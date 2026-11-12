@@ -18,6 +18,7 @@ export default function Header() {
     { to: '/khuyen-mai', label: 'Tin khuyến mãi' },
     { to: '/gioi-thieu', label: 'Giới thiệu' },
     { to: '/quy-dinh-hanh-ly', label: 'Quy định hành lý' },
+    { to: '/bao-cao', label: 'Thống kê báo cáo' },
   ];
 
   const isActive = (path) => {
