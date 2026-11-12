@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import HeroBanner from '../components/HeroBanner';
 import TopCheapFlights from '../components/TopCheapFlights';
 import ServiceCommitments from '../components/ServiceCommitments';
@@ -9,12 +10,37 @@ import ServiceCommitments from '../components/ServiceCommitments';
  * và khối cam kết chất lượng dịch vụ đồng bộ thiết kế Figma.
  */
 export default function HomePage() {
-  const [selectedFlight, setSelectedFlight] = useState(null);
+  const navigate = useNavigate();
 
+  /**
+   * Khi người dùng chọn một chuyến bay giá rẻ ở trang chủ,
+   * điều hướng sang trang tìm kiếm chuyến bay với các params tương ứng.
+   */
   const handleSelectFlight = (flight) => {
-    setSelectedFlight(flight);
-    // Khi có chức năng đặt vé ở task sau, chuyển hướng sang màn hình khai báo hành khách / đặt chỗ
-    alert(`Bạn đã chọn chuyến bay ${flight.maChuyenBay} (${flight.sanBayDi?.maSanBay} → ${flight.sanBayDen?.maSanBay})!`);
+    const maDi = flight.sanBayDi?.maSanBay || '';
+    const maDen = flight.sanBayDen?.maSanBay || '';
+    // Lấy ngày từ chuyến bay (YYYY-MM-DD), hỗ trợ cả object { dateTime, timeZone } và string
+    let ngayDi = '';
+    const rawTime = typeof flight.thoiGianKhoiHanh === 'string'
+      ? flight.thoiGianKhoiHanh
+      : flight.thoiGianKhoiHanh?.dateTime;
+    if (rawTime) {
+      ngayDi = rawTime.slice(0, 10);
+    } else {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      ngayDi = tomorrow.toISOString().split('T')[0];
+    }
+
+    const params = new URLSearchParams({
+      maDi,
+      maDen,
+      ngayDi,
+      soNguoiLon: '1',
+      soTreEm: '0',
+      loaiVe: 'oneWay',
+    });
+    navigate(`/chuyen-bay?${params.toString()}`);
   };
 
   return (
