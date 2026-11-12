@@ -3,8 +3,10 @@ import MainLayout from '../components/layout/MainLayout';
 import HomePage from '../features/home/pages/HomePage';
 import ReportPage from '../features/reports/pages/ReportPage';
 import PlaceholderPage from '../components/common/PlaceholderPage';
+import EmployeePage from '../features/employees/pages/EmployeePage';
 
 export const router = createBrowserRouter([
+  { path: '/quan-ly-nhan-vien', element: <EmployeePage /> },
   {
     path: '/',
     element: <MainLayout />,

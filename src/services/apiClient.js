@@ -63,7 +63,7 @@ export async function apiClient(endpoint, options = {}) {
 
     // Đọc body dạng JSON nếu có
     const contentType = response.headers.get('content-type') || '';
-    const isJson = contentType.includes('application/json');
+    const isJson = contentType.includes('application/json') || contentType.includes('application/problem+json');
     const data = isJson ? await response.json() : null;
 
     if (!response.ok) {
