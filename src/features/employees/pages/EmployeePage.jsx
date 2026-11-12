@@ -24,6 +24,7 @@ function formatDate(date) {
 }
 
 function EmployeeShell({ children, user }) {
+  const isAdmin = user?.vaiTro === 'ADMIN';
   return (
     <div className="min-h-screen bg-[#f7f9fc] font-['Inter',sans-serif] text-[#172137]">
       <header className="flex h-16 items-center justify-between bg-[#101827] px-4 text-white lg:px-6">
@@ -34,7 +35,7 @@ function EmployeeShell({ children, user }) {
           </Link>
           <img src={menuIcon} alt="" className="hidden size-[18px] lg:block" /><span className="hidden text-xs tracking-wide text-[#c2cad6] lg:block">HỆ THỐNG QUẢN LÝ PHÒNG VÉ</span>
         </div>
-        <div className="flex items-center gap-3 text-xs"><span className="hidden text-[#aebcd0] md:block">{new Intl.DateTimeFormat('vi-VN', { dateStyle: 'full' }).format(new Date())}</span><img src={bellIcon} alt="" className="hidden size-[18px] md:block" /><span className="flex size-9 items-center justify-center rounded-full bg-[#dff3ff] font-semibold text-[#075b8b]">{(user?.hoTen || 'A').slice(0, 1).toUpperCase()}</span><span className="hidden font-semibold sm:block">{user?.hoTen || 'Quản trị viên'}</span><span className="rounded-full bg-[#dff3ff] px-3 py-1 font-semibold text-[#075b8b]">Admin</span></div>
+        <div className="flex items-center gap-3 text-xs"><span className="hidden text-[#aebcd0] md:block">{new Intl.DateTimeFormat('vi-VN', { dateStyle: 'full' }).format(new Date())}</span><img src={bellIcon} alt="" className="hidden size-[18px] md:block" />{isAdmin ? <><span className="flex size-9 items-center justify-center rounded-full bg-[#dff3ff] font-semibold text-[#075b8b]">{(user.hoTen || 'A').slice(0, 1).toUpperCase()}</span><span className="hidden font-semibold sm:block">{user.hoTen || 'Quản trị viên'}</span><span className="rounded-full bg-[#dff3ff] px-3 py-1 font-semibold text-[#075b8b]">Admin</span></> : <span className="rounded-full border border-[#64748b] px-3 py-1 text-[#cbd5e1]">Xem giao diện</span>}</div>
       </header>
       <div className="mx-auto flex max-w-[1440px] min-h-[calc(100vh-64px)]">
         <aside className="hidden w-[260px] shrink-0 border-r border-[#dbe4ee] bg-white px-4 py-6 lg:block">
@@ -44,7 +45,7 @@ function EmployeeShell({ children, user }) {
             <Link to="/quan-ly-nhan-vien" aria-current="page" className="flex items-center gap-3 rounded-lg bg-[#dff1fc] px-4 py-3 font-semibold text-[#0076b6]"><img src={usersIcon} alt="" className="size-[18px]" />Quản lý nhân viên</Link>
             <Link to="/bao-cao" className="flex items-center gap-3 rounded-lg px-4 py-3 text-[#3d4c63] hover:bg-[#edf7fe]"><img src={chartIcon} alt="" className="size-[18px]" />Thống kê báo cáo doanh thu</Link>
           </nav>
-          <div className="mt-6 border-t border-[#dbe4ee] pt-4 text-xs text-[#687b98]"><p>Chi nhánh Hồ Chí Minh</p><p className="mt-3 text-[#07976e]">● &nbsp;Hệ thống hoạt động tốt</p><p className="mt-3">Trợ giúp • Hướng dẫn sử dụng</p></div>
+          <div className="mt-6 border-t border-[#dbe4ee] pt-4 text-xs text-[#687b98]"><p>Chi nhánh Hồ Chí Minh</p>{isAdmin && <p className="mt-3 text-[#07976e]">● &nbsp;Hệ thống hoạt động tốt</p>}<p className="mt-3">Trợ giúp • Hướng dẫn sử dụng</p></div>
         </aside>
         <main className="min-w-0 flex-1 px-4 py-8 sm:px-6 lg:px-8">
           {children}
@@ -86,8 +87,7 @@ export default function EmployeePage() {
     if (!authLoading && user?.vaiTro === 'ADMIN') load();
   }, [authLoading, user?.vaiTro, load]);
 
-  if (authLoading) return <div className="p-8" role="status">Đang kiểm tra quyền truy cập...</div>;
-  if (user?.vaiTro !== 'ADMIN') return <div className="p-8" role="alert">Bạn cần đăng nhập bằng tài khoản Admin để quản lý nhân viên.</div>;
+  const isAdmin = !authLoading && user?.vaiTro === 'ADMIN';
 
   const employees = data?.nhanVien || [];
   const total = data?.tongSo || 0;
@@ -97,6 +97,7 @@ export default function EmployeePage() {
 
   function search(event) {
     event.preventDefault();
+    if (!isAdmin) return;
     const term = keyword.trim();
     setFilter(term
       ? { tieuChi: searchBy, tuKhoa: term, trang: 0, kichThuoc: PAGE_SIZE }
@@ -110,6 +111,7 @@ export default function EmployeePage() {
   }
 
   async function saveEmployee(payload) {
+    if (!isAdmin) throw new Error('Cần đăng nhập Admin để lưu thông tin nhân viên.');
     if (formMode === 'create') {
       await employeeService.create(payload);
       setNotice('Thêm nhân viên thành công.');
@@ -134,7 +136,7 @@ export default function EmployeePage() {
   if (formMode === 'create') return <EmployeeShell user={user}>
     <div className="mb-6 flex justify-between text-xs text-[#64748b]"><span>Quản trị / Quản lý nhân viên</span><span>Vân Việt • HCM</span></div>
     <div className="mb-6"><h1 className="text-2xl font-bold text-[#0f172a]">Thêm nhân viên</h1><p className="mt-1 text-sm text-[#64748b]">Tạo tài khoản mới và thiết lập quyền truy cập phù hợp.</p></div>
-    <EmployeeForm mode="create" onCancel={() => setFormMode(null)} onSave={saveEmployee} />
+    <EmployeeForm mode="create" canSubmit={isAdmin} onCancel={() => setFormMode(null)} onSave={saveEmployee} />
     <EmployeeFormInfo mode="create" />
   </EmployeeShell>;
 
@@ -152,12 +154,13 @@ export default function EmployeePage() {
         <div><h1 className="text-[24px] font-bold tracking-tight">Quản lý nhân viên</h1><p className="mt-1 text-sm text-[#667895]">{data ? `${total} tài khoản` : 'Tài khoản'} • Quản lý thông tin và phân quyền đội ngũ phòng vé.</p></div>
         <button type="button" onClick={() => { setNotice(''); setFormMode('create'); }} className="inline-flex items-center gap-2 rounded-lg bg-[#0284c7] px-5 py-3 text-sm font-semibold text-white hover:bg-[#0369a1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7]"><img src={plusIcon} alt="" className="size-4" />Thêm nhân viên</button>
       </div>
+      {!isAdmin && <div role="status" className="mb-6 rounded-lg border border-[#bae6fd] bg-[#e0f2fe] px-4 py-3 text-sm text-[#075985]">{authLoading ? 'Đang kiểm tra phiên đăng nhập...' : 'Đây là bản xem giao diện. Đăng nhập bằng tài khoản Admin và chạy Backend để xem dữ liệu, thêm, sửa hoặc xóa nhân viên.'}</div>}
       {notice && <div role="status" className="mb-6 rounded-lg border border-[#9be8c4] bg-[#eafbf3] px-4 py-3 text-sm font-semibold text-[#086b51]">{notice}</div>}
       <form onSubmit={search} className="mb-6 grid gap-4 rounded-xl border border-[#dce5ef] bg-white p-5 shadow-sm md:grid-cols-[240px_minmax(0,1fr)_auto_auto] md:items-end">
-        <label className="block text-xs font-semibold text-[#33435e]">Tìm theo<select className="mt-2 h-10 w-full rounded-lg border border-[#c9d7e7] bg-white px-3 text-sm font-normal text-[#23324a] focus:border-[#0284c7] focus:outline-none" value={searchBy} onChange={(event) => setSearchBy(event.target.value)}>{TIEU_CHI_TIM.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
-        <label className="block text-xs font-semibold text-[#33435e]">Từ khóa<div className="relative"><input className="mt-2 h-10 w-full rounded-lg border border-[#c9d7e7] px-3 pr-9 text-sm font-normal focus:border-[#0284c7] focus:outline-none" value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="Nhập mã nhân viên hoặc họ tên" maxLength={40} /><img src={searchIcon} alt="" className="absolute right-3 top-5 size-4" /></div></label>
-        <button type="submit" className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#0284c7] px-5 text-sm font-semibold text-white hover:bg-[#0369a1]"><img src={searchButtonIcon} alt="" className="size-4" />Tìm</button>
-        <button type="button" onClick={reset} className="h-10 rounded-lg border border-[#c9d7e7] px-5 text-sm font-semibold text-[#3e506c] hover:bg-[#f2f7fb]">Đặt lại</button>
+        <label className="block text-xs font-semibold text-[#33435e]">Tìm theo<select disabled={!isAdmin} className="mt-2 h-10 w-full rounded-lg border border-[#c9d7e7] bg-white px-3 text-sm font-normal text-[#23324a] focus:border-[#0284c7] focus:outline-none disabled:opacity-50" value={searchBy} onChange={(event) => setSearchBy(event.target.value)}>{TIEU_CHI_TIM.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
+        <label className="block text-xs font-semibold text-[#33435e]">Từ khóa<div className="relative"><input disabled={!isAdmin} className="mt-2 h-10 w-full rounded-lg border border-[#c9d7e7] px-3 pr-9 text-sm font-normal focus:border-[#0284c7] focus:outline-none disabled:opacity-50" value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="Nhập mã nhân viên hoặc họ tên" maxLength={40} /><img src={searchIcon} alt="" className="absolute right-3 top-5 size-4" /></div></label>
+        <button type="submit" disabled={!isAdmin} className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#0284c7] px-5 text-sm font-semibold text-white hover:bg-[#0369a1] disabled:cursor-not-allowed disabled:opacity-50"><img src={searchButtonIcon} alt="" className="size-4" />Tìm</button>
+        <button type="button" disabled={!isAdmin} onClick={reset} className="h-10 rounded-lg border border-[#c9d7e7] px-5 text-sm font-semibold text-[#3e506c] hover:bg-[#f2f7fb] disabled:cursor-not-allowed disabled:opacity-50">Đặt lại</button>
       </form>
       <div className="overflow-x-auto rounded-xl border border-[#dce5ef] bg-white">
         <table className="w-full min-w-[1050px] border-collapse text-left text-[13px]">
@@ -178,7 +181,7 @@ export default function EmployeePage() {
         </table>
         {loading && <div className="p-12 text-center text-sm text-[#667895]" role="status">Đang tải danh sách nhân viên...</div>}
         {!loading && error && <div className="p-12 text-center text-sm" role="alert"><p className="font-semibold text-[#172137]">{backendPending ? 'API danh sách nhân viên đang chờ Backend cập nhật' : 'Không tải được danh sách nhân viên'}</p><p className="mt-2 text-[#667895]">{backendPending ? 'Endpoint GET /api/v1/nhan-vien chưa có trên nhánh develop.' : error.message}</p><button type="button" onClick={load} className="mt-4 rounded-lg bg-[#0284c7] px-4 py-2 font-semibold text-white">Thử lại</button></div>}
-        {!loading && !error && employees.length === 0 && <div className="p-12 text-center text-sm"><p className="font-semibold">{filter.tuKhoa ? 'Không có kết quả phù hợp' : 'Chưa có nhân viên'}</p><p className="mt-2 text-[#667895]">{filter.tuKhoa ? 'Thử thay đổi từ khóa hoặc tiêu chí tìm kiếm.' : 'Danh sách nhân viên sẽ hiển thị tại đây.'}</p></div>}
+        {!loading && !error && employees.length === 0 && <div className="p-12 text-center text-sm"><p className="font-semibold">{!isAdmin ? 'Đăng nhập Admin để tải danh sách' : filter.tuKhoa ? 'Không có kết quả phù hợp' : 'Chưa có nhân viên'}</p><p className="mt-2 text-[#667895]">{!isAdmin ? 'Dữ liệu nhân viên không hiển thị khi chưa xác thực.' : filter.tuKhoa ? 'Thử thay đổi từ khóa hoặc tiêu chí tìm kiếm.' : 'Danh sách nhân viên sẽ hiển thị tại đây.'}</p></div>}
       </div>
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4 text-xs text-[#667895]"><span>Hiển thị {start}–{end} trong {total} bản ghi</span><div className="flex items-center gap-2"><button type="button" disabled={filter.trang === 0 || loading} onClick={() => setFilter((current) => ({ ...current, trang: current.trang - 1 }))} className="rounded-lg border border-[#c9d7e7] px-4 py-2 disabled:opacity-50">Trước</button><span className="rounded-lg bg-[#0284c7] px-3 py-2 font-semibold text-white">{filter.trang + 1}</span><button type="button" disabled={!data || filter.trang >= data.tongTrang - 1 || loading} onClick={() => setFilter((current) => ({ ...current, trang: current.trang + 1 }))} className="rounded-lg border border-[#c9d7e7] px-4 py-2 disabled:opacity-50">Sau</button></div></div>
       {deleteTarget && <EmployeeDeleteDialog employee={deleteTarget} onCancel={() => setDeleteTarget(null)} onConfirm={deleteEmployee} />}
