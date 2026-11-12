@@ -104,6 +104,13 @@ export default function Header() {
                   >
                     Lịch sử giao dịch
                   </Link>
+                  <Link
+                    to="/bao-cao"
+                    onClick={() => setUserDropdownOpen(false)}
+                    className="block px-4 py-2 text-[13px] text-[#0284c7] font-medium hover:bg-[#f8fafc]"
+                  >
+                    Thống kê báo cáo
+                  </Link>
                   <button
                     type="button"
                     onClick={() => {
