@@ -99,6 +99,13 @@ export default function Header() {
                     Tài khoản cá nhân
                   </Link>
                   <Link
+                    to="/tai-khoan/thanh-toan"
+                    onClick={() => setUserDropdownOpen(false)}
+                    className="block px-4 py-2 text-[13px] text-[#334155] hover:bg-[#f8fafc]"
+                  >
+                    Thanh toán vé
+                  </Link>
+                  <Link
                     to="/tai-khoan/lich-su-giao-dich"
                     onClick={() => setUserDropdownOpen(false)}
                     className="block px-4 py-2 text-[13px] text-[#334155] hover:bg-[#f8fafc]"

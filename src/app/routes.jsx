@@ -6,6 +6,9 @@ import PlaceholderPage from '../components/common/PlaceholderPage';
 import EmployeePage from '../features/employees/pages/EmployeePage';
 import FlightSearchPage from '../features/flight-search/pages/FlightSearchPage';
 import PassengerInfoPage from '../features/booking/pages/PassengerInfoPage';
+import PaymentPage from '../features/payment/pages/PaymentPage';
+import PaymentResultPage from '../features/payment/pages/PaymentResultPage';
+import TransactionHistoryPage from '../features/payment/pages/TransactionHistoryPage';
 
 export const router = createBrowserRouter([
   { path: '/quan-ly-nhan-vien', element: <EmployeePage /> },
@@ -55,11 +58,44 @@ export const router = createBrowserRouter([
         element: <PassengerInfoPage />,
       },
       {
+        // 6.4.3 – Trang thanh toán đặt vé
         path: 'dat-ve/thanh-toan',
+        element: <PaymentPage />,
+      },
+      {
+        // 6.4.3 – Xác nhận kết quả callback VNPay / PayPal
+        path: 'dat-ve/thanh-toan/ket-qua',
+        element: <PaymentResultPage />,
+      },
+      {
+        path: 'thanh-toan/that-bai',
+        element: <PaymentResultPage isCancelled />,
+      },
+      {
+        path: 'tai-khoan',
         element: (
           <PlaceholderPage
-            title="Thanh toán đặt vé"
-            description="Đặt chỗ thành công. Chức năng thanh toán sẽ được triển khai ở task tiếp theo."
+            title="Thông tin cá nhân"
+            description="Màn hình quản lý thông tin tài khoản cá nhân."
+          />
+        ),
+      },
+      {
+        // 6.4.3 – Thanh toán vé trong khu vực tài khoản
+        path: 'tai-khoan/thanh-toan',
+        element: <PaymentPage />,
+      },
+      {
+        // 6.4.4 – Xem lịch sử giao dịch
+        path: 'tai-khoan/lich-su-giao-dich',
+        element: <TransactionHistoryPage />,
+      },
+      {
+        path: 'tai-khoan/doi-mat-khau',
+        element: (
+          <PlaceholderPage
+            title="Đổi mật khẩu"
+            description="Màn hình thay đổi mật khẩu tài khoản."
           />
         ),
       },
