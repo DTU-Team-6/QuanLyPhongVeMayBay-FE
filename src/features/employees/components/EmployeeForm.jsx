@@ -17,7 +17,7 @@ const secondaryClass = 'inline-flex h-10 items-center justify-center gap-2 round
 
 function Field({ label, name, type = 'text', value, onChange, error, disabled, maxLength, placeholder, autoComplete, icon }) {
   return <label className="block text-xs font-semibold text-[#334155]">{label}
-    <span className="relative block"><input name={name} type={type} value={value || ''} onChange={onChange} disabled={disabled} maxLength={maxLength} placeholder={placeholder} autoComplete={autoComplete} aria-invalid={Boolean(error)} aria-describedby={error ? `${name}-error` : undefined} className={`${inputClass} ${icon ? 'pr-9' : ''} ${error ? '!border-red-500' : ''}`} />{icon && <img src={icon} alt="" className="pointer-events-none absolute right-3 top-[18px] size-4" />}</span>
+    <span className="relative block"><input name={name} type={type} value={value || ''} onChange={onChange} disabled={disabled} maxLength={maxLength} placeholder={placeholder} autoComplete={autoComplete} aria-invalid={Boolean(error)} aria-describedby={error ? `${name}-error` : undefined} className={`${inputClass} ${icon ? 'pr-9' : ''} ${type === 'date' ? 'employee-date' : ''} ${error ? '!border-red-500' : ''}`} />{icon && <img src={icon} alt="" className="pointer-events-none absolute right-3 top-[18px] size-4" />}</span>
     {error && <span id={`${name}-error`} className="mt-1 block text-xs font-normal text-red-600">{error}</span>}
   </label>;
 }

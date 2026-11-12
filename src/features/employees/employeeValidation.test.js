@@ -14,6 +14,7 @@ test('validateEmployee kiểm tra đúng trường khi thêm và sửa', () => {
   assert.ok(validateEmployee({ ...valid, maNhanVien: '', matKhau: '' }, 'create').maNhanVien);
   assert.equal(validateEmployee({ ...valid, maNhanVien: '', matKhau: '' }, 'edit').maNhanVien, undefined);
   assert.ok(validateEmployee({ ...valid, vaiTro: 'KHACH_HANG' }, 'edit').vaiTro);
+  assert.ok(validateEmployee({ ...valid, ngaySinh: '1995-02-30' }, 'edit').ngaySinh);
 });
 
 test('employeePayload không gửi mã nhân viên và mật khẩu khi sửa', () => {

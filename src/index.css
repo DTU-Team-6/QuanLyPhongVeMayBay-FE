@@ -5,3 +5,13 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   }
 }
+
+/* Giữ vùng mở lịch gốc và chỉ hiển thị biểu tượng lịch đúng thiết kế Figma. */
+.employee-date::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+}

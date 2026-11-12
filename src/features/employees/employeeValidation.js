@@ -23,7 +23,8 @@ export function validateEmployee(values, mode) {
   if (!name) errors.hoTen = 'Vui lòng nhập họ tên.';
   else if (name.length > 40 || !NAME_PATTERN.test(name)) errors.hoTen = 'Họ tên gồm tối đa 40 chữ cái và khoảng trắng.';
 
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(birthday) || Number.isNaN(Date.parse(`${birthday}T00:00:00Z`))) errors.ngaySinh = 'Vui lòng chọn ngày sinh hợp lệ.';
+  const parsedBirthday = new Date(`${birthday}T00:00:00Z`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(birthday) || Number.isNaN(parsedBirthday.getTime()) || parsedBirthday.toISOString().slice(0, 10) !== birthday) errors.ngaySinh = 'Vui lòng chọn ngày sinh hợp lệ.';
   else if (birthday >= new Date().toISOString().slice(0, 10)) errors.ngaySinh = 'Ngày sinh phải trước hôm nay.';
 
   if (!['Nam', 'Nu', 'Khac'].includes(values.gioiTinh)) errors.gioiTinh = 'Vui lòng chọn giới tính.';

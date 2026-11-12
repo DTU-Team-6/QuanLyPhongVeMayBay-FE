@@ -97,7 +97,10 @@ export default function EmployeePage() {
 
   function search(event) {
     event.preventDefault();
-    setFilter({ tieuChi: searchBy, tuKhoa: keyword.trim(), trang: 0, kichThuoc: PAGE_SIZE });
+    const term = keyword.trim();
+    setFilter(term
+      ? { tieuChi: searchBy, tuKhoa: term, trang: 0, kichThuoc: PAGE_SIZE }
+      : { trang: 0, kichThuoc: PAGE_SIZE });
   }
 
   function reset() {
