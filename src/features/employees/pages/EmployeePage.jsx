@@ -1,15 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import planeIcon from '../../../assets/plane.svg';
+import AdminShell from '../../../components/layout/AdminShell';
 import employeeService from '../employeeService';
 import { TIEU_CHI_TIM } from '../employeeTypes';
 import EmployeeForm, { EmployeeFormInfo } from '../components/EmployeeForm';
-import menuIcon from '../../../assets/employees/menu.svg';
-import bellIcon from '../../../assets/employees/bell.svg';
-import userIcon from '../../../assets/employees/user.svg';
-import usersIcon from '../../../assets/employees/users.svg';
-import chartIcon from '../../../assets/employees/chart.svg';
 import plusIcon from '../../../assets/employees/plus.svg';
 import searchIcon from '../../../assets/employees/search.svg';
 import searchButtonIcon from '../../../assets/employees/searchButton.svg';
@@ -24,35 +18,10 @@ function formatDate(date) {
 }
 
 function EmployeeShell({ children, user }) {
-  const isAdmin = user?.vaiTro === 'ADMIN';
   return (
-    <div className="min-h-screen bg-[#f7f9fc] font-['Inter',sans-serif] text-[#172137]">
-      <header className="flex h-16 items-center justify-between bg-[#101827] px-4 text-white lg:px-6">
-        <div className="flex items-center gap-7">
-          <Link to="/" className="flex items-center gap-2.5" aria-label="Vân Việt - Trang chủ">
-            <span className="flex size-9 items-center justify-center rounded-[9px] bg-[#0284c7]"><img src={planeIcon} alt="" className="size-[23px]" /></span>
-            <span className="leading-tight"><strong className="block text-[20px]">Vân Việt</strong><small className="block text-[9px] tracking-[1.5px] text-[#b5c2d4]">PHÒNG VÉ MÁY BAY</small></span>
-          </Link>
-          <img src={menuIcon} alt="" className="hidden size-[18px] lg:block" /><span className="hidden text-xs tracking-wide text-[#c2cad6] lg:block">HỆ THỐNG QUẢN LÝ PHÒNG VÉ</span>
-        </div>
-        <div className="flex items-center gap-3 text-xs"><span className="hidden text-[#aebcd0] md:block">{new Intl.DateTimeFormat('vi-VN', { dateStyle: 'full' }).format(new Date())}</span><img src={bellIcon} alt="" className="hidden size-[18px] md:block" />{isAdmin ? <><span className="flex size-9 items-center justify-center rounded-full bg-[#dff3ff] font-semibold text-[#075b8b]">{(user.hoTen || 'A').slice(0, 1).toUpperCase()}</span><span className="hidden font-semibold sm:block">{user.hoTen || 'Quản trị viên'}</span><span className="rounded-full bg-[#dff3ff] px-3 py-1 font-semibold text-[#075b8b]">Admin</span></> : <span className="rounded-full border border-[#64748b] px-3 py-1 text-[#cbd5e1]">Xem giao diện</span>}</div>
-      </header>
-      <div className="mx-auto flex max-w-[1440px] min-h-[calc(100vh-64px)]">
-        <aside className="hidden w-[260px] shrink-0 border-r border-[#dbe4ee] bg-white px-4 py-6 lg:block">
-          <p className="mb-5 text-xs font-semibold text-[#667895]">KHÔNG GIAN QUẢN TRỊ</p>
-          <nav className="space-y-2 text-sm">
-            <Link to="/tai-khoan" className="flex items-center gap-3 rounded-lg px-4 py-3 text-[#3d4c63] hover:bg-[#edf7fe]"><img src={userIcon} alt="" className="size-[18px]" />Thông tin Admin</Link>
-            <Link to="/quan-ly-nhan-vien" aria-current="page" className="flex items-center gap-3 rounded-lg bg-[#dff1fc] px-4 py-3 font-semibold text-[#0076b6]"><img src={usersIcon} alt="" className="size-[18px]" />Quản lý nhân viên</Link>
-            <Link to="/bao-cao" className="flex items-center gap-3 rounded-lg px-4 py-3 text-[#3d4c63] hover:bg-[#edf7fe]"><img src={chartIcon} alt="" className="size-[18px]" />Thống kê báo cáo doanh thu</Link>
-          </nav>
-          <div className="mt-6 border-t border-[#dbe4ee] pt-4 text-xs text-[#687b98]"><p>Chi nhánh Hồ Chí Minh</p>{isAdmin && <p className="mt-3 text-[#07976e]">● &nbsp;Hệ thống hoạt động tốt</p>}<p className="mt-3">Trợ giúp • Hướng dẫn sử dụng</p></div>
-        </aside>
-        <main className="min-w-0 flex-1 px-4 py-8 sm:px-6 lg:px-8">
-          {children}
-          <footer className="mt-12 flex justify-between text-[11px] text-[#72839c]"><span>© 2026 Vân Việt • Hệ thống quản lý phòng vé</span><span>Phiên bản 2.6</span></footer>
-        </main>
-      </div>
-    </div>
+    <AdminShell user={user} activeKey="employees">
+      {children}
+    </AdminShell>
   );
 }
 

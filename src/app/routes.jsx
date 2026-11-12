@@ -9,9 +9,16 @@ import PassengerInfoPage from '../features/booking/pages/PassengerInfoPage';
 import PaymentPage from '../features/payment/pages/PaymentPage';
 import PaymentResultPage from '../features/payment/pages/PaymentResultPage';
 import TransactionHistoryPage from '../features/payment/pages/TransactionHistoryPage';
+import AdminNewsListPage from '../features/news/pages/AdminNewsListPage';
+import AdminNewsFormPage from '../features/news/pages/AdminNewsFormPage';
+import PublicNewsListPage from '../features/news/pages/PublicNewsListPage';
+import PublicNewsDetailPage from '../features/news/pages/PublicNewsDetailPage';
 
 export const router = createBrowserRouter([
   { path: '/quan-ly-nhan-vien', element: <EmployeePage /> },
+  { path: '/quan-ly-tin-tuc', element: <AdminNewsListPage /> },
+  { path: '/quan-ly-tin-tuc/them-moi', element: <AdminNewsFormPage mode="create" /> },
+  { path: '/quan-ly-tin-tuc/:id/chinh-sua', element: <AdminNewsFormPage mode="edit" /> },
   {
     path: '/',
     element: <MainLayout />,
@@ -19,6 +26,14 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <HomePage />,
+      },
+      {
+        path: 'tin-tuc',
+        element: <PublicNewsListPage />,
+      },
+      {
+        path: 'tin-tuc/:id',
+        element: <PublicNewsDetailPage />,
       },
       {
         path: 'khuyen-mai',
