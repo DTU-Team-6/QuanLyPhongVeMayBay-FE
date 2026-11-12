@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import HomePage from '../features/home/pages/HomePage';
+import ReportPage from '../features/reports/pages/ReportPage';
 import PlaceholderPage from '../components/common/PlaceholderPage';
 
 export const router = createBrowserRouter([
@@ -47,6 +48,14 @@ export const router = createBrowserRouter([
             description="Màn hình tìm kiếm và chọn chuyến bay (Task tiếp theo)."
           />
         ),
+      },
+      {
+        path: 'bao-cao',
+        element: <ReportPage />,
+      },
+      {
+        path: 'thong-ke',
+        element: <ReportPage />,
       },
       {
         path: 'dang-nhap',

@@ -18,6 +18,7 @@ export default function Header() {
     { to: '/khuyen-mai', label: 'Tin khuyến mãi' },
     { to: '/gioi-thieu', label: 'Giới thiệu' },
     { to: '/quy-dinh-hanh-ly', label: 'Quy định hành lý' },
+    { to: '/bao-cao', label: 'Thống kê báo cáo' },
   ];
 
   const isActive = (path) => {
@@ -103,6 +104,13 @@ export default function Header() {
                     className="block px-4 py-2 text-[13px] text-[#334155] hover:bg-[#f8fafc]"
                   >
                     Lịch sử giao dịch
+                  </Link>
+                  <Link
+                    to="/bao-cao"
+                    onClick={() => setUserDropdownOpen(false)}
+                    className="block px-4 py-2 text-[13px] text-[#0284c7] font-medium hover:bg-[#f8fafc]"
+                  >
+                    Thống kê báo cáo
                   </Link>
                   <button
                     type="button"
