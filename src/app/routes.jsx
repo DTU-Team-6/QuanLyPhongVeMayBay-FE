@@ -4,6 +4,8 @@ import HomePage from '../features/home/pages/HomePage';
 import ReportPage from '../features/reports/pages/ReportPage';
 import PlaceholderPage from '../components/common/PlaceholderPage';
 import EmployeePage from '../features/employees/pages/EmployeePage';
+import FlightSearchPage from '../features/flight-search/pages/FlightSearchPage';
+import PassengerInfoPage from '../features/booking/pages/PassengerInfoPage';
 
 export const router = createBrowserRouter([
   { path: '/quan-ly-nhan-vien', element: <EmployeePage /> },
@@ -43,11 +45,21 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        // 6.4.6 – Trang danh sách chuyến bay
         path: 'chuyen-bay',
+        element: <FlightSearchPage />,
+      },
+      {
+        // 6.4.8 – Trang khai báo thông tin hành khách
+        path: 'dat-ve/hanh-khach',
+        element: <PassengerInfoPage />,
+      },
+      {
+        path: 'dat-ve/thanh-toan',
         element: (
           <PlaceholderPage
-            title="Kết quả tìm kiếm chuyến bay"
-            description="Màn hình tìm kiếm và chọn chuyến bay (Task tiếp theo)."
+            title="Thanh toán đặt vé"
+            description="Đặt chỗ thành công. Chức năng thanh toán sẽ được triển khai ở task tiếp theo."
           />
         ),
       },
