@@ -11,7 +11,9 @@
 - [x] Tạo nhánh `feature/trang-chu-top-chuyen-bay-gia-re` từ `develop`.
 - [x] Cài đặt và cấu hình Tailwind CSS (`@tailwindcss/vite`, `tailwindcss`) và `react-router-dom`.
 - [x] Cấu hình file môi trường `.env.example`, `.env` với biến `VITE_API_BASE_URL` (không commit `.env`).
-- [x] Tải toàn bộ icon và hình ảnh static từ Figma vào thư mục `src/assets/`.
+- [x] Tải toàn bộ icon và hình ảnh static từ Figma vào thư mục `src/assets/` (đã fix tải đầy đủ dữ liệu ảnh và SVG thật bằng `curl.exe`).
+- [x] Sửa lỗi hiển thị hình ảnh và icon vỡ trên giao diện (commit `22409f6`).
+
 - [x] Xây dựng lớp gọi API dùng chung `src/services/apiClient.js` bằng `fetch`:
   - Đọc `VITE_API_BASE_URL`, gắn tiền tố `/api/v1`
   - Bật `credentials: 'include'` gửi cookie HttpOnly
