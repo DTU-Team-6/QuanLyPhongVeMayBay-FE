@@ -13,6 +13,7 @@ import chartIcon from '../../../assets/employees/chart.svg';
 import plusIcon from '../../../assets/employees/plus.svg';
 import searchIcon from '../../../assets/employees/search.svg';
 import searchButtonIcon from '../../../assets/employees/searchButton.svg';
+import EmployeeDeleteDialog from '../components/EmployeeDeleteDialog';
 
 const PAGE_SIZE = 20;
 
@@ -64,6 +65,7 @@ export default function EmployeePage() {
   const [error, setError] = useState(null);
   const [formMode, setFormMode] = useState(null);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [notice, setNotice] = useState('');
 
   const load = useCallback(async () => {
@@ -119,6 +121,13 @@ export default function EmployeePage() {
     }
   }
 
+  async function deleteEmployee(employee) {
+    await employeeService.remove(employee.id);
+    setDeleteTarget(null);
+    setNotice(`Xóa nhân viên ${employee.maNhanVien} - ${employee.hoTen} thành công.`);
+    load();
+  }
+
   if (formMode === 'create') return <EmployeeShell user={user}>
     <div className="mb-6 flex justify-between text-xs text-[#64748b]"><span>Quản trị / Quản lý nhân viên</span><span>Vân Việt • HCM</span></div>
     <div className="mb-6"><h1 className="text-2xl font-bold text-[#0f172a]">Thêm nhân viên</h1><p className="mt-1 text-sm text-[#64748b]">Tạo tài khoản mới và thiết lập quyền truy cập phù hợp.</p></div>
@@ -160,7 +169,7 @@ export default function EmployeePage() {
               <td className="px-4 py-4">{employee.email}</td>
               <td className="px-4 py-4">{employee.soDienThoai}</td>
               <td className="px-4 py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${employee.vaiTro === 'ADMIN' ? 'bg-[#dff1fc] text-[#0076b6]' : 'bg-[#eef2f6] text-[#637692]'}`}>{employee.vaiTro === 'ADMIN' ? 'Admin' : 'Nhân viên'}</span></td>
-              <td className="px-4 py-4"><button type="button" onClick={() => { setSelectedEmployee(employee); setFormMode('edit'); setNotice(''); }} className="mr-3 font-semibold text-[#0284c7] hover:underline">Sửa</button><button type="button" className="font-semibold text-red-600 hover:underline">Xóa</button></td>
+              <td className="px-4 py-4"><button type="button" onClick={() => { setSelectedEmployee(employee); setFormMode('edit'); setNotice(''); }} className="mr-3 font-semibold text-[#0284c7] hover:underline">Sửa</button><button type="button" onClick={() => { setDeleteTarget(employee); setNotice(''); }} className="font-semibold text-red-600 hover:underline">Xóa</button></td>
             </tr>)}
           </tbody>
         </table>
@@ -169,6 +178,7 @@ export default function EmployeePage() {
         {!loading && !error && employees.length === 0 && <div className="p-12 text-center text-sm"><p className="font-semibold">{filter.tuKhoa ? 'Không có kết quả phù hợp' : 'Chưa có nhân viên'}</p><p className="mt-2 text-[#667895]">{filter.tuKhoa ? 'Thử thay đổi từ khóa hoặc tiêu chí tìm kiếm.' : 'Danh sách nhân viên sẽ hiển thị tại đây.'}</p></div>}
       </div>
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4 text-xs text-[#667895]"><span>Hiển thị {start}–{end} trong {total} bản ghi</span><div className="flex items-center gap-2"><button type="button" disabled={filter.trang === 0 || loading} onClick={() => setFilter((current) => ({ ...current, trang: current.trang - 1 }))} className="rounded-lg border border-[#c9d7e7] px-4 py-2 disabled:opacity-50">Trước</button><span className="rounded-lg bg-[#0284c7] px-3 py-2 font-semibold text-white">{filter.trang + 1}</span><button type="button" disabled={!data || filter.trang >= data.tongTrang - 1 || loading} onClick={() => setFilter((current) => ({ ...current, trang: current.trang + 1 }))} className="rounded-lg border border-[#c9d7e7] px-4 py-2 disabled:opacity-50">Sau</button></div></div>
+      {deleteTarget && <EmployeeDeleteDialog employee={deleteTarget} onCancel={() => setDeleteTarget(null)} onConfirm={deleteEmployee} />}
     </EmployeeShell>
   );
 }
