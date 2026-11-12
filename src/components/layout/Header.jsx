@@ -15,6 +15,7 @@ export default function Header() {
 
   const navLinks = [
     { to: '/', label: 'Trang chủ' },
+    { to: '/tin-tuc', label: 'Tin tức' },
     { to: '/khuyen-mai', label: 'Tin khuyến mãi' },
     { to: '/gioi-thieu', label: 'Giới thiệu' },
     { to: '/quy-dinh-hanh-ly', label: 'Quy định hành lý' },
@@ -119,6 +120,24 @@ export default function Header() {
                   >
                     Thống kê báo cáo
                   </Link>
+                  {(user.vaiTro === 'ADMIN' || user.vaiTro === 'NHAN_VIEN') && (
+                    <Link
+                      to="/quan-ly-tin-tuc"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="block px-4 py-2 text-[13px] text-[#0284c7] font-medium hover:bg-[#f8fafc]"
+                    >
+                      Quản lý tin tức
+                    </Link>
+                  )}
+                  {user.vaiTro === 'ADMIN' && (
+                    <Link
+                      to="/quan-ly-nhan-vien"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="block px-4 py-2 text-[13px] text-[#0284c7] font-medium hover:bg-[#f8fafc]"
+                    >
+                      Quản lý nhân viên
+                    </Link>
+                  )}
                   <button
                     type="button"
                     onClick={() => {
