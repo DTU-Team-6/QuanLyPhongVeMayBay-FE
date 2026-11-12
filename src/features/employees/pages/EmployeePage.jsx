@@ -63,6 +63,7 @@ export default function EmployeePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [formMode, setFormMode] = useState(null);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [notice, setNotice] = useState('');
 
   const load = useCallback(async () => {
@@ -109,6 +110,12 @@ export default function EmployeePage() {
       setNotice('Thêm nhân viên thành công.');
       setFormMode(null);
       load();
+    } else if (formMode === 'edit' && selectedEmployee) {
+      await employeeService.update(selectedEmployee.id, payload);
+      setNotice(`Cập nhật nhân viên ${selectedEmployee.maNhanVien} thành công.`);
+      setFormMode(null);
+      setSelectedEmployee(null);
+      load();
     }
   }
 
@@ -117,6 +124,13 @@ export default function EmployeePage() {
     <div className="mb-6"><h1 className="text-2xl font-bold text-[#0f172a]">Thêm nhân viên</h1><p className="mt-1 text-sm text-[#64748b]">Tạo tài khoản mới và thiết lập quyền truy cập phù hợp.</p></div>
     <EmployeeForm mode="create" onCancel={() => setFormMode(null)} onSave={saveEmployee} />
     <EmployeeFormInfo mode="create" />
+  </EmployeeShell>;
+
+  if (formMode === 'edit' && selectedEmployee) return <EmployeeShell user={user}>
+    <div className="mb-6 flex justify-between text-xs text-[#64748b]"><span>Quản trị / Quản lý nhân viên</span><span>Vân Việt • HCM</span></div>
+    <div className="mb-6"><h1 className="text-2xl font-bold text-[#0f172a]">Sửa nhân viên</h1><p className="mt-1 text-sm text-[#64748b]">{selectedEmployee.maNhanVien} – {selectedEmployee.hoTen} • Cập nhật thông tin và quyền truy cập.</p></div>
+    <EmployeeForm mode="edit" employee={selectedEmployee} onCancel={() => { setFormMode(null); setSelectedEmployee(null); }} onSave={saveEmployee} />
+    <EmployeeFormInfo mode="edit" />
   </EmployeeShell>;
 
   return (
@@ -137,7 +151,17 @@ export default function EmployeePage() {
         <table className="w-full min-w-[1050px] border-collapse text-left text-[13px]">
           <thead className="bg-[#f0f4f8] text-xs font-semibold text-[#637692]"><tr>{['STT', 'Mã NV', 'Họ tên', 'Ngày sinh', 'Giới tính', 'Email', 'SĐT', 'Phân quyền', 'Sửa / Xóa'].map((title) => <th key={title} scope="col" className="px-4 py-4">{title}</th>)}</tr></thead>
           <tbody>
-            {employees.map((employee, index) => <tr key={employee.id} className="border-t border-[#e1e8f0] text-[#354660] hover:bg-[#f7fbfe]"><td className="px-4 py-4 text-[#72839c]">{start + index}</td><td className="px-4 py-4">{employee.maNhanVien}</td><td className="px-4 py-4 font-semibold">{employee.hoTen}</td><td className="px-4 py-4">{formatDate(employee.ngaySinh)}</td><td className="px-4 py-4">{{ Nam: 'Nam', Nu: 'Nữ', Khac: 'Khác' }[employee.gioiTinh] || employee.gioiTinh}</td><td className="px-4 py-4">{employee.email}</td><td className="px-4 py-4">{employee.soDienThoai}</td><td className="px-4 py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${employee.vaiTro === 'ADMIN' ? 'bg-[#dff1fc] text-[#0076b6]' : 'bg-[#eef2f6] text-[#637692]'}`}>{employee.vaiTro === 'ADMIN' ? 'Admin' : 'Nhân viên'}</span></td><td className="px-4 py-4"><button type="button" className="mr-3 font-semibold text-[#0284c7] hover:underline">Sửa</button><button type="button" className="font-semibold text-red-600 hover:underline">Xóa</button></td></tr>)}
+            {employees.map((employee, index) => <tr key={employee.id} className="border-t border-[#e1e8f0] text-[#354660] hover:bg-[#f7fbfe]">
+              <td className="px-4 py-4 text-[#72839c]">{start + index}</td>
+              <td className="px-4 py-4">{employee.maNhanVien}</td>
+              <td className="px-4 py-4 font-semibold">{employee.hoTen}</td>
+              <td className="px-4 py-4">{formatDate(employee.ngaySinh)}</td>
+              <td className="px-4 py-4">{{ Nam: 'Nam', Nu: 'Nữ', Khac: 'Khác' }[employee.gioiTinh] || employee.gioiTinh}</td>
+              <td className="px-4 py-4">{employee.email}</td>
+              <td className="px-4 py-4">{employee.soDienThoai}</td>
+              <td className="px-4 py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${employee.vaiTro === 'ADMIN' ? 'bg-[#dff1fc] text-[#0076b6]' : 'bg-[#eef2f6] text-[#637692]'}`}>{employee.vaiTro === 'ADMIN' ? 'Admin' : 'Nhân viên'}</span></td>
+              <td className="px-4 py-4"><button type="button" onClick={() => { setSelectedEmployee(employee); setFormMode('edit'); setNotice(''); }} className="mr-3 font-semibold text-[#0284c7] hover:underline">Sửa</button><button type="button" className="font-semibold text-red-600 hover:underline">Xóa</button></td>
+            </tr>)}
           </tbody>
         </table>
         {loading && <div className="p-12 text-center text-sm text-[#667895]" role="status">Đang tải danh sách nhân viên...</div>}
