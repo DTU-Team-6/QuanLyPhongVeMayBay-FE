@@ -4,6 +4,15 @@ import { useAuth } from '../../../context/AuthContext';
 import planeIcon from '../../../assets/plane.svg';
 import employeeService from '../employeeService';
 import { TIEU_CHI_TIM } from '../employeeTypes';
+import EmployeeForm, { EmployeeFormInfo } from '../components/EmployeeForm';
+import menuIcon from '../../../assets/employees/menu.svg';
+import bellIcon from '../../../assets/employees/bell.svg';
+import userIcon from '../../../assets/employees/user.svg';
+import usersIcon from '../../../assets/employees/users.svg';
+import chartIcon from '../../../assets/employees/chart.svg';
+import plusIcon from '../../../assets/employees/plus.svg';
+import searchIcon from '../../../assets/employees/search.svg';
+import searchButtonIcon from '../../../assets/employees/searchButton.svg';
 
 const PAGE_SIZE = 20;
 
@@ -22,17 +31,17 @@ function EmployeeShell({ children, user }) {
             <span className="flex size-9 items-center justify-center rounded-[9px] bg-[#0284c7]"><img src={planeIcon} alt="" className="size-[23px]" /></span>
             <span className="leading-tight"><strong className="block text-[20px]">Vân Việt</strong><small className="block text-[9px] tracking-[1.5px] text-[#b5c2d4]">PHÒNG VÉ MÁY BAY</small></span>
           </Link>
-          <span className="hidden border-l border-[#36445a] pl-7 text-xs tracking-wide text-[#c2cad6] lg:block">HỆ THỐNG QUẢN LÝ PHÒNG VÉ</span>
+          <img src={menuIcon} alt="" className="hidden size-[18px] lg:block" /><span className="hidden text-xs tracking-wide text-[#c2cad6] lg:block">HỆ THỐNG QUẢN LÝ PHÒNG VÉ</span>
         </div>
-        <div className="flex items-center gap-3 text-xs"><span className="hidden text-[#aebcd0] md:block">{new Intl.DateTimeFormat('vi-VN', { dateStyle: 'full' }).format(new Date())}</span><span className="hidden text-lg md:block" aria-hidden="true">♧</span><span className="flex size-9 items-center justify-center rounded-full bg-[#dff3ff] font-semibold text-[#075b8b]">{(user?.hoTen || 'A').slice(0, 1).toUpperCase()}</span><span className="hidden font-semibold sm:block">{user?.hoTen || 'Quản trị viên'}</span><span className="rounded-full bg-[#dff3ff] px-3 py-1 font-semibold text-[#075b8b]">Admin</span></div>
+        <div className="flex items-center gap-3 text-xs"><span className="hidden text-[#aebcd0] md:block">{new Intl.DateTimeFormat('vi-VN', { dateStyle: 'full' }).format(new Date())}</span><img src={bellIcon} alt="" className="hidden size-[18px] md:block" /><span className="flex size-9 items-center justify-center rounded-full bg-[#dff3ff] font-semibold text-[#075b8b]">{(user?.hoTen || 'A').slice(0, 1).toUpperCase()}</span><span className="hidden font-semibold sm:block">{user?.hoTen || 'Quản trị viên'}</span><span className="rounded-full bg-[#dff3ff] px-3 py-1 font-semibold text-[#075b8b]">Admin</span></div>
       </header>
       <div className="mx-auto flex max-w-[1440px] min-h-[calc(100vh-64px)]">
         <aside className="hidden w-[260px] shrink-0 border-r border-[#dbe4ee] bg-white px-4 py-6 lg:block">
           <p className="mb-5 text-xs font-semibold text-[#667895]">KHÔNG GIAN QUẢN TRỊ</p>
           <nav className="space-y-2 text-sm">
-            <Link to="/tai-khoan" className="block rounded-lg px-4 py-3 text-[#3d4c63] hover:bg-[#edf7fe]">Thông tin Admin</Link>
-            <Link to="/quan-ly-nhan-vien" aria-current="page" className="block rounded-lg bg-[#dff1fc] px-4 py-3 font-semibold text-[#0076b6]">Quản lý nhân viên</Link>
-            <Link to="/bao-cao" className="block rounded-lg px-4 py-3 text-[#3d4c63] hover:bg-[#edf7fe]">Thống kê báo cáo doanh thu</Link>
+            <Link to="/tai-khoan" className="flex items-center gap-3 rounded-lg px-4 py-3 text-[#3d4c63] hover:bg-[#edf7fe]"><img src={userIcon} alt="" className="size-[18px]" />Thông tin Admin</Link>
+            <Link to="/quan-ly-nhan-vien" aria-current="page" className="flex items-center gap-3 rounded-lg bg-[#dff1fc] px-4 py-3 font-semibold text-[#0076b6]"><img src={usersIcon} alt="" className="size-[18px]" />Quản lý nhân viên</Link>
+            <Link to="/bao-cao" className="flex items-center gap-3 rounded-lg px-4 py-3 text-[#3d4c63] hover:bg-[#edf7fe]"><img src={chartIcon} alt="" className="size-[18px]" />Thống kê báo cáo doanh thu</Link>
           </nav>
           <div className="mt-6 border-t border-[#dbe4ee] pt-4 text-xs text-[#687b98]"><p>Chi nhánh Hồ Chí Minh</p><p className="mt-3 text-[#07976e]">● &nbsp;Hệ thống hoạt động tốt</p><p className="mt-3">Trợ giúp • Hướng dẫn sử dụng</p></div>
         </aside>
@@ -53,6 +62,8 @@ export default function EmployeePage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [formMode, setFormMode] = useState(null);
+  const [notice, setNotice] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -92,17 +103,34 @@ export default function EmployeePage() {
     setFilter({ trang: 0, kichThuoc: PAGE_SIZE });
   }
 
+  async function saveEmployee(payload) {
+    if (formMode === 'create') {
+      await employeeService.create(payload);
+      setNotice('Thêm nhân viên thành công.');
+      setFormMode(null);
+      load();
+    }
+  }
+
+  if (formMode === 'create') return <EmployeeShell user={user}>
+    <div className="mb-6 flex justify-between text-xs text-[#64748b]"><span>Quản trị / Quản lý nhân viên</span><span>Vân Việt • HCM</span></div>
+    <div className="mb-6"><h1 className="text-2xl font-bold text-[#0f172a]">Thêm nhân viên</h1><p className="mt-1 text-sm text-[#64748b]">Tạo tài khoản mới và thiết lập quyền truy cập phù hợp.</p></div>
+    <EmployeeForm mode="create" onCancel={() => setFormMode(null)} onSave={saveEmployee} />
+    <EmployeeFormInfo mode="create" />
+  </EmployeeShell>;
+
   return (
     <EmployeeShell user={user}>
       <div className="mb-7 flex items-center justify-between text-xs text-[#667895]"><span>Quản trị / Quản lý nhân viên</span><span>Vân Việt • HCM</span></div>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div><h1 className="text-[24px] font-bold tracking-tight">Quản lý nhân viên</h1><p className="mt-1 text-sm text-[#667895]">{data ? `${total} tài khoản` : 'Tài khoản'} • Quản lý thông tin và phân quyền đội ngũ phòng vé.</p></div>
-        <button type="button" className="rounded-lg bg-[#0284c7] px-5 py-3 text-sm font-semibold text-white hover:bg-[#0369a1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7]">＋ &nbsp;Thêm nhân viên</button>
+        <button type="button" onClick={() => { setNotice(''); setFormMode('create'); }} className="inline-flex items-center gap-2 rounded-lg bg-[#0284c7] px-5 py-3 text-sm font-semibold text-white hover:bg-[#0369a1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7]"><img src={plusIcon} alt="" className="size-4" />Thêm nhân viên</button>
       </div>
+      {notice && <div role="status" className="mb-6 rounded-lg border border-[#9be8c4] bg-[#eafbf3] px-4 py-3 text-sm font-semibold text-[#086b51]">{notice}</div>}
       <form onSubmit={search} className="mb-6 grid gap-4 rounded-xl border border-[#dce5ef] bg-white p-5 shadow-sm md:grid-cols-[240px_minmax(0,1fr)_auto_auto] md:items-end">
         <label className="block text-xs font-semibold text-[#33435e]">Tìm theo<select className="mt-2 h-10 w-full rounded-lg border border-[#c9d7e7] bg-white px-3 text-sm font-normal text-[#23324a] focus:border-[#0284c7] focus:outline-none" value={searchBy} onChange={(event) => setSearchBy(event.target.value)}>{TIEU_CHI_TIM.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
-        <label className="block text-xs font-semibold text-[#33435e]">Từ khóa<input className="mt-2 h-10 w-full rounded-lg border border-[#c9d7e7] px-3 text-sm font-normal focus:border-[#0284c7] focus:outline-none" value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="Nhập mã nhân viên hoặc họ tên" maxLength={40} /></label>
-        <button type="submit" className="h-10 rounded-lg bg-[#0284c7] px-5 text-sm font-semibold text-white hover:bg-[#0369a1]">⌕ &nbsp;Tìm</button>
+        <label className="block text-xs font-semibold text-[#33435e]">Từ khóa<div className="relative"><input className="mt-2 h-10 w-full rounded-lg border border-[#c9d7e7] px-3 pr-9 text-sm font-normal focus:border-[#0284c7] focus:outline-none" value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="Nhập mã nhân viên hoặc họ tên" maxLength={40} /><img src={searchIcon} alt="" className="absolute right-3 top-5 size-4" /></div></label>
+        <button type="submit" className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#0284c7] px-5 text-sm font-semibold text-white hover:bg-[#0369a1]"><img src={searchButtonIcon} alt="" className="size-4" />Tìm</button>
         <button type="button" onClick={reset} className="h-10 rounded-lg border border-[#c9d7e7] px-5 text-sm font-semibold text-[#3e506c] hover:bg-[#f2f7fb]">Đặt lại</button>
       </form>
       <div className="overflow-x-auto rounded-xl border border-[#dce5ef] bg-white">
