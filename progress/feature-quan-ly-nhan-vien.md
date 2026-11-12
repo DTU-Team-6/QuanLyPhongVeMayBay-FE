@@ -15,6 +15,7 @@
 - Sửa: mở trang theo Figma frame `1:3123` từ bản ghi được chọn; chỉ gửi các trường PUT hỗ trợ, mã NV khóa chỉnh sửa. `npm run build` thành công; `npm test` đạt 13/13.
 - Xóa: hộp thoại xác nhận theo Figma frame `1:2809`; chỉ gọi DELETE sau nút xác nhận, hiển thị lỗi và chống gửi trùng. Backend thực hiện soft delete. `npm run build` thành công; `npm test` đạt 13/13.
 - Đã mở giao diện trên trình duyệt với API mô phỏng chỉ chạy cục bộ: danh sách hiển thị 8 dòng, mở/đóng trang Thêm và Sửa, mở/hủy hộp thoại Xóa; console không có lỗi. Dữ liệu mô phỏng không nằm trong source.
+- Khi chưa đăng nhập Admin, trang vẫn hiển thị bố cục danh sách và mở được form Thêm để xem; không gọi API danh sách, các nút tìm kiếm/lưu bị khóa và không có dữ liệu nhân viên giả. Đã kiểm tra trên trình duyệt không có Backend; `npm run build` thành công, `npm test` đạt 13/13.
 
 ## Đang dở
 

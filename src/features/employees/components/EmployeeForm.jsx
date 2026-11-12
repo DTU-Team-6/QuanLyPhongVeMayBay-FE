@@ -22,7 +22,7 @@ function Field({ label, name, type = 'text', value, onChange, error, disabled, m
   </label>;
 }
 
-export default function EmployeeForm({ mode, employee, onCancel, onSave }) {
+export default function EmployeeForm({ mode, employee, onCancel, onSave, canSubmit = true }) {
   const [values, setValues] = useState(() => employee ? { ...emptyEmployee, ...employee } : { ...emptyEmployee });
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState('');
@@ -54,6 +54,7 @@ export default function EmployeeForm({ mode, employee, onCancel, onSave }) {
 
   return <form onSubmit={submit} noValidate className="rounded-xl border border-[#e2e8f0] bg-white p-6 shadow-[0_4px_16px_rgba(15,23,42,0.03)]">
     <div className="mb-5"><h2 className="text-lg font-semibold text-[#0f172a]">{mode === 'create' ? 'Thông tin nhân viên mới' : `Thông tin nhân viên ${employee.maNhanVien}`}</h2><p className="mt-1 text-sm text-[#64748b]">Điền đầy đủ thông tin. Các trường có dấu * là bắt buộc.</p></div>
+    {!canSubmit && <div role="status" className="mb-5 rounded-lg border border-[#bae6fd] bg-[#e0f2fe] px-4 py-3 text-sm text-[#075985]">Bản xem giao diện: cần đăng nhập Admin để lưu thông tin nhân viên.</div>}
     {message && <div role="alert" className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{message}</div>}
     <div className="grid gap-x-4 gap-y-5 sm:grid-cols-2">
       <Field label="Mã NV *" name="maNhanVien" value={values.maNhanVien} onChange={update} error={errors.maNhanVien} disabled={mode === 'edit'} maxLength={20} autoComplete="off" />
@@ -68,7 +69,7 @@ export default function EmployeeForm({ mode, employee, onCancel, onSave }) {
     <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-[#64748b]">Phân quyền khả dụng: <span className="rounded-full bg-[#e0f2fe] px-2.5 py-1 font-semibold text-[#0369a1]">Quản trị viên</span><span className="rounded-full bg-[#f1f5f9] px-2.5 py-1 font-semibold">Nhân viên</span></div>
     <div className="mt-5 flex flex-wrap justify-between gap-3 border-t border-[#e2e8f0] pt-5">
       <button type="button" onClick={onCancel} disabled={saving} className={secondaryClass}><img src={arrowLeftIcon} alt="" className="size-4" />Quay lại</button>
-      <div className="flex gap-3">{mode === 'create' && <button type="button" disabled={saving} onClick={() => { setValues({ ...emptyEmployee }); setErrors({}); setMessage(''); }} className={secondaryClass}>Xóa trắng</button>}{mode === 'edit' && <button type="button" disabled={saving} onClick={onCancel} className={secondaryClass}>Hủy</button>}<button type="submit" disabled={saving} className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#0284c7] px-4 text-sm font-semibold text-white hover:bg-[#0369a1] disabled:opacity-50"><img src={saveIcon} alt="" className="size-4" />{saving ? 'Đang lưu...' : mode === 'create' ? 'Lưu' : 'Xác nhận'}</button></div>
+      <div className="flex gap-3">{mode === 'create' && <button type="button" disabled={saving} onClick={() => { setValues({ ...emptyEmployee }); setErrors({}); setMessage(''); }} className={secondaryClass}>Xóa trắng</button>}{mode === 'edit' && <button type="button" disabled={saving} onClick={onCancel} className={secondaryClass}>Hủy</button>}<button type="submit" disabled={saving || !canSubmit} className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#0284c7] px-4 text-sm font-semibold text-white hover:bg-[#0369a1] disabled:opacity-50"><img src={saveIcon} alt="" className="size-4" />{saving ? 'Đang lưu...' : mode === 'create' ? 'Lưu' : 'Xác nhận'}</button></div>
     </div>
   </form>;
 }
