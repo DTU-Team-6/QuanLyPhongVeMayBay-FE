@@ -18,7 +18,7 @@ export default function AdminShell({ user, activeKey = 'news', children }) {
     {
       key: 'profile',
       to: '/tai-khoan',
-      label: 'Thông tin Admin',
+      label: 'Thông tin tài khoản',
       icon: <img src={userIcon} alt="" className="size-[18px] shrink-0" />,
     },
     {
@@ -47,11 +47,11 @@ export default function AdminShell({ user, activeKey = 'news', children }) {
         </svg>
       ),
     },
-  ];
+  ].filter((item) => item.key !== 'employees' || user?.vaiTro === 'ADMIN');
 
   return (
     <div className="min-h-screen bg-[#f7f9fc] font-['Inter',sans-serif] text-[#172137]">
-      <header className="flex h-16 items-center justify-between bg-[#101827] px-4 text-white lg:px-6 sticky top-0 z-40">
+      <header className="print:hidden flex h-16 items-center justify-between bg-[#101827] px-4 text-white lg:px-6 sticky top-0 z-40">
         <div className="flex items-center gap-7">
           <Link to="/" className="flex items-center gap-2.5" aria-label="Vân Việt - Trang chủ">
             <span className="flex size-9 items-center justify-center rounded-[9px] bg-[#0284c7]">
@@ -96,7 +96,7 @@ export default function AdminShell({ user, activeKey = 'news', children }) {
       </header>
 
       <div className="mx-auto flex max-w-[1440px] min-h-[calc(100vh-64px)]">
-        <aside className="hidden w-[250px] shrink-0 border-r border-[#dbe4ee] bg-white px-4 py-6 lg:block">
+        <aside className="print:hidden hidden w-[250px] shrink-0 border-r border-[#dbe4ee] bg-white px-4 py-6 lg:block">
           <p className="mb-4 px-2 text-[11px] font-semibold uppercase tracking-wide text-[#667895]">
             KHÔNG GIAN QUẢN TRỊ
           </p>
@@ -131,7 +131,7 @@ export default function AdminShell({ user, activeKey = 'news', children }) {
 
         <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
           {/* Thanh chuyển nhanh trên Mobile */}
-          <div className="mb-4 flex gap-2 overflow-x-auto pb-1 lg:hidden">
+          <div className="print:hidden mb-4 flex gap-2 overflow-x-auto pb-1 lg:hidden">
             {navItems.map((item) => {
               const active = item.key === activeKey;
               return (
@@ -152,7 +152,7 @@ export default function AdminShell({ user, activeKey = 'news', children }) {
 
           {children}
 
-          <footer className="mt-10 flex flex-wrap justify-between gap-2 border-t border-[#e2e8f0] pt-4 text-[11px] text-[#72839c]">
+          <footer className="print:hidden mt-10 flex flex-wrap justify-between gap-2 border-t border-[#e2e8f0] pt-4 text-[11px] text-[#72839c]">
             <span>© 2026 Vân Việt • Hệ thống quản lý phòng vé</span>
             <span>Phiên bản 2.6</span>
           </footer>
