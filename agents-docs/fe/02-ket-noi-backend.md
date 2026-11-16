@@ -19,6 +19,11 @@
 | Đăng nhập Google/Facebook              | Chuyển hướng cả trang tới `<VITE_API_BASE_URL>/oauth2/authorization/google` hoặc `/facebook` (**không** có tiền tố `/api/v1`) |
 | Sau khi đăng nhập OAuth2               | BE chuyển hướng người dùng về trang FE **`/auth/callback`**                                                                   |
 
+- Đăng ký gửi `email`, `password`, `hoTen`, `soDienThoai`, `ngaySinh`, `gioiTinh`, `identityDocument`, `nationality`. `nationality` là mã danh mục hai ký tự (`VN`, `US`, `JP`, `KR`, `ZZ`); `ZZ` là lựa chọn “Khác”. Đăng ký thành công không tự đăng nhập.
+- Chủ tài khoản phải đủ 18 tuổi theo ngày `Asia/Ho_Chi_Minh`; số điện thoại bắt buộc. Mật khẩu cần chữ hoa, chữ thường, số, tối thiểu 8 ký tự và tối đa 72 byte UTF-8. FE và BE đều kiểm tra các điều kiện này.
+- Luồng đăng ký đã được kiểm thử với BE và database test; migration gộp khách hàng chưa chạy trên database dev.
+- Endpoint refresh trong bảng trên là hợp đồng đã chốt, nhưng BE hiện chưa triển khai; FE chưa tự làm mới phiên.
+
 - OAuth2 do BE xử lý bằng Authorization Code Flow. FE chỉ chuyển hướng sang BE và nhận kết quả khi quay về `/auth/callback`; FE không giữ client secret, không xử lý mã hay token OAuth2.
 - Nếu `GET /api/v1/auth/me` trả 401, FE gọi `/api/v1/auth/refresh` một lần rồi gọi lại endpoint; nếu vẫn 401 thì đưa người dùng về trang đăng nhập.
 

@@ -1,12 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { validateRegistration } from '../authValidation.js';
-
-function adultDateLimit() {
-  const date = new Date();
-  date.setFullYear(date.getFullYear() - 18);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-}
+import { authService } from '../../../services/authService';
+import { adultDateLimit, registrationFieldErrors, validateRegistration } from '../authValidation.js';
 
 function Field({ label, name, type = 'text', autoComplete, hint, hintClassName = '', error, ...props }) {
   const errorId = `${name}-error`;
@@ -81,18 +76,22 @@ function PasswordField({ label, name, autoComplete, error, hint, hintClassName =
   );
 }
 
-function SelectField({ label, name, children, defaultValue, hint }) {
+function SelectField({ label, name, children, defaultValue, hint, error, onChange }) {
   return (
     <label className="block">
       <span className="mb-2 block text-sm font-semibold text-[#334155] md:mb-1 md:text-[12px]">{label}</span>
       <select
         name={name}
         defaultValue={defaultValue}
-        className="h-[48px] w-full appearance-none rounded-[8px] border border-[#cbd5e1] bg-white px-3.5 text-sm text-[#0f172a] outline-none focus:border-2 focus:border-[#0284c7] md:h-[40px] md:rounded-[6px] md:px-3 md:text-sm"
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? `${name}-error` : undefined}
+        onChange={onChange}
+        className={`h-[48px] w-full appearance-none rounded-[8px] border bg-white px-3.5 text-sm text-[#0f172a] outline-none focus:border-2 focus:border-[#0284c7] md:h-[40px] md:rounded-[6px] md:px-3 md:text-sm ${error ? 'border-red-500' : 'border-[#cbd5e1]'}`}
       >
         {children}
       </select>
       {hint && <span className="mt-2 block text-sm leading-relaxed text-[#64748b] md:mt-1 md:text-[10px]">{hint}</span>}
+      {error && <span id={`${name}-error`} className="mt-1 block text-sm text-red-600 md:text-[11px]">{error}</span>}
     </label>
   );
 }
@@ -100,9 +99,12 @@ function SelectField({ label, name, children, defaultValue, hint }) {
 export default function RegisterPage() {
   const [errors, setErrors] = useState({});
   const [notice, setNotice] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
     const form = event.currentTarget;
     if (!form.reportValidity()) return;
 
@@ -111,16 +113,40 @@ export default function RegisterPage() {
       password: values.password,
       confirmPassword: values.confirmPassword,
       dateOfBirth: values.dateOfBirth,
+      phone: values.phone,
     });
     setErrors(nextErrors);
     setNotice('');
+    setErrorMessage('');
 
     if (Object.keys(nextErrors).length > 0) {
       form.elements.namedItem(Object.keys(nextErrors)[0])?.focus();
       return;
     }
 
-    setNotice('Thông tin hợp lệ. Đăng ký tài khoản sẽ được kết nối với hệ thống sau.');
+    setIsSubmitting(true);
+    try {
+      await authService.register({
+        email: values.email.trim(),
+        password: values.password,
+        hoTen: values.fullName.trim(),
+        soDienThoai: values.phone.trim(),
+        ngaySinh: values.dateOfBirth,
+        gioiTinh: values.gender,
+        identityDocument: values.identityDocument.trim(),
+        nationality: values.nationality,
+      });
+      form.reset();
+      setNotice('Đăng ký thành công. Vui lòng đăng nhập.');
+    } catch (error) {
+      const fieldErrors = registrationFieldErrors(error);
+      setErrors(fieldErrors);
+      setErrorMessage(error?.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+      const firstField = Object.keys(fieldErrors)[0];
+      if (firstField) form.elements.namedItem(firstField)?.focus();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const clearFieldError = (name) => {
@@ -131,6 +157,7 @@ export default function RegisterPage() {
       return next;
     });
     setNotice('');
+    setErrorMessage('');
   };
 
   return (
@@ -151,9 +178,9 @@ export default function RegisterPage() {
             <p className="mt-1 text-xs text-[#64748b]">Các trường có dấu * là bắt buộc.</p>
           </div>
 
-          <form onSubmit={handleSubmit} noValidate className="space-y-5 md:grid md:grid-cols-2 md:items-start md:gap-x-4 md:gap-y-[26px] md:space-y-0">
-            <Field label="Email *" name="email" type="email" autoComplete="email" placeholder="email@example.com" />
-            <Field label="Họ và tên *" name="fullName" autoComplete="name" placeholder="Nhập họ và tên" />
+          <form onSubmit={handleSubmit} noValidate aria-busy={isSubmitting} className="space-y-5 md:grid md:grid-cols-2 md:items-start md:gap-x-4 md:gap-y-[26px] md:space-y-0">
+            <Field label="Email *" name="email" type="email" autoComplete="email" placeholder="email@example.com" error={errors.email} onChange={() => clearFieldError('email')} />
+            <Field label="Họ và tên *" name="fullName" autoComplete="name" placeholder="Nhập họ và tên" error={errors.fullName} onChange={() => clearFieldError('fullName')} />
             <PasswordField
               label="Mật khẩu *"
               name="password"
@@ -183,7 +210,7 @@ export default function RegisterPage() {
               onChange={() => clearFieldError('dateOfBirth')}
             />
 
-            <SelectField label="Giới tính" name="gender" defaultValue="Nu" hint="Nam / Nữ / Khác">
+            <SelectField label="Giới tính" name="gender" defaultValue="Nu" hint="Nam / Nữ / Khác" error={errors.gender} onChange={() => clearFieldError('gender')}>
               <option value="Nam">Nam</option>
               <option value="Nu">Nữ</option>
               <option value="Khac">Khác</option>
@@ -196,27 +223,31 @@ export default function RegisterPage() {
               autoComplete="tel"
               placeholder="Nhập số điện thoại"
               inputMode="tel"
+              error={errors.phone}
+              onChange={() => clearFieldError('phone')}
             />
             <Field
               label="CMND/Hộ chiếu *"
               name="identityDocument"
               autoComplete="off"
               placeholder="Nhập số trên giấy tờ tùy thân"
-              hint="Nhập số giấy tờ 12 chữ số, trùng khớp với giấy tờ tùy thân khi bay."
+              maxLength={20}
+              hint="Nhập số giấy tờ trùng khớp với giấy tờ tùy thân khi bay, tối đa 20 ký tự."
               hintClassName="md:hidden"
+              error={errors.identityDocument}
+              onChange={() => clearFieldError('identityDocument')}
             />
 
-            <SelectField label="Quốc tịch" name="nationality" defaultValue="Việt Nam">
-              <option>Việt Nam</option>
-              <option>Hoa Kỳ</option>
-              <option>Nhật Bản</option>
-              <option>Hàn Quốc</option>
-              <option>Khác</option>
+            <SelectField label="Quốc tịch" name="nationality" defaultValue="VN" error={errors.nationality} onChange={() => clearFieldError('nationality')}>
+              <option value="VN">Việt Nam</option>
+              <option value="US">Hoa Kỳ</option>
+              <option value="JP">Nhật Bản</option>
+              <option value="KR">Hàn Quốc</option>
+              <option value="ZZ">Khác</option>
             </SelectField>
 
             <p className="text-sm leading-relaxed text-[#64748b] md:self-end md:pb-1 md:text-[10px]">
-              <span className="md:hidden">Nhập số giấy tờ 12 chữ số, trùng khớp với giấy tờ tùy thân khi bay.</span>
-              <span className="hidden md:inline">Nhập số giấy tờ 12 chữ số, trùng khớp với giấy tờ tùy thân khi bay.</span>
+              <span>Nhập số giấy tờ trùng khớp với giấy tờ tùy thân khi bay, tối đa 20 ký tự.</span>
             </p>
 
             <label className="flex cursor-pointer items-start gap-2.5 pt-1 text-sm leading-relaxed text-[#475569] md:col-span-2 md:gap-1.5 md:pt-0 md:text-[11px]">
@@ -233,11 +264,18 @@ export default function RegisterPage() {
               </p>
             )}
 
+            {errorMessage && (
+              <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 md:col-span-2 md:text-[11px]">
+                {errorMessage}
+              </p>
+            )}
+
             <button
               type="submit"
-              className="h-[48px] w-full rounded-[8px] bg-[#0284c7] text-sm font-semibold text-white transition hover:bg-[#0369a1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7] md:col-span-2 md:justify-self-end md:h-[40px] md:w-auto md:rounded-[6px] md:px-4 md:text-sm"
+              disabled={isSubmitting}
+              className="h-[48px] w-full rounded-[8px] bg-[#0284c7] text-sm font-semibold text-white transition hover:bg-[#0369a1] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7] md:col-span-2 md:justify-self-end md:h-[40px] md:w-auto md:rounded-[6px] md:px-4 md:text-sm"
             >
-              Đăng ký
+              {isSubmitting ? 'Đang đăng ký...' : 'Đăng ký'}
             </button>
           </form>
         </div>

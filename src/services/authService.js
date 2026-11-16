@@ -14,6 +14,20 @@ async function ensureCsrfToken() {
  * Service quản lý xác thực và phiên đăng nhập của người dùng
  */
 export const authService = {
+  async register(registration) {
+    await ensureCsrfToken();
+    const response = await apiClient('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(registration),
+    });
+
+    if (!response?.data) {
+      throw new Error('Backend trả về dữ liệu đăng ký không hợp lệ.');
+    }
+
+    return response.data;
+  },
+
   /**
    * Đăng nhập bằng email và mật khẩu; phiên được Backend đặt trong cookie HttpOnly.
    * @param {{email: string, password: string}} credentials

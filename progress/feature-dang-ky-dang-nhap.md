@@ -4,7 +4,7 @@
 
 - Chức năng: Giao diện đăng ký và đăng nhập responsive
 - Nhánh: `feature/dang-ky-dang-nhap`
-- Cập nhật lần cuối: 2026-11-16
+- Cập nhật lần cuối: 2026-11-17
 
 ## Đã xong (đã commit)
 
@@ -14,19 +14,23 @@
 - Căn card đăng nhập theo thiết kế 480px rộng, cao tự ôm nội dung (xấp xỉ 575px); không khóa chiều cao.
 - Căn card đăng ký theo thiết kế 800px rộng với chiều cao tự ôm nội dung; thay icon đầu trang đăng nhập theo biểu tượng cổng và mũi tên được cung cấp.
 
-## Đã xong (chưa commit)
+## Đã xong
 
 - Nối đăng nhập với `POST /api/v1/auth/login`, khởi tạo CSRF trước request, nhận user từ phản hồi và cập nhật `AuthContext`.
 - Khi đăng nhập thành công, chuyển về trang chủ; hiển thị lỗi theo mã Backend và trạng thái đang gửi.
 - Tắt checkbox ghi nhớ đăng nhập vì API hiện chưa hỗ trợ tùy chọn này.
+- Nối đăng ký với `POST /api/v1/auth/register`, gửi CSRF, giấy tờ và mã quốc tịch; thành công báo người dùng đăng nhập riêng.
+- Đã kiểm thử trên trình duyệt với BE thật dùng database test: đăng ký, kiểm tra dữ liệu lưu, đăng nhập và lỗi email trùng; đã xác nhận CORS và CSRF. `npm run build` và `npm test` (21 test) thành công.
+- Đã thống nhất kiểm tra tuổi theo ngày Việt Nam, số điện thoại và mật khẩu ở cả FE và BE.
+- Kiểm thử lại thành công trên trình duyệt với cookie access cũ và BE test sau khi đồng bộ các quy tắc.
 
 ## Đang dở
 
-- Chưa kết nối API đăng ký. Backend hiện không nhận/lưu giấy tờ tùy thân và quốc tịch đang có trong form; cần thống nhất hợp đồng trước khi nối.
+- Migration BE gộp khách hàng mới chỉ chạy trên database test; chưa chạy trên database dev.
 
 ## Việc tiếp theo (theo thứ tự)
 
-1. Cập nhật hợp đồng đăng ký phía Backend để hỗ trợ giấy tờ tùy thân và quốc tịch; sau đó nối service và xử lý lỗi theo `code`/`details`.
+1. Chờ duyệt migration gộp khách hàng trên database dev.
 2. Tích hợp OAuth Google/Facebook, khôi phục mật khẩu và xác nhận luồng cookie/CSRF với Backend.
 
 ## Quyết định đã chốt và lưu ý
@@ -38,5 +42,5 @@
 
 ## Lỗi đang gặp (nếu có)
 
-- Trong kiểm thử trình duyệt, `GET http://localhost:8080/api/v1/auth/me` thất bại với `net::ERR_CONNECTION_REFUSED` do Backend không chạy tại địa chỉ này.
+- Migration BE mới chưa được áp dụng trên database dev; không mặc định chạy BE trỏ tới database đó khi chưa được duyệt.
 - `npm run build` thành công nhưng Vite cảnh báo bundle JavaScript lớn hơn 500 kB.
