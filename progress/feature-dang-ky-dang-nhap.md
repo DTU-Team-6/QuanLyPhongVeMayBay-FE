@@ -10,6 +10,7 @@
 
 - Giao diện đăng ký/đăng nhập responsive, route, validation cơ bản; commit `67d0e84`.
 - Điều chỉnh bố cục desktop theo thiết kế mới: form đăng ký hai cột, card đăng nhập hẹp căn giữa, Header/Footer gọn; vẫn giữ bố cục mobile.
+- Tăng cỡ chữ desktop và chiều cao ô nhập sau khi kiểm tra trên màn hình thực tế.
 
 ## Đang dở
 

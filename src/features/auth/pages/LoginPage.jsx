@@ -41,14 +41,14 @@ function AuthField({ label, type, name, autoComplete, visible, onToggle, icon, p
 
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-semibold text-[#334155]">{label}</span>
+      <span className="mb-2 block text-sm font-semibold text-[#334155] md:mb-1 md:text-[12px]">{label}</span>
       <span className="relative block">
         <input
           required
           type={inputType}
           name={name}
           autoComplete={autoComplete}
-          className="h-[54px] w-full rounded-[9px] border border-[#cbd5e1] bg-white px-4 pr-12 text-[15px] text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-2 focus:border-[#0284c7] md:h-[30px] md:rounded-[5px] md:px-2 md:pr-8 md:text-[10px]"
+          className="h-[54px] w-full rounded-[9px] border border-[#cbd5e1] bg-white px-4 pr-12 text-[15px] text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-2 focus:border-[#0284c7] md:h-[36px] md:rounded-[5px] md:px-2 md:pr-8 md:text-[12px]"
           placeholder={placeholder || (type === 'email' ? 'name@example.com' : 'Nhập mật khẩu')}
         />
         {type === 'password' ? (
@@ -87,10 +87,10 @@ export default function LoginPage() {
           <div className="mx-auto mb-6 flex size-[64px] items-center justify-center rounded-[18px] bg-[#e0f2fe] md:mb-2 md:size-[36px] md:rounded-[9px]">
             <PlaneLoginIcon />
           </div>
-          <h1 className="text-center text-[30px] font-bold leading-tight tracking-tight text-[#0f172a] sm:text-[36px] md:text-[18px]">
+          <h1 className="text-center text-[30px] font-bold leading-tight tracking-tight text-[#0f172a] sm:text-[36px] md:text-[22px]">
             Chào mừng bạn trở lại
           </h1>
-          <p className="mt-3 text-center text-base leading-relaxed text-[#64748b] sm:text-lg md:mt-2 md:text-[11px]">
+          <p className="mt-3 text-center text-base leading-relaxed text-[#64748b] sm:text-lg md:mt-2 md:text-[14px]">
             Đăng nhập để quản lý hành trình của bạn.
           </p>
 
@@ -113,19 +113,19 @@ export default function LoginPage() {
             />
 
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <label className="inline-flex cursor-pointer items-center gap-2.5 text-sm text-[#475569] sm:text-base md:gap-1.5 md:text-[9px]">
+              <label className="inline-flex cursor-pointer items-center gap-2.5 text-sm text-[#475569] sm:text-base md:gap-1.5 md:text-[11px]">
                 <input
                   type="checkbox"
                   checked={remember}
                   onChange={(event) => setRemember(event.target.checked)}
-                  className="size-4 accent-[#0284c7] md:size-3"
+                  className="size-4 accent-[#0284c7] md:size-3.5"
                 />
                 Ghi nhớ đăng nhập
               </label>
               <button
                 type="button"
                 onClick={() => setNotice('Khôi phục mật khẩu sẽ được bổ sung khi kết nối API.')}
-                className="text-sm font-semibold text-[#0284c7] hover:text-[#0369a1] sm:text-base md:text-[9px]"
+                className="text-sm font-semibold text-[#0284c7] hover:text-[#0369a1] sm:text-base md:text-[11px]"
               >
                 Quên mật khẩu?
               </button>
@@ -133,13 +133,13 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="h-[58px] w-full rounded-[9px] bg-[#0284c7] text-base font-semibold text-white transition hover:bg-[#0369a1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7] md:h-[30px] md:rounded-[5px] md:text-[10px]"
+              className="h-[58px] w-full rounded-[9px] bg-[#0284c7] text-base font-semibold text-white transition hover:bg-[#0369a1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7] md:h-[36px] md:rounded-[5px] md:text-[12px]"
             >
               Đăng nhập
             </button>
           </form>
 
-          <div className="my-7 flex items-center gap-4 text-sm text-[#94a3b8] md:my-4 md:gap-2 md:text-[9px]">
+          <div className="my-7 flex items-center gap-4 text-sm text-[#94a3b8] md:my-4 md:gap-2 md:text-[11px]">
             <span className="h-px flex-1 bg-[#e2e8f0]" />
             <span>Hoặc</span>
             <span className="h-px flex-1 bg-[#e2e8f0]" />
@@ -151,7 +151,7 @@ export default function LoginPage() {
                 key={provider}
                 type="button"
                 onClick={() => setNotice(`Đăng nhập ${provider} sẽ được kết nối sau.`)}
-                className="flex h-[54px] items-center justify-center gap-2 rounded-[9px] border border-[#cbd5e1] text-sm font-medium text-[#475569] transition hover:border-[#0284c7] hover:bg-[#f8fafc] sm:text-base md:h-[30px] md:gap-1 md:rounded-[5px] md:text-[10px]"
+                className="flex h-[54px] items-center justify-center gap-2 rounded-[9px] border border-[#cbd5e1] text-sm font-medium text-[#475569] transition hover:border-[#0284c7] hover:bg-[#f8fafc] sm:text-base md:h-[34px] md:gap-1 md:rounded-[5px] md:text-[12px]"
               >
                 <span className="font-bold text-[#0284c7]">{provider === 'Google' ? 'G' : 'f'}</span>
                 {provider}
@@ -160,12 +160,12 @@ export default function LoginPage() {
           </div>
 
           {notice && (
-            <p role="status" className="mt-5 rounded-lg bg-[#eff6ff] px-4 py-3 text-sm text-[#075985] md:mt-3 md:px-2 md:py-1.5 md:text-[9px]">
+            <p role="status" className="mt-5 rounded-lg bg-[#eff6ff] px-4 py-3 text-sm text-[#075985] md:mt-3 md:px-2 md:py-1.5 md:text-[11px]">
               {notice}
             </p>
           )}
 
-          <p className="mt-8 flex flex-wrap items-center justify-between gap-2 text-sm text-[#64748b] sm:text-base md:mt-4 md:justify-center md:gap-1 md:text-[9px]">
+          <p className="mt-8 flex flex-wrap items-center justify-between gap-2 text-sm text-[#64748b] sm:text-base md:mt-4 md:justify-center md:gap-1 md:text-[11px]">
             <span>Chưa có tài khoản?</span>
             <Link to="/dang-ky" className="font-semibold text-[#0284c7] hover:text-[#0369a1]">
               Đăng ký ngay
@@ -173,7 +173,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <p className="mt-6 text-center text-sm text-[#64748b] sm:text-base md:mt-3 md:text-[8px]">
+        <p className="mt-6 text-center text-sm text-[#64748b] sm:text-base md:mt-3 md:text-[10px]">
           Thông tin của bạn được bảo mật và mã hóa an toàn.
         </p>
       </div>

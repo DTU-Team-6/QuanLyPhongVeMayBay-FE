@@ -43,27 +43,27 @@ export default function Header() {
         <Link to="/" className="flex items-center gap-[10px] group focus:outline-hidden">
           <div className={`bg-[#0284c7] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
             isAuthPage
-              ? 'size-[36px] rounded-[10px] md:size-[24px] md:rounded-[6px]'
+              ? 'size-[36px] rounded-[10px] md:size-[28px] md:rounded-[7px]'
               : 'size-[36px] rounded-[10px]'
           }`}>
             <img
               src={planeIcon}
               alt="Vân Việt Logo"
-              className={isAuthPage ? 'size-[23px] md:size-[17px]' : 'size-[23px]'}
+              className={isAuthPage ? 'size-[23px] md:size-[19px]' : 'size-[23px]'}
             />
           </div>
           <div className="flex flex-col">
-            <span className={`font-bold text-[#0f172a] leading-tight tracking-tight ${isAuthPage ? 'text-[20px] md:text-[14px]' : 'text-[20px]'}`}>
+            <span className={`font-bold text-[#0f172a] leading-tight tracking-tight ${isAuthPage ? 'text-[20px] md:text-[16px]' : 'text-[20px]'}`}>
               Vân Việt
             </span>
-            <span className={`font-medium text-[#64748b] tracking-[1.4px] ${isAuthPage ? 'text-[9px] md:text-[6px]' : 'text-[9px]'}`}>
+            <span className={`font-medium text-[#64748b] tracking-[1.4px] ${isAuthPage ? 'text-[9px] md:text-[8px]' : 'text-[9px]'}`}>
               PHÒNG VÉ MÁY BAY
             </span>
           </div>
         </Link>
 
         {/* Liên kết điều hướng Desktop */}
-        <nav className={`hidden md:flex items-center ${isAuthPage ? 'gap-[18px] text-[10px]' : 'gap-[24px] text-[14px]'}`}>
+        <nav className={`hidden md:flex items-center ${isAuthPage ? 'gap-[18px] text-[12px]' : 'gap-[24px] text-[14px]'}`}>
           {visibleNavLinks.map((link) => (
             <Link
               key={link.to}
@@ -172,14 +172,14 @@ export default function Header() {
             <div className="flex items-center gap-[16px]">
               <Link
                 to="/dang-ky"
-                className={`font-semibold text-[#0284c7] hover:underline ${isAuthPage ? 'text-[10px]' : 'text-[14px]'}`}
+                className={`font-semibold text-[#0284c7] hover:underline ${isAuthPage ? 'text-[12px]' : 'text-[14px]'}`}
               >
                 Đăng ký
               </Link>
               <Link
                 to="/dang-nhap"
                 className={`bg-[#0284c7] hover:bg-[#0369a1] text-white font-semibold flex items-center justify-center transition ${
-                  isAuthPage ? 'text-[10px] h-[28px] px-[12px] rounded-[5px]' : 'text-[14px] h-[40px] px-[16px] rounded-[8px]'
+                  isAuthPage ? 'text-[12px] h-[32px] px-[14px] rounded-[5px]' : 'text-[14px] h-[40px] px-[16px] rounded-[8px]'
                 }`}
               >
                 Đăng nhập
