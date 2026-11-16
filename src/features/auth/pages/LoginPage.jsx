@@ -24,7 +24,7 @@ export default function LoginPage() {
     try {
       await login({ email: email.trim(), password });
       setPassword('');
-      navigate(returnTo, { replace: true });
+      await navigate(returnTo, { replace: true });
     } catch (requestError) {
       setError(requestError.status === 0 ? 'Không thể kết nối. Vui lòng thử lại.' : requestError.message || 'Đăng nhập không thành công.');
     } finally { setPending(false); }

@@ -56,7 +56,7 @@ export default function FlightSearchForm({ onSearch }) {
     setMaDen(temp);
   };
 
-  const handleSearchSubmit = (e) => {
+  const handleSearchSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
     if (maDi === maDen) { setFormError('Điểm đi và điểm đến phải khác nhau.'); return; }
@@ -76,10 +76,14 @@ export default function FlightSearchForm({ onSearch }) {
       query.append('ngayVe', ngayVe);
     }
 
-    if (onSearch) {
-      onSearch({ maDi, maDen, ngayDi, ngayVe, soNguoiLon, soTreEm, soEmBe, tripType });
-    } else {
-      navigate(`/chuyen-bay?${query.toString()}`);
+    try {
+      if (onSearch) {
+        await onSearch({ maDi, maDen, ngayDi, ngayVe, soNguoiLon, soTreEm, soEmBe, tripType });
+      } else {
+        await navigate(`/chuyen-bay?${query.toString()}`);
+      }
+    } catch {
+      setFormError('Chưa thể mở kết quả tìm kiếm. Vui lòng thử lại.');
     }
   };
 
@@ -237,15 +241,19 @@ export default function FlightSearchForm({ onSearch }) {
 
         {/* Hành khách */}
         <div className="relative">
-          <label className="block text-[12px] font-semibold text-[#334155] mb-1.5">
+          <label htmlFor="home-passenger-picker" className="block text-[12px] font-semibold text-[#334155] mb-1.5">
             Hành khách
           </label>
           <button
             type="button"
+            id="home-passenger-picker"
+            aria-expanded={passengerDropdownOpen}
+            aria-controls="home-passenger-options"
+            aria-describedby="home-passenger-summary"
             onClick={() => setPassengerDropdownOpen(!passengerDropdownOpen)}
             className="w-full h-[40px] px-3 bg-white border-2 border-[#0284c7] rounded-[8px] text-[14px] text-[#0f172a] flex items-center justify-between text-left cursor-pointer"
           >
-            <span>{passengerSummary}</span>
+            <span id="home-passenger-summary">{passengerSummary}</span>
             <img
               src={passengerDropdownOpen ? chevronUpIcon : chevronDownIcon}
               alt=""
@@ -255,7 +263,7 @@ export default function FlightSearchForm({ onSearch }) {
 
           {/* Panel tăng giảm số lượng hành khách */}
           {passengerDropdownOpen && (
-            <div className="mt-2 bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] p-4 flex flex-col gap-3 shadow-md z-20">
+            <div id="home-passenger-options" className="mt-2 bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] p-4 flex flex-col gap-3 shadow-md z-20">
               {/* Người lớn */}
               <div className="flex items-center justify-between">
                 <div>

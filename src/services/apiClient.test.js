@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { apiClient, ApiError } from './apiClient.js';
+import { apiClient, ApiError, trimTrailingSlashes } from './apiClient.js';
 
 test('API gửi cookie và đọc lỗi RFC 9457 theo code/details', async () => {
   const originalFetch = globalThis.fetch;
@@ -43,4 +43,12 @@ test('API không đổi request bị hủy thành lỗi mạng', async () => {
     globalThis.fetch = async () => { throw new DOMException('Đã hủy', 'AbortError'); };
     await assert.rejects(apiClient('/flights/top-cheap'), { name: 'AbortError' });
   } finally { globalThis.fetch = originalFetch; }
+});
+
+test('chuẩn hóa API base chỉ bỏ slash cuối và giữ nguyên origin/path bên trong', () => {
+  assert.equal(trimTrailingSlashes('https://example.test/backend///'), 'https://example.test/backend');
+  assert.equal(trimTrailingSlashes('https://example.test/a//b/'), 'https://example.test/a//b');
+  assert.equal(trimTrailingSlashes('https://example.test/backend'), 'https://example.test/backend');
+  assert.equal(trimTrailingSlashes(''), '');
+  assert.equal(trimTrailingSlashes('/'.repeat(100000)), '');
 });

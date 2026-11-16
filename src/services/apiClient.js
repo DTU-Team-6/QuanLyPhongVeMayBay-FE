@@ -4,7 +4,13 @@ import { getCookie } from '../utils/csrf.js';
  * Địa chỉ gốc backend đọc từ biến môi trường VITE_API_BASE_URL,
  * không viết cứng trong code. Tiền tố /api/v1 đặt tại đây.
  */
-const BASE_URL = (import.meta.env?.VITE_API_BASE_URL || '').replace(/\/+$/, '');
+export function trimTrailingSlashes(value) {
+  let end = value.length;
+  while (end > 0 && value[end - 1] === '/') end -= 1;
+  return value.slice(0, end);
+}
+
+const BASE_URL = trimTrailingSlashes(import.meta.env?.VITE_API_BASE_URL || '');
 const API_PREFIX = '/api/v1';
 let csrfRequest = null;
 
