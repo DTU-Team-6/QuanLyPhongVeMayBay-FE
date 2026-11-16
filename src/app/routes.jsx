@@ -17,12 +17,12 @@ import PublicNewsListPage from '../features/news/pages/PublicNewsListPage';
 import PublicNewsDetailPage from '../features/news/pages/PublicNewsDetailPage';
 
 export const router = createBrowserRouter([
-  { path: '/quan-ly-diem-den', element: <DestinationListPage /> },
-  { path: '/quan-ly-diem-den/them-moi', element: <DestinationCreatePage /> },
   { path: '/quan-ly-nhan-vien', element: <EmployeePage /> },
   { path: '/quan-ly-tin-tuc', element: <AdminNewsListPage /> },
   { path: '/quan-ly-tin-tuc/them-moi', element: <AdminNewsFormPage mode="create" /> },
   { path: '/quan-ly-tin-tuc/:id/chinh-sua', element: <AdminNewsFormPage mode="edit" /> },
+  { path: '/quan-ly-diem-den', element: <DestinationListPage /> },
+  { path: '/quan-ly-diem-den/them-moi', element: <DestinationCreatePage /> },
   {
     path: '/',
     element: <MainLayout />,
@@ -158,3 +158,4 @@ export const router = createBrowserRouter([
 ]);
 
 export default router;
+
