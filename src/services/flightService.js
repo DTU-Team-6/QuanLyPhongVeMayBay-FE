@@ -9,9 +9,10 @@ export const flightService = {
    * @param {number} [limit=10] - Số lượng chuyến bay tối đa (mặc định 10)
    * @returns {Promise<Array>} Danh sách TopCheapFlightResponse
    */
-  async getTopCheapFlights(limit = 10) {
-    const res = await apiClient(`/flights/top-cheap?limit=${encodeURIComponent(limit)}`);
-    return res?.data || [];
+  async getTopCheapFlights(limit = 10, options = {}) {
+    const res = await apiClient(`/flights/top-cheap?limit=${encodeURIComponent(limit)}`, options);
+    if (!Array.isArray(res?.data)) throw new Error('Phản hồi danh sách chuyến bay không hợp lệ');
+    return res.data;
   },
 
   /**
@@ -29,7 +30,8 @@ export const flightService = {
       params.append('maHang', maHang);
     }
     const res = await apiClient(`/flights?${params.toString()}`);
-    return res?.data || [];
+    if (!Array.isArray(res?.data)) throw new Error('Phản hồi danh sách chuyến bay không hợp lệ');
+    return res.data;
   },
 
   /**

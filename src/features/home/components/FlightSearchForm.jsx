@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { localDateValue } from '../utils/homeHelpers';
 import arrowLeftRightIcon from '../../../assets/arrow-left-right.svg';
 import chevronDownIcon from '../../../assets/chevron-down.svg';
 import chevronUpIcon from '../../../assets/chevron-up.svg';
@@ -26,7 +27,8 @@ export default function FlightSearchForm({ onSearch }) {
   const navigate = useNavigate();
 
   const [tripType, setTripType] = useState('roundTrip'); // 'oneWay' | 'roundTrip'
-  const [cabinClass, setCabinClass] = useState('Phổ thông');
+  const cabinClass = 'Phổ thông';
+  const [formError, setFormError] = useState('');
   const [maDi, setMaDi] = useState('SGN');
   const [maDen, setMaDen] = useState('HAN');
 
@@ -37,7 +39,7 @@ export default function FlightSearchForm({ onSearch }) {
   const defaultReturn = new Date(today);
   defaultReturn.setDate(today.getDate() + 4);
 
-  const formatDateValue = (d) => d.toISOString().split('T')[0];
+  const formatDateValue = localDateValue;
 
   const [ngayDi, setNgayDi] = useState(formatDateValue(defaultDeparture));
   const [ngayVe, setNgayVe] = useState(formatDateValue(defaultReturn));
@@ -56,6 +58,11 @@ export default function FlightSearchForm({ onSearch }) {
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
+    setFormError('');
+    if (maDi === maDen) { setFormError('Điểm đi và điểm đến phải khác nhau.'); return; }
+    if (!ngayDi || ngayDi < localDateValue()) { setFormError('Vui lòng chọn ngày đi từ hôm nay trở đi.'); return; }
+    if (tripType === 'roundTrip' && (!ngayVe || ngayVe < ngayDi)) { setFormError('Ngày về phải từ ngày đi trở đi.'); return; }
+    if (soNguoiLon + soTreEm > 9 || soEmBe > soNguoiLon) { setFormError('Tối đa 9 người lớn và trẻ em; mỗi người lớn đi cùng tối đa 1 em bé.'); return; }
     const query = new URLSearchParams({
       maDi,
       maDen,
@@ -80,7 +87,7 @@ export default function FlightSearchForm({ onSearch }) {
 
   return (
     <div className="bg-white border border-[#e2e8f0] rounded-[12px] p-6 shadow-[0px_4px_16px_0px_rgba(15,23,42,0.03)] w-full">
-      <form onSubmit={handleSearchSubmit} className="flex flex-col gap-5">
+      <form onSubmit={handleSearchSubmit} className="flex flex-col gap-5"><p role="alert" className="text-sm text-red-700" hidden={!formError}>{formError}</p>
         {/* Lựa chọn loại hành trình & hạng vé */}
         <div className="flex items-center gap-6">
           <label className="flex items-center gap-2 cursor-pointer text-[14px]">
@@ -128,11 +135,10 @@ export default function FlightSearchForm({ onSearch }) {
         <div className="flex flex-col sm:flex-row items-end gap-3">
           {/* Điểm đi */}
           <div className="flex-1 w-full">
-            <label className="block text-[12px] font-semibold text-[#334155] mb-1.5">
-              Điểm đi
+            <label htmlFor="home-departure-airport" className="block text-[12px] font-semibold text-[#334155] mb-1.5">Điểm đi
             </label>
             <div className="relative">
-              <select
+              <select id="home-departure-airport"
                 value={maDi}
                 onChange={(e) => setMaDi(e.target.value)}
                 className="w-full h-[40px] px-3 pr-8 bg-white border border-[#cbd5e1] rounded-[8px] text-[14px] text-[#0f172a] focus:outline-hidden focus:border-[#0284c7] appearance-none cursor-pointer"
@@ -163,12 +169,10 @@ export default function FlightSearchForm({ onSearch }) {
 
           {/* Điểm đến */}
           <div className="flex-1 w-full">
-            <label className="block text-[12px] font-semibold text-[#334155] mb-1.5">
-              Điểm đến
+            <label htmlFor="home-arrival-airport" className="block text-[12px] font-semibold text-[#334155] mb-1.5">Điểm đến
             </label>
             <div className="relative">
-              <select
-                value={maDen}
+              <select id="home-arrival-airport" value={maDen}
                 onChange={(e) => setMaDen(e.target.value)}
                 className="w-full h-[40px] px-3 pr-8 bg-white border border-[#cbd5e1] rounded-[8px] text-[14px] text-[#0f172a] focus:outline-hidden focus:border-[#0284c7] appearance-none cursor-pointer"
               >
@@ -190,13 +194,10 @@ export default function FlightSearchForm({ onSearch }) {
         {/* Ngày đi và Ngày về */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-[12px] font-semibold text-[#334155] mb-1.5">
-              Ngày đi
+            <label htmlFor="home-departure-date" className="block text-[12px] font-semibold text-[#334155] mb-1.5">Ngày đi
             </label>
             <div className="relative">
-              <input
-                type="date"
-                value={ngayDi}
+              <input id="home-departure-date" required type="date" value={ngayDi}
                 min={formatDateValue(new Date())}
                 onChange={(e) => setNgayDi(e.target.value)}
                 className="w-full h-[40px] px-3 pr-8 bg-white border border-[#cbd5e1] rounded-[8px] text-[14px] text-[#0f172a] focus:outline-hidden focus:border-[#0284c7]"
@@ -210,13 +211,10 @@ export default function FlightSearchForm({ onSearch }) {
           </div>
 
           <div>
-            <label className="block text-[12px] font-semibold text-[#334155] mb-1.5">
-              Ngày về
+            <label htmlFor="home-return-date" className="block text-[12px] font-semibold text-[#334155] mb-1.5">Ngày về
             </label>
             <div className="relative">
-              <input
-                type="date"
-                value={ngayVe}
+              <input id="home-return-date" required={tripType === 'roundTrip'} type="date" value={ngayVe}
                 min={ngayDi}
                 disabled={tripType === 'oneWay'}
                 onChange={(e) => setNgayVe(e.target.value)}
@@ -268,7 +266,7 @@ export default function FlightSearchForm({ onSearch }) {
                   <button
                     type="button"
                     disabled={soNguoiLon <= 1}
-                    onClick={() => setSoNguoiLon(soNguoiLon - 1)}
+                    onClick={() => { setSoNguoiLon(soNguoiLon - 1); setSoEmBe((count) => Math.min(count, soNguoiLon - 1)); }}
                     className="size-7 rounded-md bg-white border border-[#cbd5e1] text-[#0284c7] font-semibold flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                   >
                     −
@@ -278,7 +276,7 @@ export default function FlightSearchForm({ onSearch }) {
                   </span>
                   <button
                     type="button"
-                    disabled={soNguoiLon >= 9}
+                    disabled={soNguoiLon + soTreEm >= 9}
                     onClick={() => setSoNguoiLon(soNguoiLon + 1)}
                     className="size-7 rounded-md bg-white border border-[#cbd5e1] text-[#0284c7] font-semibold flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                   >
@@ -307,7 +305,7 @@ export default function FlightSearchForm({ onSearch }) {
                   </span>
                   <button
                     type="button"
-                    disabled={soTreEm >= 9}
+                    disabled={soNguoiLon + soTreEm >= 9}
                     onClick={() => setSoTreEm(soTreEm + 1)}
                     className="size-7 rounded-md bg-white border border-[#cbd5e1] text-[#0284c7] font-semibold flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                   >

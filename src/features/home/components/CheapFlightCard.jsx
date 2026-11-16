@@ -1,4 +1,4 @@
-import { formatCurrency, formatTime, formatDuration } from '../../../utils/formatters';
+import { formatCurrency, formatTime, formatDate, formatDuration } from '../../../utils/formatters';
 import planeIcon from '../../../assets/plane.svg';
 
 /**
@@ -19,7 +19,7 @@ export default function CheapFlightCard({ flight, onSelect }) {
     thoiLuongBayPhut,
     loaiKhoangReNhat,
     tongGiaVe,
-    giaBan,
+    tienTe,
     soGheTrong,
     hanhLyXachTayKg,
     hanhLyKyGuiKg,
@@ -40,7 +40,7 @@ export default function CheapFlightCard({ flight, onSelect }) {
   };
 
   const khoangText = loaiKhoangReNhat === 'THUONG_GIA' ? 'Thương gia' : 'Phổ thông';
-  const displayPrice = tongGiaVe || giaBan;
+  const displayPrice = tongGiaVe;
 
   return (
     <div className="bg-white border border-[#e2e8f0] hover:border-[#0284c7] transition-all rounded-[12px] p-4 md:p-[20px] shadow-xs flex flex-col gap-[16px] w-full">
@@ -89,6 +89,7 @@ export default function CheapFlightCard({ flight, onSelect }) {
               {formatTime(thoiGianKhoiHanh?.dateTime, thoiGianKhoiHanh?.timeZone)}
             </span>
             <span className="text-[#64748b] text-[12px]">
+              {formatDate(thoiGianKhoiHanh?.dateTime, thoiGianKhoiHanh?.timeZone)}<br />
               {sanBayDi?.thanhPho || sanBayDi?.tenSanBay} ({sanBayDi?.maSanBay})
             </span>
           </div>
@@ -114,6 +115,7 @@ export default function CheapFlightCard({ flight, onSelect }) {
               {formatTime(thoiGianHaCanh?.dateTime, thoiGianHaCanh?.timeZone)}
             </span>
             <span className="text-[#64748b] text-[12px]">
+              {formatDate(thoiGianHaCanh?.dateTime, thoiGianHaCanh?.timeZone)}<br />
               {sanBayDen?.thanhPho || sanBayDen?.tenSanBay} ({sanBayDen?.maSanBay})
             </span>
           </div>
@@ -122,7 +124,7 @@ export default function CheapFlightCard({ flight, onSelect }) {
         {/* Cụm Giá vé */}
         <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center border-t md:border-t-0 pt-3 md:pt-0 border-slate-100 w-full md:w-[140px] shrink-0">
           <span className="font-semibold text-[#0284c7] text-[18px] sm:text-[20px]">
-            {formatCurrency(displayPrice)}
+            {displayPrice == null ? 'Liên hệ phòng vé' : formatCurrency(displayPrice, tienTe)}
           </span>
           <span className="text-[#64748b] text-[11px]">
             / khách • đã gồm thuế
@@ -136,7 +138,7 @@ export default function CheapFlightCard({ flight, onSelect }) {
       {/* Điều kiện vé và nút chọn chuyến */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <p className="text-[#64748b] text-[12px]">
-          {hanhLyXachTayKg || 7}kg xách tay
+          {hanhLyXachTayKg ?? 0}kg xách tay
           {hanhLyKyGuiKg ? ` • ${hanhLyKyGuiKg}kg ký gửi` : ' • Chưa gồm ký gửi'}
           {soGheTrong !== undefined && soGheTrong !== null ? ` • Còn ${soGheTrong} ghế trống` : ''}
         </p>
@@ -146,7 +148,7 @@ export default function CheapFlightCard({ flight, onSelect }) {
           onClick={() => onSelect?.(flight)}
           className="w-full sm:w-auto bg-[#0284c7] hover:bg-[#0369a1] text-white text-[13px] font-semibold px-4 py-2 rounded-[8px] transition cursor-pointer"
         >
-          Chọn chuyến
+          Xem chuyến bay
         </button>
       </div>
     </div>
