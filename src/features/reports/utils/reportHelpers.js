@@ -8,7 +8,7 @@
  * @returns {string}
  */
 export function formatDateToISO(date) {
-  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+  if (!date || !(date instanceof Date) || Number.isNaN(date.getTime())) {
     return '';
   }
   const year = date.getFullYear();
