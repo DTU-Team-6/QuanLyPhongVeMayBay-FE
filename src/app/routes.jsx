@@ -2,6 +2,8 @@ import { createBrowserRouter } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import HomePage from '../features/home/pages/HomePage';
 import ReportPage from '../features/reports/pages/ReportPage';
+import DestinationListPage from '../features/destinations/pages/DestinationListPage';
+import DestinationCreatePage from '../features/destinations/pages/DestinationCreatePage';
 import PlaceholderPage from '../components/common/PlaceholderPage';
 import EmployeePage from '../features/employees/pages/EmployeePage';
 import FlightSearchPage from '../features/flight-search/pages/FlightSearchPage';
@@ -15,6 +17,8 @@ import PublicNewsListPage from '../features/news/pages/PublicNewsListPage';
 import PublicNewsDetailPage from '../features/news/pages/PublicNewsDetailPage';
 
 export const router = createBrowserRouter([
+  { path: '/quan-ly-diem-den', element: <DestinationListPage /> },
+  { path: '/quan-ly-diem-den/them-moi', element: <DestinationCreatePage /> },
   { path: '/quan-ly-nhan-vien', element: <EmployeePage /> },
   { path: '/quan-ly-tin-tuc', element: <AdminNewsListPage /> },
   { path: '/quan-ly-tin-tuc/them-moi', element: <AdminNewsFormPage mode="create" /> },

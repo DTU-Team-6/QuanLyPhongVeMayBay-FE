@@ -34,6 +34,12 @@ export default function AdminShell({ user, activeKey = 'news', children }) {
       icon: <img src={chartIcon} alt="" className="size-[18px] shrink-0" />,
     },
     {
+      key: 'destinations',
+      to: '/quan-ly-diem-den',
+      label: 'Quản lý điểm đến',
+      icon: <svg className="size-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1116 0z" /><circle cx="12" cy="10" r="3" /></svg>,
+    },
+    {
       key: 'news',
       to: '/quan-ly-tin-tuc',
       label: 'Quản lý tin tức',
