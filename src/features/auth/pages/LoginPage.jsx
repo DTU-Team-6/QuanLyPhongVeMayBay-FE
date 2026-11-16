@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
+import { ApiError } from '../../../services/apiClient';
 
-function PlaneLoginIcon() {
+function LoginIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="size-7 text-[#0284c7]">
-      <path d="M4 12h15m-6-6 6 6-6 6M5 5v14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -41,14 +43,14 @@ function AuthField({ label, type, name, autoComplete, visible, onToggle, icon, p
 
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-semibold text-[#334155] md:mb-1 md:text-[12px]">{label}</span>
+      <span className="mb-2 block text-[12px] font-semibold text-[#334155]">{label}</span>
       <span className="relative block">
         <input
           required
           type={inputType}
           name={name}
           autoComplete={autoComplete}
-          className="h-[54px] w-full rounded-[9px] border border-[#cbd5e1] bg-white px-4 pr-12 text-[15px] text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-2 focus:border-[#0284c7] md:h-[36px] md:rounded-[5px] md:px-2 md:pr-8 md:text-[12px]"
+          className="h-[42px] w-full rounded-[8px] border border-[#cbd5e1] bg-white px-3 pr-10 text-sm text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-2 focus:border-[#0284c7]"
           placeholder={placeholder || (type === 'email' ? 'name@example.com' : 'Nhập mật khẩu')}
         />
         {type === 'password' ? (
@@ -56,13 +58,13 @@ function AuthField({ label, type, name, autoComplete, visible, onToggle, icon, p
             type="button"
             onClick={onToggle}
             aria-label={visible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-            className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-[#64748b] md:w-7"
+            className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-[#64748b]"
           >
-            <span className="md:scale-75"><EyeIcon visible={visible} /></span>
+            <EyeIcon visible={visible} />
           </button>
         ) : icon ? (
-          <span className="pointer-events-none absolute inset-y-0 right-0 flex w-12 items-center justify-center">
-            <span className="md:scale-75">{icon}</span>
+          <span className="pointer-events-none absolute inset-y-0 right-0 flex w-10 items-center justify-center">
+            {icon}
           </span>
         ) : null}
       </span>
@@ -70,36 +72,62 @@ function AuthField({ label, type, name, autoComplete, visible, onToggle, icon, p
   );
 }
 
+function getLoginErrorMessage(error) {
+  if (error?.code === 'INVALID_CREDENTIALS') return 'Email hoặc mật khẩu không đúng.';
+  if (error?.code === 'ACCOUNT_INACTIVE') return 'Tài khoản đã bị khóa hoặc chưa được kích hoạt.';
+  if (error?.code === 'NETWORK_ERROR') return 'Không thể kết nối Backend. Vui lòng kiểm tra mạng và thử lại.';
+  if (error?.code === 'API_BASE_URL_MISSING') return error.message;
+  if (error instanceof ApiError) return error.message;
+  return error?.message || 'Đăng nhập thất bại. Vui lòng thử lại.';
+}
+
 export default function LoginPage() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [notice, setNotice] = useState('');
-  const [remember, setRemember] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    setNotice('Giao diện đã sẵn sàng. Đăng nhập sẽ được kết nối với hệ thống sau.');
+    if (isSubmitting) return;
+
+    const values = Object.fromEntries(new FormData(event.currentTarget));
+    setIsSubmitting(true);
+    setErrorMessage('');
+    setNotice('');
+
+    try {
+      await login({ email: values.email.trim(), password: values.password });
+      navigate('/', { replace: true });
+    } catch (error) {
+      setErrorMessage(getLoginErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <section className="w-full flex-1 bg-[#f8fafc] px-4 py-10 md:px-6 md:py-9">
-      <div className="mx-auto w-full max-w-[600px] md:max-w-[356px]">
-        <div className="rounded-2xl border border-[#dce5ef] bg-white p-6 shadow-sm sm:p-9 md:rounded-[8px] md:p-4">
-          <div className="mx-auto mb-6 flex size-[64px] items-center justify-center rounded-[18px] bg-[#e0f2fe] md:mb-2 md:size-[36px] md:rounded-[9px]">
-            <PlaneLoginIcon />
+      <div className="mx-auto w-full max-w-[480px]">
+        <div className="rounded-2xl border border-[#dce5ef] bg-white p-6 shadow-sm">
+          <div className="mx-auto mb-3 flex size-[50px] items-center justify-center rounded-[14px] bg-[#e0f2fe]">
+            <LoginIcon />
           </div>
-          <h1 className="text-center text-[30px] font-bold leading-tight tracking-tight text-[#0f172a] sm:text-[36px] md:text-[22px]">
+          <h1 className="text-center text-[26px] font-bold leading-tight tracking-tight text-[#0f172a]">
             Chào mừng bạn trở lại
           </h1>
-          <p className="mt-3 text-center text-base leading-relaxed text-[#64748b] sm:text-lg md:mt-2 md:text-[14px]">
+          <p className="mt-2 text-center text-base leading-5 text-[#64748b]">
             Đăng nhập để quản lý hành trình của bạn.
           </p>
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-6 md:mt-4 md:space-y-3">
+          <form onSubmit={handleSubmit} className="mt-5 space-y-[14px]">
             <AuthField
               label="Email/Tài khoản"
-              type="text"
+              type="email"
               name="email"
-              autoComplete="username"
+              autoComplete="email"
               placeholder="minhanh.nguyen@email.com"
               icon={<MailIcon />}
             />
@@ -113,19 +141,22 @@ export default function LoginPage() {
             />
 
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <label className="inline-flex cursor-pointer items-center gap-2.5 text-sm text-[#475569] sm:text-base md:gap-1.5 md:text-[11px]">
+              <label className="inline-flex cursor-not-allowed items-center gap-2 text-xs text-[#475569]">
                 <input
                   type="checkbox"
-                  checked={remember}
-                  onChange={(event) => setRemember(event.target.checked)}
-                  className="size-4 accent-[#0284c7] md:size-3.5"
+                  disabled
+                  title="Backend chưa hỗ trợ ghi nhớ đăng nhập."
+                  className="size-4 cursor-not-allowed accent-[#0284c7] disabled:opacity-50"
                 />
-                Ghi nhớ đăng nhập
+                <span>
+                  Ghi nhớ đăng nhập
+                  <span className="ml-1 text-[10px] text-[#94a3b8]">(chưa hỗ trợ)</span>
+                </span>
               </label>
               <button
                 type="button"
                 onClick={() => setNotice('Khôi phục mật khẩu sẽ được bổ sung khi kết nối API.')}
-                className="text-sm font-semibold text-[#0284c7] hover:text-[#0369a1] sm:text-base md:text-[11px]"
+                className="text-xs font-semibold text-[#0284c7] hover:text-[#0369a1]"
               >
                 Quên mật khẩu?
               </button>
@@ -133,25 +164,32 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="h-[58px] w-full rounded-[9px] bg-[#0284c7] text-base font-semibold text-white transition hover:bg-[#0369a1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7] md:h-[36px] md:rounded-[5px] md:text-[12px]"
+              disabled={isSubmitting}
+              className="h-[42px] w-full rounded-[8px] bg-[#0284c7] text-sm font-semibold text-white transition hover:bg-[#0369a1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7] disabled:cursor-wait disabled:opacity-70"
             >
-              Đăng nhập
+              {isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
             </button>
           </form>
 
-          <div className="my-7 flex items-center gap-4 text-sm text-[#94a3b8] md:my-4 md:gap-2 md:text-[11px]">
+          {errorMessage && (
+            <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
+              {errorMessage}
+            </p>
+          )}
+
+          <div className="my-6 flex items-center gap-3 text-xs text-[#94a3b8]">
             <span className="h-px flex-1 bg-[#e2e8f0]" />
             <span>Hoặc</span>
             <span className="h-px flex-1 bg-[#e2e8f0]" />
           </div>
 
-          <div className="grid grid-cols-2 gap-3 md:gap-2">
+          <div className="grid grid-cols-2 gap-3">
             {['Google', 'Facebook'].map((provider) => (
               <button
                 key={provider}
                 type="button"
                 onClick={() => setNotice(`Đăng nhập ${provider} sẽ được kết nối sau.`)}
-                className="flex h-[54px] items-center justify-center gap-2 rounded-[9px] border border-[#cbd5e1] text-sm font-medium text-[#475569] transition hover:border-[#0284c7] hover:bg-[#f8fafc] sm:text-base md:h-[34px] md:gap-1 md:rounded-[5px] md:text-[12px]"
+                className="flex h-[42px] items-center justify-center gap-2 rounded-[8px] border border-[#cbd5e1] text-sm font-medium text-[#475569] transition hover:border-[#0284c7] hover:bg-[#f8fafc]"
               >
                 <span className="font-bold text-[#0284c7]">{provider === 'Google' ? 'G' : 'f'}</span>
                 {provider}
@@ -160,12 +198,12 @@ export default function LoginPage() {
           </div>
 
           {notice && (
-            <p role="status" className="mt-5 rounded-lg bg-[#eff6ff] px-4 py-3 text-sm text-[#075985] md:mt-3 md:px-2 md:py-1.5 md:text-[11px]">
+            <p role="status" className="mt-3 rounded-lg bg-[#eff6ff] px-3 py-2 text-xs text-[#075985]">
               {notice}
             </p>
           )}
 
-          <p className="mt-8 flex flex-wrap items-center justify-between gap-2 text-sm text-[#64748b] sm:text-base md:mt-4 md:justify-center md:gap-1 md:text-[11px]">
+          <p className="mt-6 flex flex-wrap items-center justify-center gap-1 text-xs text-[#64748b]">
             <span>Chưa có tài khoản?</span>
             <Link to="/dang-ky" className="font-semibold text-[#0284c7] hover:text-[#0369a1]">
               Đăng ký ngay
@@ -173,7 +211,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <p className="mt-6 text-center text-sm text-[#64748b] sm:text-base md:mt-3 md:text-[10px]">
+        <p className="mt-5 text-center text-xs text-[#64748b]">
           Thông tin của bạn được bảo mật và mã hóa an toàn.
         </p>
       </div>

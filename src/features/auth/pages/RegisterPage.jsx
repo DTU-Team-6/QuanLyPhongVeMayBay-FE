@@ -22,7 +22,7 @@ function Field({ label, name, type = 'text', autoComplete, hint, hintClassName =
         autoComplete={autoComplete}
         aria-invalid={Boolean(error)}
         aria-describedby={[hint ? hintId : null, error ? errorId : null].filter(Boolean).join(' ') || undefined}
-        className={`h-[48px] w-full rounded-[8px] border bg-white px-3.5 text-sm text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-2 focus:border-[#0284c7] md:h-[32px] md:rounded-[5px] md:px-2 md:text-[12px] ${
+        className={`h-[48px] w-full rounded-[8px] border bg-white px-3.5 text-sm text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-2 focus:border-[#0284c7] md:h-[40px] md:rounded-[6px] md:px-3 md:text-sm ${
           error ? 'border-red-500' : 'border-[#cbd5e1]'
         }`}
         {...props}
@@ -50,7 +50,7 @@ function PasswordField({ label, name, autoComplete, error, hint, hintClassName =
           minLength={8}
           aria-invalid={Boolean(error)}
           aria-describedby={[hint ? hintId : null, error ? errorId : null].filter(Boolean).join(' ') || undefined}
-          className={`h-[48px] w-full rounded-[8px] border bg-white px-3.5 pr-12 text-sm text-[#0f172a] outline-none transition focus:border-2 focus:border-[#0284c7] md:h-[32px] md:rounded-[5px] md:px-2 md:pr-8 md:text-[12px] ${
+          className={`h-[48px] w-full rounded-[8px] border bg-white px-3.5 pr-12 text-sm text-[#0f172a] outline-none transition focus:border-2 focus:border-[#0284c7] md:h-[40px] md:rounded-[6px] md:px-3 md:pr-10 md:text-sm ${
             error ? 'border-red-500' : 'border-[#cbd5e1]'
           }`}
         />
@@ -88,7 +88,7 @@ function SelectField({ label, name, children, defaultValue, hint }) {
       <select
         name={name}
         defaultValue={defaultValue}
-        className="h-[48px] w-full appearance-none rounded-[8px] border border-[#cbd5e1] bg-white px-3.5 text-sm text-[#0f172a] outline-none focus:border-2 focus:border-[#0284c7] md:h-[32px] md:rounded-[5px] md:px-2 md:text-[12px]"
+        className="h-[48px] w-full appearance-none rounded-[8px] border border-[#cbd5e1] bg-white px-3.5 text-sm text-[#0f172a] outline-none focus:border-2 focus:border-[#0284c7] md:h-[40px] md:rounded-[6px] md:px-3 md:text-sm"
       >
         {children}
       </select>
@@ -135,8 +135,8 @@ export default function RegisterPage() {
 
   return (
     <section className="w-full flex-1 bg-[#f8fafc] px-4 py-8 md:px-6 md:py-5">
-      <div className="mx-auto max-w-[760px] md:max-w-[504px]">
-        <header className="mb-6 md:mb-3">
+      <div className="mx-auto w-full max-w-[800px]">
+        <header className="mb-6">
           <h1 className="text-[26px] font-bold tracking-tight text-[#0f172a] sm:text-[32px] md:text-[20px]">
             Đăng ký tài khoản
           </h1>
@@ -145,13 +145,13 @@ export default function RegisterPage() {
           </p>
         </header>
 
-        <div className="rounded-[14px] border border-[#dce5ef] bg-white p-5 shadow-sm sm:p-8 md:rounded-[8px] md:p-4">
-          <div className="mb-6 md:mb-3">
-            <h2 className="text-xl font-bold text-[#0f172a] md:text-[15px]">Thông tin đăng ký</h2>
-            <p className="mt-1 text-sm text-[#64748b] md:mt-1 md:text-[11px]">Các trường có dấu * là bắt buộc.</p>
+        <div className="rounded-[14px] border border-[#dce5ef] bg-white p-6 shadow-sm md:rounded-[8px]">
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-[#0f172a]">Thông tin đăng ký</h2>
+            <p className="mt-1 text-xs text-[#64748b]">Các trường có dấu * là bắt buộc.</p>
           </div>
 
-          <form onSubmit={handleSubmit} noValidate className="space-y-5 md:grid md:grid-cols-2 md:items-start md:gap-x-3 md:gap-y-3 md:space-y-0">
+          <form onSubmit={handleSubmit} noValidate className="space-y-5 md:grid md:grid-cols-2 md:items-start md:gap-x-4 md:gap-y-[26px] md:space-y-0">
             <Field label="Email *" name="email" type="email" autoComplete="email" placeholder="email@example.com" />
             <Field label="Họ và tên *" name="fullName" autoComplete="name" placeholder="Nhập họ và tên" />
             <PasswordField
@@ -235,7 +235,7 @@ export default function RegisterPage() {
 
             <button
               type="submit"
-              className="h-[48px] w-full rounded-[8px] bg-[#0284c7] text-sm font-semibold text-white transition hover:bg-[#0369a1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7] md:col-span-2 md:justify-self-end md:h-[32px] md:w-auto md:rounded-[5px] md:px-4 md:text-[11px]"
+              className="h-[48px] w-full rounded-[8px] bg-[#0284c7] text-sm font-semibold text-white transition hover:bg-[#0369a1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7] md:col-span-2 md:justify-self-end md:h-[40px] md:w-auto md:rounded-[6px] md:px-4 md:text-sm"
             >
               Đăng ký
             </button>

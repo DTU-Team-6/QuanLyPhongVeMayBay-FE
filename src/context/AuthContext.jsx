@@ -18,6 +18,12 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  const login = useCallback(async (credentials) => {
+    const authenticatedUser = await authService.login(credentials);
+    setUser(authenticatedUser);
+    return authenticatedUser;
+  }, []);
+
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
@@ -31,6 +37,7 @@ export function AuthProvider({ children }) {
     user,
     loading,
     isAuthenticated: !!user,
+    login,
     checkAuth,
     logout,
   };
