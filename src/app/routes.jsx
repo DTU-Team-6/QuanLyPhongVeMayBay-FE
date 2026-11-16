@@ -15,6 +15,8 @@ import PublicNewsListPage from '../features/news/pages/PublicNewsListPage';
 import PublicNewsDetailPage from '../features/news/pages/PublicNewsDetailPage';
 
 export const router = createBrowserRouter([
+  { path: '/bao-cao', element: <ReportPage /> },
+  { path: '/thong-ke', element: <ReportPage /> },
   { path: '/quan-ly-nhan-vien', element: <EmployeePage /> },
   { path: '/quan-ly-tin-tuc', element: <AdminNewsListPage /> },
   { path: '/quan-ly-tin-tuc/them-moi', element: <AdminNewsFormPage mode="create" /> },
@@ -113,14 +115,6 @@ export const router = createBrowserRouter([
             description="Màn hình thay đổi mật khẩu tài khoản."
           />
         ),
-      },
-      {
-        path: 'bao-cao',
-        element: <ReportPage />,
-      },
-      {
-        path: 'thong-ke',
-        element: <ReportPage />,
       },
       {
         path: 'dang-nhap',

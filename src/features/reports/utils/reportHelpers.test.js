@@ -7,6 +7,9 @@ import {
   validateReportFilter,
   calculateGrowth,
   buildReportCSV,
+  revenueShares,
+  previousRevenue,
+  orderedReportItems,
 } from './reportHelpers.js';
 
 test('formatDateToISO formats date object to yyyy-MM-dd correctly', () => {
@@ -109,4 +112,53 @@ test('buildReportCSV generates UTF-8 BOM CSV text with headers and rows', () => 
   assert.ok(csv.includes('Lê Thu Hà'));
   assert.ok(csv.includes('30000000'));
   assert.ok(csv.includes('TỔNG CỘNG'));
+});
+
+test('validation loại ngày lịch không tồn tại, enum lạ và đầu kỳ không có kỳ trước', () => {
+  const base = { startDate: '2026-02-28', endDate: '2026-03-01', reportType: 'THEO_HANG' };
+  assert.ok(validateReportFilter({ ...base, startDate: '2026-02-30' }).errors.startDate);
+  assert.ok(validateReportFilter({ ...base, startDate: '2026-01-00', endDate: '' }).errors.startDate);
+  assert.ok(validateReportFilter({ ...base, reportType: 'INVALID' }).errors.reportType);
+  assert.ok(validateReportFilter({ ...base, groupBy: 'WEEK' }).errors.groupBy);
+  assert.ok(validateReportFilter({ ...base, displayMode: 'INVALID' }).errors.displayMode);
+  assert.ok(validateReportFilter({ ...base, startDate: '0001-01-01', endDate: '0001-01-02', comparePrevious: true }).errors.startDate);
+});
+
+test('kỳ trước tính theo ngày lịch qua năm nhuận và bỏ khoảng không hợp lệ', () => {
+  assert.deepEqual(getPreviousPeriod('2024-03-01', '2024-03-02'), { startDate: '2024-02-28', endDate: '2024-02-29' });
+  assert.deepEqual(getPreviousPeriod('2026-11-10', '2026-11-01'), { startDate: '', endDate: '' });
+});
+
+test('không báo tăng 100% khi kỳ trước bằng 0 hoặc dữ liệu bị thiếu', () => {
+  assert.equal(calculateGrowth(50, 0).percent, null);
+  assert.equal(calculateGrowth(50, null).diff, null);
+  assert.equal(calculateGrowth(0, 0).percent, 0);
+});
+
+test('CSV thoát công thức, dấu phẩy, dấu ngoặc và dùng kỳ trả từ API', () => {
+  const csv = buildReportCSV({ startDate: '2026-01-01', endDate: '2026-01-02', reportType: 'THEO_HANG', tienTe: 'USD', items: [{ label: '=HYPERLINK("x"), hãng', doanhThu: 150, loiNhuan: -10 }], summary: {} });
+  assert.ok(csv.includes('2026-01-01 đến 2026-01-02'));
+  assert.ok(csv.includes(`"'=HYPERLINK(""x""), hãng"`));
+  assert.ok(csv.includes('Doanh thu (USD)'));
+  assert.ok(csv.includes('"-10"'));
+});
+
+test('tỷ trọng bao gồm mọi hãng và không dựng hãng giả khi doanh thu bằng 0', () => {
+  const items = Array.from({ length: 7 }, (_, index) => ({ key: `H${index}`, doanhThu: 100 }));
+  const shares = revenueShares(items);
+  assert.equal(shares.length, 6);
+  assert.equal(shares[5].label, 'Các hãng khác');
+  assert.equal(shares[5].amount, 200);
+  assert.ok(Math.abs(shares.reduce((sum, share) => sum + share.percent, 0) - 100) < 0.00001);
+  assert.deepEqual(revenueShares([{ doanhThu: 0 }]), []);
+});
+
+test('so sánh dùng key thay vì thứ tự; null kỳ trước khác với kỳ trước trống', () => {
+  const current = { key: 'NV01', doanhThu: 50 };
+  assert.equal(previousRevenue(current, null), null);
+  assert.equal(previousRevenue(current, { items: [] }), 0);
+  assert.equal(previousRevenue(current, { items: [{ key: 'NV02', doanhThu: 100 }, { key: 'NV01', doanhThu: 10 }] }), 10);
+  const report = { reportType: 'THEO_THOI_GIAN', items: [{ key: '2026-11-10', doanhThu: 100 }, { key: '2026-11-09', doanhThu: 20 }] };
+  assert.equal(orderedReportItems(report)[0].key, '2026-11-09');
+  assert.equal(report.items[0].key, '2026-11-10');
 });

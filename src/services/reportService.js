@@ -10,8 +10,9 @@ export const reportService = {
    * @param {Object} filter - ReportFilterRequest
    * @returns {Promise<Object>} ReportResponse
    */
-  async createReport(filter) {
+  async createReport(filter, options = {}) {
     const res = await apiClient('/reports', {
+      ...options,
       method: 'POST',
       body: JSON.stringify(filter),
     });
@@ -23,7 +24,7 @@ export const reportService = {
    * @param {Object} filter - query parameters
    * @returns {Promise<Object>} ReportResponse
    */
-  async generateReport(filter) {
+  async generateReport(filter, options = {}) {
     const params = new URLSearchParams();
     Object.entries(filter).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
@@ -32,7 +33,7 @@ export const reportService = {
     });
     const queryString = params.toString();
     const endpoint = queryString ? `/reports/generate?${queryString}` : '/reports/generate';
-    const res = await apiClient(endpoint);
+    const res = await apiClient(endpoint, options);
     return res?.data;
   },
 
@@ -41,7 +42,7 @@ export const reportService = {
    * @param {Object} filter - StatisticsFilterRequest
    * @returns {Promise<Object>} StatisticsResponse
    */
-  async getStatistics(filter = {}) {
+  async getStatistics(filter = {}, options = {}) {
     const params = new URLSearchParams();
     Object.entries(filter).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
@@ -50,7 +51,7 @@ export const reportService = {
     });
     const queryString = params.toString();
     const endpoint = queryString ? `/statistics?${queryString}` : '/statistics';
-    const res = await apiClient(endpoint);
+    const res = await apiClient(endpoint, options);
     return res?.data;
   },
 };

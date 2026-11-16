@@ -88,160 +88,113 @@ export function getPresetDateRange(presetType, baseDate = new Date()) {
   }
 }
 
-/**
- * Tính toán khoảng thời gian đối chiếu của kỳ liền trước (cùng độ dài số ngày)
- * @param {string} startDateStr - yyyy-MM-dd
- * @param {string} endDateStr - yyyy-MM-dd
- * @returns {{ startDate: string, endDate: string }}
- */
+/** Đọc ngày ISO chặt chẽ, dùng UTC để phép tính ngày không lệch theo DST/múi giờ. */
+function parseISODate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '') || value < '0001-01-01') return null;
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value ? date : null;
+}
+
 export function getPreviousPeriod(startDateStr, endDateStr) {
-  if (!startDateStr || !endDateStr) {
-    return { startDate: '', endDate: '' };
-  }
-
-  const start = new Date(startDateStr);
-  const end = new Date(endDateStr);
-
-  const diffTime = Math.abs(end.getTime() - start.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-
-  const prevEnd = new Date(start.getTime());
-  prevEnd.setDate(prevEnd.getDate() - 1);
-
-  const prevStart = new Date(prevEnd.getTime());
-  prevStart.setDate(prevStart.getDate() - diffDays + 1);
-
+  const start = parseISODate(startDateStr);
+  const end = parseISODate(endDateStr);
+  if (!start || !end || start > end) return { startDate: '', endDate: '' };
+  const day = 86400000;
+  const previousStart = new Date(start.getTime() - (end.getTime() - start.getTime() + day));
+  if (previousStart.getUTCFullYear() < 1) return { startDate: '', endDate: '' };
   return {
-    startDate: formatDateToISO(prevStart),
-    endDate: formatDateToISO(prevEnd),
+    startDate: previousStart.toISOString().slice(0, 10),
+    endDate: new Date(start.getTime() - day).toISOString().slice(0, 10),
   };
 }
 
-/**
- * Kiểm tra tính hợp lệ của bộ lọc báo cáo ở phía Client
- * @param {Object} filter
- * @returns {{ isValid: boolean, errors: Record<string, string> }}
- */
+export const REPORT_TITLES = {
+  THEO_NHAN_VIEN: 'Doanh thu theo nhân viên',
+  THEO_HANG: 'Doanh thu theo hãng hàng không',
+  THEO_THOI_GIAN: 'Doanh thu theo thời gian',
+};
+
 export function validateReportFilter(filter) {
   const errors = {};
-
-  if (!filter?.startDate) {
-    errors.startDate = 'Vui lòng chọn ngày bắt đầu';
+  for (const [field, label] of [['startDate', 'ngày bắt đầu'], ['endDate', 'ngày kết thúc']]) {
+    if (!filter?.[field]) errors[field] = `Vui lòng chọn ${label}`;
+    else if (!parseISODate(filter[field])) errors[field] = `${label.charAt(0).toUpperCase() + label.slice(1)} không đúng định dạng`;
   }
-
-  if (!filter?.endDate) {
-    errors.endDate = 'Vui lòng chọn ngày kết thúc';
-  }
-
-  if (filter?.startDate && filter?.endDate) {
-    const start = new Date(filter.startDate);
-    const end = new Date(filter.endDate);
-
-    if (isNaN(start.getTime())) {
-      errors.startDate = 'Ngày bắt đầu không đúng định dạng';
-    }
-    if (isNaN(end.getTime())) {
-      errors.endDate = 'Ngày kết thúc không đúng định dạng';
-    }
-
-    if (!errors.startDate && !errors.endDate && start > end) {
-      errors.endDate = 'Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu';
-    }
-  }
-
-  if (!filter?.reportType) {
-    errors.reportType = 'Vui lòng chọn loại báo cáo';
-  }
-
-  return {
-    isValid: Object.keys(errors).length === 0,
-    errors,
-  };
+  if (!errors.startDate && !errors.endDate && filter.startDate > filter.endDate) errors.endDate = 'Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu';
+  if (!Object.hasOwn(REPORT_TITLES, filter?.reportType || '')) errors.reportType = 'Vui lòng chọn loại báo cáo hợp lệ';
+  if (filter?.groupBy && !['DAY', 'MONTH', 'YEAR'].includes(filter.groupBy)) errors.groupBy = 'Tiêu chí gom nhóm không hợp lệ';
+  if (filter?.displayMode && !['BOTH', 'TABLE', 'CHART'].includes(filter.displayMode)) errors.displayMode = 'Kiểu hiển thị không hợp lệ';
+  if (filter?.comparePrevious && !errors.startDate && !errors.endDate && !getPreviousPeriod(filter.startDate, filter.endDate).startDate) errors.startDate = 'Khoảng ngày không đủ để đối chiếu kỳ trước';
+  return { isValid: Object.keys(errors).length === 0, errors };
 }
 
-/**
- * Tính toán % tăng trưởng và chênh lệch giữa hai số
- * @param {number} current
- * @param {number} previous
- * @returns {{ diff: number, percent: number, isPositive: boolean }}
- */
 export function calculateGrowth(current, previous) {
-  const curr = Number(current) || 0;
-  const prev = Number(previous) || 0;
+  if (current == null || previous == null) return { diff: null, percent: null, isPositive: null };
+  const curr = Number(current);
+  const prev = Number(previous);
+  if (!Number.isFinite(curr) || !Number.isFinite(prev)) return { diff: null, percent: null, isPositive: null };
   const diff = curr - prev;
-
-  let percent = 0;
-  if (prev !== 0) {
-    percent = (diff / prev) * 100;
-  } else if (curr > 0) {
-    percent = 100;
-  }
-
-  return {
-    diff,
-    percent: Math.round(percent * 10) / 10,
-    isPositive: diff >= 0,
-  };
+  // Tỷ lệ tăng từ 0 không xác định; không thể diễn đạt là tăng 100%.
+  const percent = prev === 0 ? (curr === 0 ? 0 : null) : Math.round((diff / Math.abs(prev)) * 1000) / 10;
+  return { diff, percent, isPositive: diff >= 0 };
 }
 
-/**
- * Chuyển dữ liệu báo cáo thành file CSV UTF-8 kèm BOM
- * @param {Object} report
- * @returns {string} CSV content
- */
+export function formatGrowth(growth) {
+  return growth.percent == null ? '—' : `${growth.percent > 0 ? '+' : ''}${growth.percent.toLocaleString('vi-VN')}%`;
+}
+
+export function orderedReportItems(report) {
+  const items = [...(report?.items || [])];
+  return report?.reportType === 'THEO_THOI_GIAN'
+    ? items.sort((a, b) => String(a.key).localeCompare(String(b.key)))
+    : items.sort((a, b) => Number(b.doanhThu) - Number(a.doanhThu));
+}
+
+/** Kỳ trước trả thành công nhưng không có đối tượng này nghĩa là doanh thu bằng 0. */
+export function previousRevenue(item, previousReport) {
+  if (!previousReport) return null;
+  return previousReport.items.find((previous) => previous.key === item.key)?.doanhThu ?? 0;
+}
+
+/** Gom các hãng còn lại thành Khác để hình tròn luôn thể hiện toàn bộ doanh thu. */
+export function revenueShares(items = []) {
+  const positive = items.filter((item) => Number(item.doanhThu) > 0).sort((a, b) => Number(b.doanhThu) - Number(a.doanhThu));
+  const total = positive.reduce((sum, item) => sum + Number(item.doanhThu), 0);
+  if (!total) return [];
+  const visible = positive.slice(0, 5).map((item) => ({ label: item.label || item.key || 'Chưa phân loại', amount: Number(item.doanhThu) }));
+  if (positive.length > 5) visible.push({ label: 'Các hãng khác', amount: positive.slice(5).reduce((sum, item) => sum + Number(item.doanhThu), 0) });
+  return visible.map((item) => ({ ...item, percent: item.amount / total * 100 }));
+}
+
+function csvCell(value) {
+  let text = String(value ?? '');
+  // Bảo vệ tên đối tượng do người dùng nhập khỏi bị Excel hiểu là công thức.
+  if (/^[\s]*[=+\-@]/.test(text) && typeof value !== 'number') text = `'${text}`;
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
 export function buildReportCSV(report) {
   const summary = report?.summary || {};
-  const items = report?.items || [];
-
-  const headers = ['STT', 'Hạng', 'Đối tượng', 'Số đơn đặt chỗ', 'Số vé bán ra', 'Doanh thu (VNĐ)', 'Lợi nhuận (VNĐ)'];
-
-  const rows = items.map((item, index) => [
-    index + 1,
-    `#${index + 1}`,
-    `"${(item.label || item.key || '').replace(/"/g, '""')}"`,
-    item.soDonDatCho || 0,
-    item.soVeBanRa || 0,
-    item.doanhThu || 0,
-    item.loiNhuan || 0,
-  ]);
-
-  // Thêm dòng tổng kết
-  rows.push([
-    '',
-    'TỔNG CỘNG',
-    '',
-    summary.tongSoDonDatCho || 0,
-    summary.tongSoVe || 0,
-    summary.tongDoanhThu || 0,
-    summary.tongLoiNhuan || 0,
-  ]);
-
-  const csvRows = [
-    `"BÁO CÁO DOANH THU PHÒNG VÉ VÂN VIỆT"`,
-    `"Khoảng thời gian: ${report?.startDate || ''} đến ${report?.endDate || ''}"`,
-    `"Loại báo cáo: ${report?.reportType || ''}"`,
-    '',
-    headers.join(','),
-    ...rows.map((row) => row.join(',')),
+  const currency = report?.tienTe || 'VND';
+  const rows = [
+    ['BÁO CÁO DOANH THU PHÒNG VÉ VÂN VIỆT'],
+    [`Khoảng thời gian: ${report?.startDate || ''} đến ${report?.endDate || ''}`],
+    [`Loại báo cáo: ${REPORT_TITLES[report?.reportType] || report?.reportType || ''}`],
+    [],
+    ['STT', 'Đối tượng', 'Số đơn đặt chỗ', 'Số vé bán ra', `Doanh thu (${currency})`, `Lợi nhuận (${currency})`],
+    ...orderedReportItems(report).map((item, index) => [index + 1, item.label || item.key || 'Khách đặt trực tuyến', item.soDonDatCho ?? 0, item.soVeBanRa ?? 0, item.doanhThu ?? 0, item.loiNhuan ?? 0]),
+    ['', 'TỔNG CỘNG', summary.tongSoDonDatCho ?? 0, summary.tongSoVe ?? 0, summary.tongDoanhThu ?? 0, summary.tongLoiNhuan ?? 0],
   ];
-
-  // Thêm UTF-8 Byte Order Mark (BOM) \uFEFF để Excel hiển thị đúng dấu tiếng Việt
-  return '\uFEFF' + csvRows.join('\r\n');
+  return '\uFEFF' + rows.map((row) => row.map(csvCell).join(',')).join('\r\n');
 }
 
-/**
- * Kích hoạt tải file CSV về trình duyệt
- * @param {string} csvContent
- * @param {string} filename
- */
 export function downloadCSV(csvContent, filename = 'bao-cao-doanh-thu.csv') {
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
+  const url = URL.createObjectURL(new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }));
   const link = document.createElement('a');
   link.href = url;
-  link.setAttribute('download', filename);
+  link.download = filename;
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
+  link.remove();
   URL.revokeObjectURL(url);
 }

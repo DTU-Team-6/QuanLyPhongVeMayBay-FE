@@ -1,13 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import reportService from '../../../services/reportService';
 import { useAuth } from '../../../context/AuthContext';
-import {
-  getPresetDateRange,
-  getPreviousPeriod,
-  validateReportFilter,
-  buildReportCSV,
-  downloadCSV,
-} from '../utils/reportHelpers';
+import AdminShell from '../../../components/layout/AdminShell';
+import { getPresetDateRange, validateReportFilter, buildReportCSV, downloadCSV, REPORT_TITLES } from '../utils/reportHelpers';
+import { loadReportBundle } from '../utils/reportRequests';
 import ReportFilterForm from '../components/ReportFilterForm';
 import ReportSummaryCards from '../components/ReportSummaryCards';
 import ReportTableView from '../components/ReportTableView';
@@ -15,288 +12,80 @@ import ReportChartView from '../components/ReportChartView';
 import EmptyState from '../../../components/common/EmptyState';
 import Loading from '../../../components/common/Loading';
 
-/**
- * Màn hình Tạo báo cáo (SRS 6.5.4.1) và Kết quả thống kê (SRS 6.5.4.2)
- * Thiết kế chuẩn theo Figma node 186:3277 (Staff Bảng) và 186:5696 (Admin Biểu đồ)
- */
+/** Màn hình 6.5.4.1/6.5.4.2 chỉ hiển thị kết quả gắn với điều kiện đã gửi. */
 export default function ReportPage() {
-  const { user } = useAuth();
-
-  // Khởi tạo bộ lọc mặc định: Tuần này
-  const initialRange = getPresetDateRange('thisWeek');
-  const [filter, setFilter] = useState({
-    startDate: initialRange.startDate,
-    endDate: initialRange.endDate,
-    reportType: 'THEO_NHAN_VIEN',
-    groupBy: 'DAY',
-    displayMode: 'BOTH',
-    comparePrevious: true,
-  });
-
-  const [filterErrors, setFilterErrors] = useState({});
+  const { user, loading: authLoading, checkAuth } = useAuth();
+  const canManage = !authLoading && ['ADMIN', 'NHAN_VIEN'].includes(user?.vaiTro);
+  const initialFilter = useRef({ ...getPresetDateRange('thisWeek'), reportType: 'THEO_NHAN_VIEN', groupBy: 'DAY', displayMode: 'BOTH', comparePrevious: true });
+  const [filter, setFilter] = useState(initialFilter.current);
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(null);
+  const [error, setError] = useState(null);
+  const [result, setResult] = useState(null);
+  const [lastRequest, setLastRequest] = useState(null);
+  const activeRequest = useRef(null);
 
-  // Dữ liệu báo cáo kỳ hiện tại và kỳ đối chiếu trước đó
-  const [reportData, setReportData] = useState(null);
-  const [previousReportData, setPreviousReportData] = useState(null);
-
-  // Tính khoảng thời gian đối chiếu của kỳ trước
-  const prevPeriod = getPreviousPeriod(filter.startDate, filter.endDate);
-
-  const fetchReports = useCallback(async (currentFilter) => {
-    const validation = validateReportFilter(currentFilter);
-    if (!validation.isValid) {
-      setFilterErrors(validation.errors);
-      return;
-    }
-    setFilterErrors({});
+  const load = useCallback(async (draft) => {
+    if (!canManage) return;
+    const validation = validateReportFilter(draft);
+    setErrors(validation.errors);
+    if (!validation.isValid) return;
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    const applied = { ...draft };
+    setLastRequest(applied);
     setLoading(true);
-    setErrorMessage(null);
-
+    setError(null);
+    setResult(null);
     try {
-      // 1. Gọi API cho kỳ hiện tại
-      const currentRes = await reportService.createReport({
-        startDate: currentFilter.startDate,
-        endDate: currentFilter.endDate,
-        reportType: currentFilter.reportType,
-        groupBy: currentFilter.groupBy || 'DAY',
-        trangThaiDatCho: 'DA_THANH_TOAN',
-      });
-
-      setReportData(currentRes);
-
-      // 2. Nếu bật so sánh với kỳ trước, gọi thêm dữ liệu đối chiếu
-      if (currentFilter.comparePrevious) {
-        const prev = getPreviousPeriod(currentFilter.startDate, currentFilter.endDate);
-        if (prev.startDate && prev.endDate) {
-          try {
-            const prevRes = await reportService.createReport({
-              startDate: prev.startDate,
-              endDate: prev.endDate,
-              reportType: currentFilter.reportType,
-              groupBy: currentFilter.groupBy || 'DAY',
-              trangThaiDatCho: 'DA_THANH_TOAN',
-            });
-            setPreviousReportData(prevRes);
-          } catch {
-            // Không chặn hiển thị nếu kỳ trước chưa có dữ liệu
-            setPreviousReportData(null);
-          }
-        }
-      } else {
-        setPreviousReportData(null);
-      }
-    } catch (err) {
-      console.error('Lỗi khi tải dữ liệu báo cáo:', err);
-      setErrorMessage(
-        err.message || 'Không thể tạo báo cáo. Vui lòng kiểm tra kết nối máy chủ backend.'
-      );
+      const bundle = await loadReportBundle(applied, reportService.generateReport, controller.signal);
+      if (!controller.signal.aborted) setResult(bundle);
+    } catch (requestError) {
+      if (controller.signal.aborted) return;
+      setResult(null);
+      setError(requestError);
+      if (requestError.status === 401) await checkAuth();
+      const fieldErrors = {};
+      for (const detail of requestError.details || []) if (['startDate', 'endDate', 'reportType', 'groupBy'].includes(detail.field)) fieldErrors[detail.field] = detail.message;
+      setErrors(fieldErrors);
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
-  }, []);
+  }, [canManage, checkAuth]);
 
-  // Tự động tải báo cáo lần đầu khi vào trang
   useEffect(() => {
-    fetchReports(filter);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    if (canManage) load(initialFilter.current);
+    else { setResult(null); setError(null); }
+    return () => activeRequest.current?.abort();
+  }, [canManage, user?.id, load]);
 
-  const handleFilterChange = (updates) => {
-    setFilter((prev) => ({ ...prev, ...updates }));
-    // Xóa lỗi của trường vừa thay đổi
-    if (Object.keys(updates).some((key) => filterErrors[key])) {
-      setFilterErrors((prev) => {
-        const next = { ...prev };
-        Object.keys(updates).forEach((k) => delete next[k]);
-        return next;
-      });
-    }
-  };
+  function change(updates) {
+    setFilter((previous) => ({ ...previous, ...updates }));
+    setErrors((previous) => { const next = { ...previous }; for (const key of Object.keys(updates)) delete next[key]; return next; });
+  }
+  function exportCSV() {
+    const report = result.report;
+    downloadCSV(buildReportCSV(report), `bao-cao-${report.reportType.toLowerCase()}-${report.startDate}-${report.endDate}.csv`);
+  }
+  const errorText = error?.status === 401 ? 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.' : error?.status === 403 ? 'Tài khoản không có quyền xem báo cáo này.' : error?.status === 0 ? 'Không thể kết nối đến hệ thống. Vui lòng thử lại.' : error?.message;
 
-  const handleFilterSubmit = () => {
-    fetchReports(filter);
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const handleExportCSV = () => {
-    if (!reportData) return;
-    const csv = buildReportCSV(reportData);
-    const filename = `bao-cao-${filter.reportType.toLowerCase()}-${filter.startDate}-${filter.endDate}.csv`;
-    downloadCSV(csv, filename);
-  };
-
-  const scrollToFilter = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const reportTypeTitles = {
-    THEO_NHAN_VIEN: 'Top nhân viên bán hàng',
-    THEO_HANG: 'Doanh thu theo hãng hàng không',
-    THEO_THOI_GIAN: 'Doanh thu phòng vé theo thời gian',
-  };
-
-  const currentTitle = reportTypeTitles[filter.reportType] || 'Thống kê báo cáo';
-
-  return (
-    <div className="bg-[#f8fafc] min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-[1400px] mx-auto flex flex-col gap-8">
-        {/* Đường dẫn & Thông tin hệ thống */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between text-[#64748b] text-[12px] gap-2 border-b border-[#e2e8f0] pb-3">
-          <div className="flex items-center gap-2">
-            <span className="hover:text-[#0284c7] cursor-pointer">
-              {user?.vaiTro === 'ADMIN' ? 'Quản trị' : 'Nhân viên'}
-            </span>
-            <span>/</span>
-            <span className="font-semibold text-[#0f172a]">Thống kê báo cáo</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="font-medium text-[#0284c7]">Vân Việt • HCM</span>
-            <span>•</span>
-            <span>Hệ thống hoạt động ổn định</span>
-          </div>
-        </div>
-
-        {/* Tiêu đề trang & Mốc thời gian đối chiếu */}
-        <div className="flex flex-col gap-1">
-          <h1 className="text-[#0f172a] text-[24px] sm:text-[28px] font-bold tracking-tight">
-            {user?.vaiTro === 'ADMIN' ? 'Thống kê báo cáo doanh thu' : 'Thống kê báo cáo'}
-          </h1>
-          <p className="text-[#64748b] text-[14px]">
-            Kỳ <strong>{filter.startDate}</strong> đến <strong>{filter.endDate}</strong>
-            {filter.comparePrevious && prevPeriod.startDate && (
-              <>
-                {' '}• Đối chiếu <strong>{prevPeriod.startDate}</strong> đến <strong>{prevPeriod.endDate}</strong>
-              </>
-            )}
-            {' '}• Đơn vị tiền: <strong>VNĐ</strong>
-          </p>
-        </div>
-
-        {/* Form lọc báo cáo */}
-        <div className="print:hidden">
-          <ReportFilterForm
-            filter={filter}
-            onChange={handleFilterChange}
-            onSubmit={handleFilterSubmit}
-            loading={loading}
-            errors={filterErrors}
-          />
-        </div>
-
-        {/* Thông báo lỗi nếu có */}
-        {errorMessage && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-[8px] flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <svg className="size-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="text-[13px]">{errorMessage}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => fetchReports(filter)}
-              className="text-[13px] font-semibold underline hover:text-red-900 cursor-pointer"
-            >
-              Thử lại
-            </button>
-          </div>
-        )}
-
-        {/* Trạng thái tải dữ liệu */}
-        {loading && (
-          <div className="bg-white border border-[#e2e8f0] rounded-[12px] p-12 shadow-xs">
-            <Loading message="Đang truy vấn số liệu thống kê từ hệ thống..." />
-          </div>
-        )}
-
-        {/* Dữ liệu trống */}
-        {!loading && !errorMessage && (!reportData || reportData?.items?.length === 0) && (
-          <EmptyState
-            title="Không có dữ liệu báo cáo trong khoảng thời gian đã chọn"
-            description="Hãy thử mở rộng khoảng ngày hoặc chọn tiêu chí lọc khác để xem số liệu thống kê."
-            actionLabel="Đặt lại tuần này"
-            onAction={() => {
-              const week = getPresetDateRange('thisWeek');
-              handleFilterChange({ startDate: week.startDate, endDate: week.endDate });
-              fetchReports({ ...filter, startDate: week.startDate, endDate: week.endDate });
-            }}
-          />
-        )}
-
-        {/* Kết quả báo cáo */}
-        {!loading && reportData && reportData.items && reportData.items.length > 0 && (
-          <div className="flex flex-col gap-8">
-            {/* 3 Thẻ chỉ số KPI */}
-            <ReportSummaryCards
-              summary={reportData.summary}
-              previousSummary={previousReportData?.summary}
-              compareEnabled={filter.comparePrevious}
-            />
-
-            {/* Chế độ xem Biểu đồ */}
-            {(filter.displayMode === 'BOTH' || filter.displayMode === 'CHART') && (
-              <ReportChartView
-                report={reportData}
-                previousReport={previousReportData}
-                compareEnabled={filter.comparePrevious}
-              />
-            )}
-
-            {/* Chế độ xem Bảng */}
-            {(filter.displayMode === 'BOTH' || filter.displayMode === 'TABLE') && (
-              <ReportTableView
-                title={currentTitle}
-                subtitle="Sắp xếp theo doanh thu giảm dần"
-                items={reportData.items}
-                previousItems={previousReportData?.items}
-                compareEnabled={filter.comparePrevious}
-              />
-            )}
-
-            {/* Thanh thao tác: Quay lại, In, Xuất Excel */}
-            <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-[#e2e8f0] print:hidden">
-              <button
-                type="button"
-                onClick={scrollToFilter}
-                className="h-[40px] px-4 rounded-[8px] border border-[#cbd5e1] bg-white hover:bg-slate-50 text-[#334155] text-[14px] font-semibold flex items-center gap-2 transition cursor-pointer"
-              >
-                <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                </svg>
-                <span>Quay lại bộ lọc</span>
-              </button>
-
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handlePrint}
-                  className="h-[40px] px-4 rounded-[8px] border border-[#cbd5e1] bg-white hover:bg-slate-50 text-[#334155] text-[14px] font-semibold flex items-center gap-2 transition cursor-pointer"
-                >
-                  <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                  </svg>
-                  <span>In báo cáo</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleExportCSV}
-                  className="h-[40px] px-4 rounded-[8px] bg-[#0284c7] hover:bg-[#0369a1] text-white text-[14px] font-semibold flex items-center gap-2 transition cursor-pointer shadow-xs"
-                >
-                  <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  <span>Xuất Excel</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  return <AdminShell user={user} activeKey="reports">
+    {authLoading ? <Loading message="Đang kiểm tra quyền truy cập…" /> : !canManage ? <div className="rounded-xl border border-slate-200 bg-white p-8 text-center"><h1 className="text-xl font-bold">Thống kê báo cáo</h1><p className="text-slate-600 mt-3">Chức năng dành cho nhân viên và quản trị viên.</p><Link to="/dang-nhap" state={{ from: '/bao-cao' }} className="inline-block mt-4 text-sky-700 underline">Đăng nhập bằng tài khoản được cấp quyền</Link></div> : <div className="flex flex-col gap-6">
+      <div><p className="text-xs text-slate-500 mb-2">{user.vaiTro === 'ADMIN' ? 'Quản trị' : 'Nhân viên'} / Thống kê báo cáo</p><h1 className="text-2xl font-bold text-slate-900">Thống kê báo cáo doanh thu</h1><p className="mt-2 text-sm text-slate-500">Chọn khoảng thời gian và loại thống kê để tạo báo cáo từ giao dịch đã thanh toán.</p></div>
+      <div className="print:hidden"><ReportFilterForm filter={filter} onChange={change} onSubmit={() => load(filter)} loading={loading} errors={errors} /></div>
+      {error && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700"><p>{errorText || 'Không thể tạo báo cáo. Vui lòng thử lại.'}</p>{error.status === 401 ? <Link to="/dang-nhap" state={{ from: '/bao-cao' }} className="underline font-semibold">Đăng nhập lại</Link> : error.status !== 403 && <button type="button" onClick={() => load(lastRequest || filter)} className="underline font-semibold mt-2">Thử lại</button>}</div>}
+      {loading && <div role="status" className="bg-white border border-slate-200 rounded-xl p-10"><Loading message="Đang tạo báo cáo…" /></div>}
+      {!loading && result && <section aria-label="Kết quả báo cáo" className="flex flex-col gap-6">
+        <div><h2 className="text-xl font-semibold">{REPORT_TITLES[result.report.reportType]}</h2><p className="text-sm text-slate-600 mt-1">Kỳ <strong>{result.report.startDate}</strong> đến <strong>{result.report.endDate}</strong>{result.applied.comparePrevious && <> • Đối chiếu <strong>{result.period.startDate}</strong> đến <strong>{result.period.endDate}</strong></>} • Đơn vị tiền: {result.report.tienTe}</p></div>
+        {(result.previousFailed || result.previousTrendFailed || result.chartsFailed) && <div role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">{result.previousFailed || result.previousTrendFailed ? 'Chưa tải được đầy đủ kỳ trước. Các mục đối chiếu thiếu dữ liệu được để trống. ' : ''}{result.chartsFailed ? 'Một số biểu đồ chưa tải được. Số liệu báo cáo chính vẫn được hiển thị. ' : ''}<button type="button" onClick={() => load(result.applied)} className="underline font-semibold">Tải lại</button></div>}
+        <ReportSummaryCards summary={result.report.summary} previousSummary={result.previous?.summary} compareEnabled={result.applied.comparePrevious} currency={result.report.tienTe} />
+        {result.report.items.length === 0 ? <EmptyState title="Không có dữ liệu trong khoảng thời gian đã chọn" description="Thử khoảng thời gian khác hoặc loại báo cáo khác để xem số liệu." /> : <>
+          {result.applied.displayMode !== 'TABLE' && <ReportChartView selectedReport={result.report} trendReport={result.trend} previousTrend={result.previousTrend} airlineReport={result.airlines} compareEnabled={result.applied.comparePrevious} />}
+          {result.applied.displayMode !== 'CHART' && <ReportTableView report={result.report} previousReport={result.previous} compareEnabled={result.applied.comparePrevious} />}
+        </>}
+        <div className="flex justify-end gap-3 border-t border-slate-200 pt-4 print:hidden"><button type="button" onClick={() => window.print()} className="px-4 py-2 border border-slate-300 rounded-lg bg-white text-sm font-semibold">In báo cáo</button><button type="button" onClick={exportCSV} className="px-4 py-2 bg-sky-600 text-white rounded-lg text-sm font-semibold">Xuất CSV</button></div>
+      </section>}
+    </div>}
+  </AdminShell>;
 }
