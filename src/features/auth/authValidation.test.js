@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { adultDateLimit, isAdult, registrationFieldErrors, validateRegistration } from './authValidation.js';
+import { adultDateLimit, isAdult, validateRegistration } from './authValidation.js';
 
 test('isAdult checks the exact 18th birthday', () => {
   const today = new Date('2026-11-15T17:30:00Z');
@@ -36,20 +36,4 @@ test('validateRegistration reports password and age errors', () => {
   assert.ok(errors.password);
   assert.ok(errors.confirmPassword);
   assert.ok(errors.dateOfBirth);
-});
-
-test('registrationFieldErrors maps backend validation details to form fields', () => {
-  assert.deepEqual(registrationFieldErrors({
-    code: 'VALIDATION_ERROR',
-    details: [
-      { field: 'hoTen', message: 'Họ tên không hợp lệ' },
-      { field: 'identityDocument', message: 'Số giấy tờ không hợp lệ' },
-    ],
-  }), {
-    fullName: 'Họ tên không hợp lệ',
-    identityDocument: 'Số giấy tờ không hợp lệ',
-  });
-  assert.deepEqual(registrationFieldErrors({ code: 'EMAIL_ALREADY_REGISTERED' }), {
-    email: 'Email đã được đăng ký.',
-  });
 });

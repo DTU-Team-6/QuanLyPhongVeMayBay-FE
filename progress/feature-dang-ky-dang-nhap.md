@@ -16,21 +16,18 @@
 
 ## Đã xong
 
-- Nối đăng nhập với `POST /api/v1/auth/login`, khởi tạo CSRF trước request, nhận user từ phản hồi và cập nhật `AuthContext`.
-- Khi đăng nhập thành công, chuyển về trang chủ; hiển thị lỗi theo mã Backend và trạng thái đang gửi.
-- Tắt checkbox ghi nhớ đăng nhập vì API hiện chưa hỗ trợ tùy chọn này.
-- Nối đăng ký với `POST /api/v1/auth/register`, gửi CSRF, giấy tờ và mã quốc tịch; thành công báo người dùng đăng nhập riêng.
-- Đã kiểm thử trên trình duyệt với BE thật dùng database test: đăng ký, kiểm tra dữ liệu lưu, đăng nhập và lỗi email trùng; đã xác nhận CORS và CSRF. `npm run build` và `npm test` (21 test) thành công.
-- Đã thống nhất kiểm tra tuổi theo ngày Việt Nam, số điện thoại và mật khẩu ở cả FE và BE.
-- Kiểm thử lại thành công trên trình duyệt với cookie access cũ và BE test sau khi đồng bộ các quy tắc.
+- Giữ giao diện đăng nhập/đăng ký và kiểm tra biểu mẫu trên trình duyệt.
+- Theo yêu cầu người dùng, bỏ kết nối API đăng nhập/đăng ký; không thay đổi kết nối API khác.
+- Các lượt kiểm thử BE thật trước đó thuộc phiên bản đã được hoàn tác, không phản ánh trạng thái hiện tại.
+- Đã kiểm tra hai form trên trình duyệt: đều báo chưa kết nối và không gửi request đăng nhập/đăng ký. `npm test` đạt 20 test; `npm run build` thành công.
 
 ## Đang dở
 
-- Migration BE gộp khách hàng mới chỉ chạy trên database test; chưa chạy trên database dev.
+- Chức năng đăng nhập và đăng ký chưa kết nối API.
 
 ## Việc tiếp theo (theo thứ tự)
 
-1. Chờ duyệt migration gộp khách hàng trên database dev.
+1. Xác nhận lại hợp đồng BE trước khi kết nối đăng nhập và đăng ký.
 2. Tích hợp OAuth Google/Facebook, khôi phục mật khẩu và xác nhận luồng cookie/CSRF với Backend.
 
 ## Quyết định đã chốt và lưu ý
@@ -42,5 +39,5 @@
 
 ## Lỗi đang gặp (nếu có)
 
-- Migration BE mới chưa được áp dụng trên database dev; không mặc định chạy BE trỏ tới database đó khi chưa được duyệt.
+- BE đã hoàn tác mã nguồn về mốc develop nhưng database dev giữ nguyên; cần kiểm tra tương thích trước khi chạy.
 - `npm run build` thành công nhưng Vite cảnh báo bundle JavaScript lớn hơn 500 kB.

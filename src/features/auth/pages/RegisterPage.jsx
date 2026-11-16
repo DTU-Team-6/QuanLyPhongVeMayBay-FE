@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { authService } from '../../../services/authService';
-import { adultDateLimit, registrationFieldErrors, validateRegistration } from '../authValidation.js';
+import { adultDateLimit, validateRegistration } from '../authValidation.js';
 
 function Field({ label, name, type = 'text', autoComplete, hint, hintClassName = '', error, ...props }) {
   const errorId = `${name}-error`;
@@ -99,12 +98,9 @@ function SelectField({ label, name, children, defaultValue, hint, error, onChang
 export default function RegisterPage() {
   const [errors, setErrors] = useState({});
   const [notice, setNotice] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
-    if (isSubmitting) return;
     const form = event.currentTarget;
     if (!form.reportValidity()) return;
 
@@ -117,36 +113,13 @@ export default function RegisterPage() {
     });
     setErrors(nextErrors);
     setNotice('');
-    setErrorMessage('');
 
     if (Object.keys(nextErrors).length > 0) {
       form.elements.namedItem(Object.keys(nextErrors)[0])?.focus();
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      await authService.register({
-        email: values.email.trim(),
-        password: values.password,
-        hoTen: values.fullName.trim(),
-        soDienThoai: values.phone.trim(),
-        ngaySinh: values.dateOfBirth,
-        gioiTinh: values.gender,
-        identityDocument: values.identityDocument.trim(),
-        nationality: values.nationality,
-      });
-      form.reset();
-      setNotice('Đăng ký thành công. Vui lòng đăng nhập.');
-    } catch (error) {
-      const fieldErrors = registrationFieldErrors(error);
-      setErrors(fieldErrors);
-      setErrorMessage(error?.message || 'Đăng ký thất bại. Vui lòng thử lại.');
-      const firstField = Object.keys(fieldErrors)[0];
-      if (firstField) form.elements.namedItem(firstField)?.focus();
-    } finally {
-      setIsSubmitting(false);
-    }
+    setNotice('Thông tin hợp lệ. Đăng ký chưa được kết nối với hệ thống.');
   };
 
   const clearFieldError = (name) => {
@@ -157,7 +130,6 @@ export default function RegisterPage() {
       return next;
     });
     setNotice('');
-    setErrorMessage('');
   };
 
   return (
@@ -178,7 +150,7 @@ export default function RegisterPage() {
             <p className="mt-1 text-xs text-[#64748b]">Các trường có dấu * là bắt buộc.</p>
           </div>
 
-          <form onSubmit={handleSubmit} noValidate aria-busy={isSubmitting} className="space-y-5 md:grid md:grid-cols-2 md:items-start md:gap-x-4 md:gap-y-[26px] md:space-y-0">
+          <form onSubmit={handleSubmit} noValidate className="space-y-5 md:grid md:grid-cols-2 md:items-start md:gap-x-4 md:gap-y-[26px] md:space-y-0">
             <Field label="Email *" name="email" type="email" autoComplete="email" placeholder="email@example.com" error={errors.email} onChange={() => clearFieldError('email')} />
             <Field label="Họ và tên *" name="fullName" autoComplete="name" placeholder="Nhập họ và tên" error={errors.fullName} onChange={() => clearFieldError('fullName')} />
             <PasswordField
@@ -264,18 +236,11 @@ export default function RegisterPage() {
               </p>
             )}
 
-            {errorMessage && (
-              <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 md:col-span-2 md:text-[11px]">
-                {errorMessage}
-              </p>
-            )}
-
             <button
               type="submit"
-              disabled={isSubmitting}
               className="h-[48px] w-full rounded-[8px] bg-[#0284c7] text-sm font-semibold text-white transition hover:bg-[#0369a1] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7] md:col-span-2 md:justify-self-end md:h-[40px] md:w-auto md:rounded-[6px] md:px-4 md:text-sm"
             >
-              {isSubmitting ? 'Đang đăng ký...' : 'Đăng ký'}
+              Đăng ký
             </button>
           </form>
         </div>

@@ -44,30 +44,3 @@ export function validateRegistration(values, today = new Date()) {
 
   return errors;
 }
-
-export function registrationFieldErrors(error) {
-  if (error?.code === 'EMAIL_ALREADY_REGISTERED') {
-    return { email: 'Email đã được đăng ký.' };
-  }
-  if (error?.code === 'INVALID_NATIONALITY') {
-    return { nationality: 'Quốc tịch không có trong danh mục.' };
-  }
-  if (error?.code === 'CUSTOMER_UNDERAGE') {
-    return { dateOfBirth: 'Chủ tài khoản phải đủ 18 tuổi.' };
-  }
-  const fieldNames = {
-    email: 'email',
-    hoTen: 'fullName',
-    password: 'password',
-    soDienThoai: 'phone',
-    ngaySinh: 'dateOfBirth',
-    gioiTinh: 'gender',
-    identityDocument: 'identityDocument',
-    nationality: 'nationality',
-  };
-  return (error?.details || []).reduce((errors, detail) => {
-    const name = fieldNames[detail.field];
-    if (name && detail.message && !errors[name]) errors[name] = detail.message;
-    return errors;
-  }, {});
-}
