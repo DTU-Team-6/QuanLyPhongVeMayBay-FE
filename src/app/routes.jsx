@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import HomePage from '../features/home/pages/HomePage';
+import LoginPage from '../features/auth/pages/LoginPage';
 import ReportPage from '../features/reports/pages/ReportPage';
 import PlaceholderPage from '../components/common/PlaceholderPage';
 import EmployeePage from '../features/employees/pages/EmployeePage';
@@ -124,12 +125,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'dang-nhap',
-        element: (
-          <PlaceholderPage
-            title="Đăng nhập tài khoản"
-            description="Màn hình đăng nhập tài khoản khách hàng / nhân viên."
-          />
-        ),
+        element: <LoginPage />,
       },
       {
         path: 'dang-ky',

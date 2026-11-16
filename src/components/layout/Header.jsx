@@ -1,246 +1,80 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import planeIcon from '../../assets/plane.svg';
 
-/**
- * Header Component dùng chung cho toàn hệ thống
- * Hiển thị Menu điều hướng và Trạng thái đăng nhập theo thiết kế Figma
- */
+/** Header dùng chung, điều hướng và phiên đăng nhập giống nhau trên mọi kích thước. */
 export default function Header() {
-  const { user, isAuthenticated, logout } = useAuth();
-  const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-
+  const { user, loading, logout } = useAuth();
+  const { pathname } = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [logoutPending, setLogoutPending] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
+  const canManage = user?.vaiTro === 'ADMIN' || user?.vaiTro === 'NHAN_VIEN';
   const navLinks = [
     { to: '/', label: 'Trang chủ' },
     { to: '/tin-tuc', label: 'Tin tức' },
     { to: '/khuyen-mai', label: 'Tin khuyến mãi' },
     { to: '/gioi-thieu', label: 'Giới thiệu' },
     { to: '/quy-dinh-hanh-ly', label: 'Quy định hành lý' },
-    { to: '/bao-cao', label: 'Thống kê báo cáo' },
   ];
-
-  const isActive = (path) => {
-    if (path === '/') return location.pathname === '/';
-    return location.pathname.startsWith(path);
-  };
-
+  const accountLinks = [
+    { to: '/tai-khoan', label: 'Tài khoản cá nhân' },
+    { to: '/tai-khoan/thanh-toan', label: 'Thanh toán vé' },
+    { to: '/tai-khoan/lich-su-giao-dich', label: 'Lịch sử giao dịch' },
+    ...(canManage ? [{ to: '/bao-cao', label: 'Thống kê báo cáo' }, { to: '/quan-ly-tin-tuc', label: 'Quản lý tin tức' }] : []),
+    ...(user?.vaiTro === 'ADMIN' ? [{ to: '/quan-ly-nhan-vien', label: 'Quản lý nhân viên' }] : []),
+  ];
+  useEffect(() => { setMobileOpen(false); setAccountOpen(false); }, [pathname]);
+  useEffect(() => {
+    const onEscape = (event) => { if (event.key === 'Escape') { setMobileOpen(false); setAccountOpen(false); } };
+    document.addEventListener('keydown', onEscape);
+    return () => document.removeEventListener('keydown', onEscape);
+  }, []);
+  async function handleLogout() {
+    setLogoutPending(true);
+    setLogoutError('');
+    try { await logout(); setAccountOpen(false); setMobileOpen(false); }
+    catch { setLogoutError('Chưa thể đăng xuất. Vui lòng thử lại.'); }
+    finally { setLogoutPending(false); }
+  }
+  const active = (to) => to === '/' ? pathname === '/' : pathname.startsWith(to);
+  const accountContent = <>
+    <p className="px-4 py-2 text-xs text-slate-500 break-all">{user?.email}</p>
+    {accountLinks.map((link) => <Link key={link.to} to={link.to} onClick={() => { setAccountOpen(false); setMobileOpen(false); }} className="block px-4 py-2 text-sm hover:bg-slate-50">{link.label}</Link>)}
+    <button type="button" disabled={logoutPending} onClick={handleLogout} className="w-full px-4 py-2 text-left text-sm text-red-600 border-t border-slate-100 disabled:opacity-50">{logoutPending ? 'Đang đăng xuất…' : 'Đăng xuất'}</button>
+  </>;
   return (
-    <header className="bg-white border-[#e2e8f0] border-b sticky top-0 z-50 w-full shadow-xs">
-      <div className="max-w-[1440px] mx-auto h-[72px] px-6 lg:px-[120px] flex items-center justify-between">
-        {/* Thương hiệu Vân Việt */}
-        <Link to="/" className="flex items-center gap-[10px] group focus:outline-hidden">
-          <div className="bg-[#0284c7] flex items-center justify-center rounded-[10px] size-[36px] shrink-0 transition-transform group-hover:scale-105">
-            <img src={planeIcon} alt="Vân Việt Logo" className="size-[23px]" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-[#0f172a] text-[20px] leading-tight tracking-tight">
-              Vân Việt
-            </span>
-            <span className="font-medium text-[#64748b] text-[9px] tracking-[1.4px]">
-              PHÒNG VÉ MÁY BAY
-            </span>
-          </div>
+    <header className="bg-white border-b border-[#e2e8f0] sticky top-0 z-50 w-full shadow-xs">
+      <div className="max-w-[1440px] mx-auto min-h-[72px] px-6 xl:px-[80px] flex items-center justify-between gap-6">
+        <Link to="/" aria-label="Vân Việt — Trang chủ" className="flex shrink-0 items-center gap-2.5">
+          <span className="bg-[#0284c7] flex items-center justify-center rounded-[10px] size-9"><img src={planeIcon} alt="" className="size-[23px]" /></span>
+          <span><strong className="block text-xl text-[#0f172a] leading-tight">Vân Việt</strong><small className="text-[9px] font-medium tracking-[1.4px] text-[#64748b]">PHÒNG VÉ MÁY BAY</small></span>
         </Link>
-
-        {/* Liên kết điều hướng Desktop */}
-        <nav className="hidden md:flex items-center gap-[24px] text-[14px]">
-          {navLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className={`transition-colors py-1 ${
-                isActive(link.to)
-                  ? 'text-[#0284c7] font-semibold'
-                  : 'text-[#334155] font-normal hover:text-[#0284c7]'
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
+        <nav aria-label="Điều hướng chính" className="hidden xl:flex items-center gap-5 text-sm">
+          {navLinks.map((link) => <Link key={link.to} to={link.to} aria-current={active(link.to) ? 'page' : undefined} className={`py-2 whitespace-nowrap ${active(link.to) ? 'text-[#0284c7] font-semibold' : 'text-[#334155] hover:text-[#0284c7]'}`}>{link.label}</Link>)}
         </nav>
-
-        {/* Khu vực trạng thái tài khoản */}
-        <div className="hidden md:flex items-center gap-[16px]">
-          {isAuthenticated && user ? (
+        <div className="hidden xl:block shrink-0">
+          {loading ? <span role="status" className="text-sm text-slate-500">Đang kiểm tra phiên…</span> : user ? (
             <div className="relative">
-              <button
-                type="button"
-                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#e2e8f0] hover:bg-slate-50 transition cursor-pointer"
-              >
-                <div className="size-8 rounded-full bg-[#e0f2fe] text-[#0284c7] font-bold text-sm flex items-center justify-center">
-                  {(user.hoTen || user.email || 'U').charAt(0).toUpperCase()}
-                </div>
-                <div className="flex flex-col text-left">
-                  <span className="text-[13px] font-semibold text-[#0f172a] max-w-[120px] truncate">
-                    {user.hoTen || user.email}
-                  </span>
-                  {user.vaiTro && user.vaiTro !== 'KHACH_HANG' && (
-                    <span className="text-[10px] font-medium text-[#0284c7]">
-                      {user.vaiTro}
-                    </span>
-                  )}
-                </div>
+              <button type="button" onClick={() => setAccountOpen(!accountOpen)} aria-expanded={accountOpen} aria-controls="account-menu" className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                <span className="flex size-8 items-center justify-center rounded-full bg-sky-100 text-sky-700 font-bold">{(user.hoTen || user.email || 'U').charAt(0).toUpperCase()}</span>
+                <span className="max-w-[120px] truncate">{user.hoTen || user.email}</span>
               </button>
-
-              {userDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-[#e2e8f0] py-1 z-50">
-                  <div className="px-4 py-2 border-b border-[#f1f5f9]">
-                    <p className="text-xs text-[#64748b]">Đăng nhập với</p>
-                    <p className="text-xs font-semibold text-[#0f172a] truncate">{user.email}</p>
-                  </div>
-                  <Link
-                    to="/tai-khoan"
-                    onClick={() => setUserDropdownOpen(false)}
-                    className="block px-4 py-2 text-[13px] text-[#334155] hover:bg-[#f8fafc]"
-                  >
-                    Tài khoản cá nhân
-                  </Link>
-                  <Link
-                    to="/tai-khoan/thanh-toan"
-                    onClick={() => setUserDropdownOpen(false)}
-                    className="block px-4 py-2 text-[13px] text-[#334155] hover:bg-[#f8fafc]"
-                  >
-                    Thanh toán vé
-                  </Link>
-                  <Link
-                    to="/tai-khoan/lich-su-giao-dich"
-                    onClick={() => setUserDropdownOpen(false)}
-                    className="block px-4 py-2 text-[13px] text-[#334155] hover:bg-[#f8fafc]"
-                  >
-                    Lịch sử giao dịch
-                  </Link>
-                  <Link
-                    to="/bao-cao"
-                    onClick={() => setUserDropdownOpen(false)}
-                    className="block px-4 py-2 text-[13px] text-[#0284c7] font-medium hover:bg-[#f8fafc]"
-                  >
-                    Thống kê báo cáo
-                  </Link>
-                  {(user.vaiTro === 'ADMIN' || user.vaiTro === 'NHAN_VIEN') && (
-                    <Link
-                      to="/quan-ly-tin-tuc"
-                      onClick={() => setUserDropdownOpen(false)}
-                      className="block px-4 py-2 text-[13px] text-[#0284c7] font-medium hover:bg-[#f8fafc]"
-                    >
-                      Quản lý tin tức
-                    </Link>
-                  )}
-                  {user.vaiTro === 'ADMIN' && (
-                    <Link
-                      to="/quan-ly-nhan-vien"
-                      onClick={() => setUserDropdownOpen(false)}
-                      className="block px-4 py-2 text-[13px] text-[#0284c7] font-medium hover:bg-[#f8fafc]"
-                    >
-                      Quản lý nhân viên
-                    </Link>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUserDropdownOpen(false);
-                      logout();
-                    }}
-                    className="w-full text-left px-4 py-2 text-[13px] text-red-600 hover:bg-red-50 border-t border-[#f1f5f9] cursor-pointer"
-                  >
-                    Đăng xuất
-                  </button>
-                </div>
-              )}
+              {accountOpen && <div id="account-menu" className="absolute right-0 mt-2 w-60 rounded-lg bg-white shadow-lg border border-slate-200 py-1">{accountContent}</div>}
             </div>
-          ) : (
-            <div className="flex items-center gap-[16px]">
-              <Link
-                to="/dang-ky"
-                className="font-semibold text-[#0284c7] text-[14px] hover:underline"
-              >
-                Đăng ký
-              </Link>
-              <Link
-                to="/dang-nhap"
-                className="bg-[#0284c7] hover:bg-[#0369a1] text-white font-semibold text-[14px] h-[40px] px-[16px] rounded-[8px] flex items-center justify-center transition"
-              >
-                Đăng nhập
-              </Link>
-            </div>
-          )}
+          ) : <div className="flex items-center gap-4 text-sm font-semibold"><Link to="/dang-ky" className="text-[#0284c7]">Đăng ký</Link><Link to="/dang-nhap" className="bg-[#0284c7] hover:bg-[#0369a1] text-white px-4 py-2.5 rounded-lg">Đăng nhập</Link></div>}
         </div>
-
-        {/* Nút bật/tắt Menu Mobile */}
-        <div className="flex md:hidden items-center">
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-[#334155] hover:text-[#0284c7] focus:outline-hidden"
-            aria-label="Toggle menu"
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              {mobileMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
-        </div>
+        <button type="button" aria-label={mobileOpen ? 'Đóng menu' : 'Mở menu'} aria-expanded={mobileOpen} aria-controls="mobile-menu" onClick={() => setMobileOpen(!mobileOpen)} className="xl:hidden p-2 text-[#334155]">
+          <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeWidth="2" d={mobileOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'} /></svg>
+        </button>
       </div>
-
-      {/* Menu thả xuống Mobile */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-t border-[#e2e8f0] bg-white px-6 py-4 flex flex-col gap-3">
-          {navLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              onClick={() => setMobileMenuOpen(false)}
-              className={`py-2 text-[15px] ${
-                isActive(link.to) ? 'text-[#0284c7] font-semibold' : 'text-[#334155]'
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
-          <div className="pt-3 border-t border-[#f1f5f9] flex flex-col gap-2">
-            {isAuthenticated && user ? (
-              <>
-                <div className="flex items-center gap-2 py-1 text-sm font-semibold text-[#0f172a]">
-                  <span>Chào, {user.hoTen || user.email}</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    logout();
-                  }}
-                  className="text-left text-sm text-red-600 py-1"
-                >
-                  Đăng xuất
-                </button>
-              </>
-            ) : (
-              <div className="flex items-center gap-3">
-                <Link
-                  to="/dang-ky"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex-1 text-center py-2 text-sm font-semibold text-[#0284c7] border border-[#0284c7] rounded-lg"
-                >
-                  Đăng ký
-                </Link>
-                <Link
-                  to="/dang-nhap"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex-1 text-center py-2 text-sm font-semibold text-white bg-[#0284c7] rounded-lg"
-                >
-                  Đăng nhập
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {mobileOpen && <div id="mobile-menu" className="xl:hidden border-t border-slate-200 bg-white px-6 py-4 max-h-[calc(100dvh-72px)] overflow-y-auto">
+        <nav aria-label="Điều hướng di động" className="flex flex-col gap-1">{navLinks.map((link) => <Link key={link.to} to={link.to} onClick={() => setMobileOpen(false)} aria-current={active(link.to) ? 'page' : undefined} className={`py-2 text-sm ${active(link.to) ? 'font-semibold text-sky-600' : 'text-slate-700'}`}>{link.label}</Link>)}</nav>
+        <div className="mt-3 pt-3 border-t border-slate-100">{loading ? <p role="status" className="text-sm text-slate-500">Đang kiểm tra phiên…</p> : user ? <><p className="px-4 text-sm font-semibold">Chào, {user.hoTen || user.email}</p>{accountContent}</> : <div className="flex gap-3"><Link to="/dang-ky" className="flex-1 text-center py-2 border border-sky-600 text-sky-600 rounded-lg">Đăng ký</Link><Link to="/dang-nhap" className="flex-1 text-center py-2 bg-sky-600 text-white rounded-lg">Đăng nhập</Link></div>}</div>
+      </div>}
+      {logoutError && <p role="alert" className="px-6 py-2 bg-red-50 text-red-700 text-sm">{logoutError}</p>}
     </header>
   );
 }

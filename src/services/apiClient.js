@@ -1,11 +1,12 @@
-import { getCookie } from '../utils/csrf';
+import { getCookie } from '../utils/csrf.js';
 
 /**
  * Địa chỉ gốc backend đọc từ biến môi trường VITE_API_BASE_URL,
  * không viết cứng trong code. Tiền tố /api/v1 đặt tại đây.
  */
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/+$/, '');
+const BASE_URL = (import.meta.env?.VITE_API_BASE_URL || '').replace(/\/+$/, '');
 const API_PREFIX = '/api/v1';
+let csrfRequest = null;
 
 /**
  * Lớp lỗi chuẩn hóa từ phản hồi RFC 9457 của backend
@@ -39,6 +40,10 @@ export async function apiClient(endpoint, options = {}) {
 
   // Tự động gắn header X-XSRF-TOKEN cho các request thay đổi dữ liệu
   if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+    if (!getCookie('XSRF-TOKEN')) {
+      csrfRequest ??= apiClient('/auth/csrf').finally(() => { csrfRequest = null; });
+      await csrfRequest;
+    }
     const xsrfToken = getCookie('XSRF-TOKEN');
     if (xsrfToken) {
       headers.set('X-XSRF-TOKEN', xsrfToken);
@@ -83,7 +88,7 @@ export async function apiClient(endpoint, options = {}) {
 
     return data;
   } catch (error) {
-    if (error instanceof ApiError) {
+    if (error instanceof ApiError || error.name === 'AbortError') {
       throw error;
     }
     // Lỗi mạng hoặc lỗi kết nối (Failed to fetch, CORS...)
