@@ -47,7 +47,7 @@ function DestinationCreateContent() {
     activeRequest.current = controller;
     try {
       const created = await destinationService.create(validation.payload, { signal: controller.signal });
-      if (!controller.signal.aborted) navigate('/quan-ly-diem-den', { replace: true, state: { notice: `Đã thêm điểm đến “${created.tenDiemDen}” thành công.` } });
+      if (!controller.signal.aborted) await navigate('/quan-ly-diem-den', { replace: true, state: { notice: `Đã thêm điểm đến “${created.tenDiemDen}” thành công.` } });
     } catch (requestError) {
       if (controller.signal.aborted) return;
       const fieldErrors = destinationFieldErrors(requestError);

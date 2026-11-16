@@ -25,7 +25,8 @@ function DestinationListContent() {
   const airportState = useDestinationAirports();
 
   useEffect(() => {
-    if (location.state?.notice) navigate(location.pathname, { replace: true, state: null });
+    // Chỉ xóa thông báo khỏi lịch sử; màn hình hiện tại không phụ thuộc kết quả điều hướng.
+    if (location.state?.notice) void navigate(location.pathname, { replace: true, state: null });
   }, [location.pathname, location.state, navigate]);
 
   useEffect(() => {
