@@ -13,6 +13,8 @@ import AdminNewsListPage from '../features/news/pages/AdminNewsListPage';
 import AdminNewsFormPage from '../features/news/pages/AdminNewsFormPage';
 import PublicNewsListPage from '../features/news/pages/PublicNewsListPage';
 import PublicNewsDetailPage from '../features/news/pages/PublicNewsDetailPage';
+import LoginPage from '../features/auth/pages/LoginPage';
+import RegisterPage from '../features/auth/pages/RegisterPage';
 
 export const router = createBrowserRouter([
   { path: '/quan-ly-nhan-vien', element: <EmployeePage /> },
@@ -124,21 +126,11 @@ export const router = createBrowserRouter([
       },
       {
         path: 'dang-nhap',
-        element: (
-          <PlaceholderPage
-            title="Đăng nhập tài khoản"
-            description="Màn hình đăng nhập tài khoản khách hàng / nhân viên."
-          />
-        ),
+        element: <LoginPage />,
       },
       {
         path: 'dang-ky',
-        element: (
-          <PlaceholderPage
-            title="Đăng ký tài khoản"
-            description="Màn hình đăng ký tài khoản khách hàng mới."
-          />
-        ),
+        element: <RegisterPage />,
       },
       {
         path: '*',

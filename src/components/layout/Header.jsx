@@ -171,6 +171,14 @@ export default function Header() {
 
         {/* Nút bật/tắt Menu Mobile */}
         <div className="flex md:hidden items-center">
+          {!isAuthenticated && (
+            <Link
+              to="/dang-nhap"
+              className="mr-3 text-[14px] font-semibold text-[#0284c7]"
+            >
+              Đăng nhập
+            </Link>
+          )}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
