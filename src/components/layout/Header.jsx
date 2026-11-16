@@ -34,36 +34,24 @@ export default function Header() {
 
   return (
     <header className="bg-white border-[#e2e8f0] border-b sticky top-0 z-50 w-full shadow-xs">
-      <div className={`mx-auto flex items-center justify-between ${
-        isAuthPage
-          ? 'max-w-[1200px] h-[64px] px-4 md:h-[52px] md:px-8 lg:px-[72px]'
-          : 'max-w-[1440px] h-[72px] px-6 lg:px-[120px]'
-      }`}>
+      <div className="max-w-[1440px] mx-auto h-[72px] px-6 lg:px-[120px] flex items-center justify-between">
         {/* Thương hiệu Vân Việt */}
         <Link to="/" className="flex items-center gap-[10px] group focus:outline-hidden">
-          <div className={`bg-[#0284c7] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
-            isAuthPage
-              ? 'size-[36px] rounded-[10px] md:size-[28px] md:rounded-[7px]'
-              : 'size-[36px] rounded-[10px]'
-          }`}>
-            <img
-              src={planeIcon}
-              alt="Vân Việt Logo"
-              className={isAuthPage ? 'size-[23px] md:size-[19px]' : 'size-[23px]'}
-            />
+          <div className="bg-[#0284c7] flex items-center justify-center rounded-[10px] size-[36px] shrink-0 transition-transform group-hover:scale-105">
+            <img src={planeIcon} alt="Vân Việt Logo" className="size-[23px]" />
           </div>
           <div className="flex flex-col">
-            <span className={`font-bold text-[#0f172a] leading-tight tracking-tight ${isAuthPage ? 'text-[20px] md:text-[16px]' : 'text-[20px]'}`}>
+            <span className="font-bold text-[#0f172a] text-[20px] leading-tight tracking-tight">
               Vân Việt
             </span>
-            <span className={`font-medium text-[#64748b] tracking-[1.4px] ${isAuthPage ? 'text-[9px] md:text-[8px]' : 'text-[9px]'}`}>
+            <span className="font-medium text-[#64748b] text-[9px] tracking-[1.4px]">
               PHÒNG VÉ MÁY BAY
             </span>
           </div>
         </Link>
 
         {/* Liên kết điều hướng Desktop */}
-        <nav className={`hidden md:flex items-center ${isAuthPage ? 'gap-[18px] text-[12px]' : 'gap-[24px] text-[14px]'}`}>
+        <nav className="hidden md:flex items-center gap-[24px] text-[14px]">
           {visibleNavLinks.map((link) => (
             <Link
               key={link.to}
@@ -172,15 +160,13 @@ export default function Header() {
             <div className="flex items-center gap-[16px]">
               <Link
                 to="/dang-ky"
-                className={`font-semibold text-[#0284c7] hover:underline ${isAuthPage ? 'text-[12px]' : 'text-[14px]'}`}
+                className="font-semibold text-[#0284c7] text-[14px] hover:underline"
               >
                 Đăng ký
               </Link>
               <Link
                 to="/dang-nhap"
-                className={`bg-[#0284c7] hover:bg-[#0369a1] text-white font-semibold flex items-center justify-center transition ${
-                  isAuthPage ? 'text-[12px] h-[32px] px-[14px] rounded-[5px]' : 'text-[14px] h-[40px] px-[16px] rounded-[8px]'
-                }`}
+                className="bg-[#0284c7] hover:bg-[#0369a1] text-white font-semibold text-[14px] h-[40px] px-[16px] rounded-[8px] flex items-center justify-center transition"
               >
                 Đăng nhập
               </Link>
