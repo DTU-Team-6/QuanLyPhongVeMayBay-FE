@@ -8,7 +8,8 @@
 
 ## Đã xong (đã commit)
 
-- Chưa commit.
+- Giao diện đăng ký/đăng nhập responsive, route, validation cơ bản; commit `67d0e84`.
+- Điều chỉnh bố cục desktop theo thiết kế mới: form đăng ký hai cột, card đăng nhập hẹp căn giữa, Header/Footer gọn; vẫn giữ bố cục mobile.
 
 ## Đang dở
 
@@ -21,7 +22,7 @@
 
 ## Quyết định đã chốt và lưu ý
 
-- Bám theo thiết kế đã gửi: Header/Footer dùng chung, responsive cho mobile và desktop.
+- Bám theo thiết kế mobile ban đầu và thiết kế desktop cập nhật sau đó; Header/Footer dùng chung, có biến thể gọn cho trang xác thực.
 - Không lưu mật khẩu hoặc token vào `localStorage`/`sessionStorage`.
 - Thêm kiểm tra tuổi từ 18 trở lên, điều kiện mật khẩu và xác nhận mật khẩu phía FE.
 - API đăng ký/đăng nhập chưa được gọi từ form. `AuthContext` hiện vẫn kiểm tra phiên chung qua `GET /api/v1/auth/me`.

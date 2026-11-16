@@ -12,6 +12,7 @@ export default function Header() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const isAuthPage = ['/dang-ky', '/dang-nhap'].includes(location.pathname);
 
   const navLinks = [
     { to: '/', label: 'Trang chủ' },
@@ -21,33 +22,49 @@ export default function Header() {
     { to: '/quy-dinh-hanh-ly', label: 'Quy định hành lý' },
     { to: '/bao-cao', label: 'Thống kê báo cáo' },
   ];
+  const visibleNavLinks = isAuthPage
+    ? navLinks.filter((link) => ['/', '/khuyen-mai', '/gioi-thieu', '/quy-dinh-hanh-ly'].includes(link.to))
+    : navLinks;
 
   const isActive = (path) => {
+    if (isAuthPage && path === '/') return true;
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
 
   return (
     <header className="bg-white border-[#e2e8f0] border-b sticky top-0 z-50 w-full shadow-xs">
-      <div className="max-w-[1440px] mx-auto h-[72px] px-6 lg:px-[120px] flex items-center justify-between">
+      <div className={`mx-auto flex items-center justify-between ${
+        isAuthPage
+          ? 'max-w-[1200px] h-[64px] px-4 md:h-[52px] md:px-8 lg:px-[72px]'
+          : 'max-w-[1440px] h-[72px] px-6 lg:px-[120px]'
+      }`}>
         {/* Thương hiệu Vân Việt */}
         <Link to="/" className="flex items-center gap-[10px] group focus:outline-hidden">
-          <div className="bg-[#0284c7] flex items-center justify-center rounded-[10px] size-[36px] shrink-0 transition-transform group-hover:scale-105">
-            <img src={planeIcon} alt="Vân Việt Logo" className="size-[23px]" />
+          <div className={`bg-[#0284c7] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+            isAuthPage
+              ? 'size-[36px] rounded-[10px] md:size-[24px] md:rounded-[6px]'
+              : 'size-[36px] rounded-[10px]'
+          }`}>
+            <img
+              src={planeIcon}
+              alt="Vân Việt Logo"
+              className={isAuthPage ? 'size-[23px] md:size-[17px]' : 'size-[23px]'}
+            />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-[#0f172a] text-[20px] leading-tight tracking-tight">
+            <span className={`font-bold text-[#0f172a] leading-tight tracking-tight ${isAuthPage ? 'text-[20px] md:text-[14px]' : 'text-[20px]'}`}>
               Vân Việt
             </span>
-            <span className="font-medium text-[#64748b] text-[9px] tracking-[1.4px]">
+            <span className={`font-medium text-[#64748b] tracking-[1.4px] ${isAuthPage ? 'text-[9px] md:text-[6px]' : 'text-[9px]'}`}>
               PHÒNG VÉ MÁY BAY
             </span>
           </div>
         </Link>
 
         {/* Liên kết điều hướng Desktop */}
-        <nav className="hidden md:flex items-center gap-[24px] text-[14px]">
-          {navLinks.map((link) => (
+        <nav className={`hidden md:flex items-center ${isAuthPage ? 'gap-[18px] text-[10px]' : 'gap-[24px] text-[14px]'}`}>
+          {visibleNavLinks.map((link) => (
             <Link
               key={link.to}
               to={link.to}
@@ -155,13 +172,15 @@ export default function Header() {
             <div className="flex items-center gap-[16px]">
               <Link
                 to="/dang-ky"
-                className="font-semibold text-[#0284c7] text-[14px] hover:underline"
+                className={`font-semibold text-[#0284c7] hover:underline ${isAuthPage ? 'text-[10px]' : 'text-[14px]'}`}
               >
                 Đăng ký
               </Link>
               <Link
                 to="/dang-nhap"
-                className="bg-[#0284c7] hover:bg-[#0369a1] text-white font-semibold text-[14px] h-[40px] px-[16px] rounded-[8px] flex items-center justify-center transition"
+                className={`bg-[#0284c7] hover:bg-[#0369a1] text-white font-semibold flex items-center justify-center transition ${
+                  isAuthPage ? 'text-[10px] h-[28px] px-[12px] rounded-[5px]' : 'text-[14px] h-[40px] px-[16px] rounded-[8px]'
+                }`}
               >
                 Đăng nhập
               </Link>
@@ -199,7 +218,7 @@ export default function Header() {
       {/* Menu thả xuống Mobile */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-[#e2e8f0] bg-white px-6 py-4 flex flex-col gap-3">
-          {navLinks.map((link) => (
+          {visibleNavLinks.map((link) => (
             <Link
               key={link.to}
               to={link.to}

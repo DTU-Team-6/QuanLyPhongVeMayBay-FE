@@ -8,13 +8,13 @@ function adultDateLimit() {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
-function Field({ label, name, type = 'text', autoComplete, hint, error, ...props }) {
+function Field({ label, name, type = 'text', autoComplete, hint, hintClassName = '', error, ...props }) {
   const errorId = `${name}-error`;
   const hintId = `${name}-hint`;
 
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-semibold text-[#334155]">{label}</span>
+      <span className="mb-2 block text-sm font-semibold text-[#334155] md:mb-1 md:text-[10px]">{label}</span>
       <input
         required
         name={name}
@@ -22,25 +22,25 @@ function Field({ label, name, type = 'text', autoComplete, hint, error, ...props
         autoComplete={autoComplete}
         aria-invalid={Boolean(error)}
         aria-describedby={[hint ? hintId : null, error ? errorId : null].filter(Boolean).join(' ') || undefined}
-        className={`h-[48px] w-full rounded-[8px] border bg-white px-3.5 text-sm text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-2 focus:border-[#0284c7] ${
+        className={`h-[48px] w-full rounded-[8px] border bg-white px-3.5 text-sm text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-2 focus:border-[#0284c7] md:h-[25px] md:rounded-[5px] md:px-2 md:text-[10px] ${
           error ? 'border-red-500' : 'border-[#cbd5e1]'
         }`}
         {...props}
       />
-      {hint && <span id={hintId} className="mt-2 block text-sm leading-relaxed text-[#64748b]">{hint}</span>}
-      {error && <span id={errorId} className="mt-1 block text-sm text-red-600">{error}</span>}
+      {hint && <span id={hintId} className={`mt-2 block text-sm leading-relaxed text-[#64748b] md:mt-1 md:text-[8px] ${hintClassName}`}>{hint}</span>}
+      {error && <span id={errorId} className="mt-1 block text-sm text-red-600 md:text-[9px]">{error}</span>}
     </label>
   );
 }
 
-function PasswordField({ label, name, autoComplete, error, hint }) {
+function PasswordField({ label, name, autoComplete, error, hint, hintClassName = '' }) {
   const [visible, setVisible] = useState(false);
   const errorId = `${name}-error`;
   const hintId = `${name}-hint`;
 
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-semibold text-[#334155]">{label}</span>
+      <span className="mb-2 block text-sm font-semibold text-[#334155] md:mb-1 md:text-[10px]">{label}</span>
       <span className="relative block">
         <input
           required
@@ -50,7 +50,7 @@ function PasswordField({ label, name, autoComplete, error, hint }) {
           minLength={8}
           aria-invalid={Boolean(error)}
           aria-describedby={[hint ? hintId : null, error ? errorId : null].filter(Boolean).join(' ') || undefined}
-          className={`h-[48px] w-full rounded-[8px] border bg-white px-3.5 pr-12 text-sm text-[#0f172a] outline-none transition focus:border-2 focus:border-[#0284c7] ${
+          className={`h-[48px] w-full rounded-[8px] border bg-white px-3.5 pr-12 text-sm text-[#0f172a] outline-none transition focus:border-2 focus:border-[#0284c7] md:h-[25px] md:rounded-[5px] md:px-2 md:pr-8 md:text-[10px] ${
             error ? 'border-red-500' : 'border-[#cbd5e1]'
           }`}
         />
@@ -58,9 +58,9 @@ function PasswordField({ label, name, autoComplete, error, hint }) {
           type="button"
           onClick={() => setVisible((current) => !current)}
           aria-label={visible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-[#64748b]"
+          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-[#64748b] md:w-7"
         >
-          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="size-5">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="size-5 md:size-3">
             {visible ? (
               <>
                 <path d="M2.5 12s3.2-6 9.5-6 9.5 6 9.5 6-3.2 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" strokeWidth="1.7" />
@@ -75,23 +75,24 @@ function PasswordField({ label, name, autoComplete, error, hint }) {
           </svg>
         </button>
       </span>
-      {hint && <span id={hintId} className="mt-2 block text-sm leading-relaxed text-[#64748b]">{hint}</span>}
-      {error && <span id={errorId} className="mt-1 block text-sm text-red-600">{error}</span>}
+      {hint && <span id={hintId} className={`mt-2 block text-sm leading-relaxed text-[#64748b] md:mt-1 md:text-[8px] ${hintClassName}`}>{hint}</span>}
+      {error && <span id={errorId} className="mt-1 block text-sm text-red-600 md:text-[9px]">{error}</span>}
     </label>
   );
 }
 
-function SelectField({ label, name, children, defaultValue }) {
+function SelectField({ label, name, children, defaultValue, hint }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-semibold text-[#334155]">{label}</span>
+      <span className="mb-2 block text-sm font-semibold text-[#334155] md:mb-1 md:text-[10px]">{label}</span>
       <select
         name={name}
         defaultValue={defaultValue}
-        className="h-[48px] w-full appearance-none rounded-[8px] border border-[#cbd5e1] bg-white px-3.5 text-sm text-[#0f172a] outline-none focus:border-2 focus:border-[#0284c7]"
+        className="h-[48px] w-full appearance-none rounded-[8px] border border-[#cbd5e1] bg-white px-3.5 text-sm text-[#0f172a] outline-none focus:border-2 focus:border-[#0284c7] md:h-[25px] md:rounded-[5px] md:px-2 md:text-[10px]"
       >
         {children}
       </select>
+      {hint && <span className="mt-2 block text-sm leading-relaxed text-[#64748b] md:mt-1 md:text-[8px]">{hint}</span>}
     </label>
   );
 }
@@ -133,24 +134,24 @@ export default function RegisterPage() {
   };
 
   return (
-    <section className="w-full flex-1 bg-[#f8fafc] px-4 py-8 md:px-6 md:py-12">
-      <div className="mx-auto max-w-[760px]">
-        <header className="mb-6">
-          <h1 className="text-[26px] font-bold tracking-tight text-[#0f172a] sm:text-[32px]">
+    <section className="w-full flex-1 bg-[#f8fafc] px-4 py-8 md:px-6 md:py-5">
+      <div className="mx-auto max-w-[760px] md:max-w-[504px]">
+        <header className="mb-6 md:mb-3">
+          <h1 className="text-[26px] font-bold tracking-tight text-[#0f172a] sm:text-[32px] md:text-[16px]">
             Đăng ký tài khoản
           </h1>
-          <p className="mt-1 text-sm leading-relaxed text-[#64748b] sm:text-base">
+          <p className="mt-1 text-sm leading-relaxed text-[#64748b] sm:text-base md:text-[9px]">
             Một tài khoản, mọi hành trình. Cùng Vân Việt khám phá những điểm đến mới.
           </p>
         </header>
 
-        <div className="rounded-[14px] border border-[#dce5ef] bg-white p-5 shadow-sm sm:p-8">
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-[#0f172a]">Thông tin đăng ký</h2>
-            <p className="mt-1 text-sm text-[#64748b]">Các trường có dấu * là bắt buộc.</p>
+        <div className="rounded-[14px] border border-[#dce5ef] bg-white p-5 shadow-sm sm:p-8 md:rounded-[8px] md:p-4">
+          <div className="mb-6 md:mb-3">
+            <h2 className="text-xl font-bold text-[#0f172a] md:text-[12px]">Thông tin đăng ký</h2>
+            <p className="mt-1 text-sm text-[#64748b] md:mt-1 md:text-[9px]">Các trường có dấu * là bắt buộc.</p>
           </div>
 
-          <form onSubmit={handleSubmit} noValidate className="space-y-5">
+          <form onSubmit={handleSubmit} noValidate className="space-y-5 md:grid md:grid-cols-2 md:items-start md:gap-x-3 md:gap-y-3 md:space-y-0">
             <Field label="Email *" name="email" type="email" autoComplete="email" placeholder="email@example.com" />
             <Field label="Họ và tên *" name="fullName" autoComplete="name" placeholder="Nhập họ và tên" />
             <PasswordField
@@ -158,6 +159,7 @@ export default function RegisterPage() {
               name="password"
               autoComplete="new-password"
               hint="Mật khẩu tối thiểu 8 ký tự, bao gồm chữ hoa, chữ thường và số."
+              hintClassName="md:hidden"
               error={errors.password}
             />
             <PasswordField
@@ -166,6 +168,9 @@ export default function RegisterPage() {
               autoComplete="new-password"
               error={errors.confirmPassword}
             />
+            <p className="hidden text-[8px] leading-relaxed text-[#64748b] md:col-span-2 md:block md:-mt-2">
+              Mật khẩu tối thiểu 8 ký tự, bao gồm chữ hoa, chữ thường và số.
+            </p>
 
             <Field
               label="Ngày sinh *"
@@ -178,7 +183,7 @@ export default function RegisterPage() {
               onChange={() => clearFieldError('dateOfBirth')}
             />
 
-            <SelectField label="Giới tính" name="gender" defaultValue="Nu">
+            <SelectField label="Giới tính" name="gender" defaultValue="Nu" hint="Nam / Nữ / Khác">
               <option value="Nam">Nam</option>
               <option value="Nu">Nữ</option>
               <option value="Khac">Khác</option>
@@ -197,6 +202,8 @@ export default function RegisterPage() {
               name="identityDocument"
               autoComplete="off"
               placeholder="Nhập số trên giấy tờ tùy thân"
+              hint="Nhập số giấy tờ 12 chữ số, trùng khớp với giấy tờ tùy thân khi bay."
+              hintClassName="md:hidden"
             />
 
             <SelectField label="Quốc tịch" name="nationality" defaultValue="Việt Nam">
@@ -207,7 +214,12 @@ export default function RegisterPage() {
               <option>Khác</option>
             </SelectField>
 
-            <label className="flex cursor-pointer items-start gap-2.5 pt-1 text-sm leading-relaxed text-[#475569]">
+            <p className="text-sm leading-relaxed text-[#64748b] md:self-end md:pb-1 md:text-[8px]">
+              <span className="md:hidden">Nhập số giấy tờ 12 chữ số, trùng khớp với giấy tờ tùy thân khi bay.</span>
+              <span className="hidden md:inline">Nhập số giấy tờ 12 chữ số, trùng khớp với giấy tờ tùy thân khi bay.</span>
+            </p>
+
+            <label className="flex cursor-pointer items-start gap-2.5 pt-1 text-sm leading-relaxed text-[#475569] md:col-span-2 md:gap-1.5 md:pt-0 md:text-[9px]">
               <input required type="checkbox" name="acceptTerms" className="mt-0.5 size-4 shrink-0 accent-[#0284c7]" />
               <span>
                 Tôi đồng ý với <Link to="/dieu-khoan" className="font-medium text-[#0284c7] hover:underline">Điều khoản sử dụng</Link> và{' '}
@@ -216,21 +228,21 @@ export default function RegisterPage() {
             </label>
 
             {notice && (
-              <p role="status" className="rounded-lg bg-[#eff6ff] px-4 py-3 text-sm text-[#075985]">
+              <p role="status" className="rounded-lg bg-[#eff6ff] px-4 py-3 text-sm text-[#075985] md:col-span-2 md:text-[9px]">
                 {notice}
               </p>
             )}
 
             <button
               type="submit"
-              className="h-[48px] w-full rounded-[8px] bg-[#0284c7] text-sm font-semibold text-white transition hover:bg-[#0369a1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7]"
+              className="h-[48px] w-full rounded-[8px] bg-[#0284c7] text-sm font-semibold text-white transition hover:bg-[#0369a1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7] md:col-span-2 md:justify-self-end md:h-[26px] md:w-auto md:rounded-[5px] md:px-4 md:text-[9px]"
             >
               Đăng ký
             </button>
           </form>
         </div>
 
-        <p className="mt-6 flex flex-wrap items-center justify-between gap-2 text-sm text-[#64748b]">
+        <p className="mt-6 flex flex-wrap items-center justify-between gap-2 text-sm text-[#64748b] md:mt-4 md:justify-center md:gap-1 md:text-[9px]">
           <span>Đã có tài khoản?</span>
           <Link to="/dang-nhap" className="font-semibold text-[#0284c7] hover:text-[#0369a1]">
             Đăng nhập ngay
