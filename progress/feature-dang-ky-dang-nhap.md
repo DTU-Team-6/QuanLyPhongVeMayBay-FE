@@ -33,6 +33,9 @@
 - Người dùng báo đăng nhập không chọn ghi nhớ, sau 15 phút tải lại vẫn đăng nhập.
 - Đã sửa đồng bộ trạng thái đăng nhập/đăng xuất giữa các tab; kiểm tra giả lập hai tab, kể cả khi BroadcastChannel không có và quay lại tab.
 - Đã chỉnh biểu tượng tài khoản, trạng thái chờ xác thực và menu tài khoản chỉ gồm thông tin cá nhân, đăng xuất; kiểm tra menu desktop/mobile với API giả lập.
+- Dropdown tài khoản và menu mobile tự đóng khi nhấn bên ngoài hoặc nhấn Escape; đã kiểm tra bằng API giả lập.
+- Đã làm giao diện thông tin cá nhân và hộp chỉnh sửa; dữ liệu chưa có hiển thị trống, thao tác lưu báo chưa hỗ trợ. Đã kiểm tra giả lập desktop/mobile, không gửi API lưu.
+- Đã làm giao diện đổi mật khẩu; chưa kết nối API. Kiểm tra giả lập desktop/mobile: hiện/ẩn mật khẩu, báo xác nhận không khớp, hủy xóa ô nhập, lưu báo chưa hỗ trợ và không gửi API ghi.
 - Chưa xác nhận đầy đủ luồng FE/BE thật trên giao diện với lựa chọn ghi nhớ, đóng/mở trình duyệt, đồng bộ nhiều tab hoặc chờ hết hạn thực tế 7 ngày.
 
 ## Việc tiếp theo (theo thứ tự)
@@ -51,5 +54,5 @@
 ## Lỗi đang gặp (nếu có)
 
 - `npm test`: đạt 20/20 test.
-- `npm run build`: thành công; Vite cảnh báo chunk JavaScript 654.06 kB lớn hơn 500 kB.
+- `npm run build`: thành công; Vite cảnh báo chunk JavaScript 665.85 kB lớn hơn 500 kB.
 - BE: `./gradlew test --tests 'com.team6.quanlyvemaybay.service.AuthServiceTest' --tests 'com.team6.quanlyvemaybay.controller.AuthControllerTest'` thành công.

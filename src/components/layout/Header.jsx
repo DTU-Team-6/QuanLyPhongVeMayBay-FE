@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import planeIcon from '../../assets/plane.svg';
@@ -16,7 +16,34 @@ export default function Header() {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [logoutError, setLogoutError] = useState('');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const headerRef = useRef(null);
+  const userDropdownRef = useRef(null);
   const isAuthPage = ['/dang-ky', '/dang-nhap'].includes(location.pathname);
+
+  useEffect(() => {
+    if (!userDropdownOpen && !mobileMenuOpen) return;
+
+    const handlePointerDown = (event) => {
+      if (userDropdownOpen && !userDropdownRef.current?.contains(event.target)) {
+        setUserDropdownOpen(false);
+      }
+      if (mobileMenuOpen && !headerRef.current?.contains(event.target)) {
+        setMobileMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setUserDropdownOpen(false);
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [userDropdownOpen, mobileMenuOpen]);
 
   const handleLogout = async () => {
     if (isLoggingOut) return;
@@ -56,7 +83,7 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-white border-[#e2e8f0] border-b sticky top-0 z-50 w-full shadow-xs">
+    <header ref={headerRef} className="bg-white border-[#e2e8f0] border-b sticky top-0 z-50 w-full shadow-xs">
       <div className="max-w-[1440px] mx-auto h-[72px] px-6 lg:px-[120px] flex items-center justify-between">
         {/* Thương hiệu Vân Việt */}
         <Link to="/" className="flex items-center gap-[10px] group focus:outline-hidden">
@@ -102,7 +129,7 @@ export default function Header() {
               </span>
             </div>
           ) : isAuthenticated && user ? (
-            <div className="relative">
+            <div ref={userDropdownRef} className="relative">
               <button
                 type="button"
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
