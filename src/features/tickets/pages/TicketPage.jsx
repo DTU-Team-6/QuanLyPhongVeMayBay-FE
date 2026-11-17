@@ -95,7 +95,7 @@ export default function TicketPage() {
     {authLoading && <p role="status" className="mb-5 text-sm text-[#667895]">Đang kiểm tra phiên đăng nhập...</p>}
     {notice && <div role="status" className="mb-5 rounded-lg border border-[#a7e6c5] bg-[#ecfdf5] p-4 text-sm text-[#047857]">{notice}</div>}
     <div className="mb-6 grid gap-4 sm:grid-cols-3">
-      {[['Đơn đặt chỗ', summary?.all], ['Chờ thanh toán', summary?.pending], ['Đã xuất vé', summary?.issued]].map(([label, count]) => <div key={label} className="rounded-xl border border-[#dce5ef] bg-white p-5 shadow-sm"><div className="text-xs font-medium text-[#667895]">{label}</div><div className="mt-2 text-2xl font-bold text-[#172137]">{count ?? '—'}</div></div>)}
+      {[['Tổng số vé', summary?.all], ['Chờ thanh toán', summary?.pending], ['Đã thanh toán', summary?.issued]].map(([label, count]) => <div key={label} className="rounded-xl border border-[#dce5ef] bg-white p-5 shadow-sm"><div className="text-xs font-medium text-[#667895]">{label}</div><div className="mt-2 text-2xl font-bold text-[#172137]">{count ?? '—'}</div></div>)}
     </div>
     <form onSubmit={search} className="mb-6 grid gap-4 rounded-xl border border-[#dce5ef] bg-white p-5 shadow-sm md:grid-cols-[180px_minmax(0,1fr)_180px_auto_auto] md:items-end">
       <label className="text-xs font-semibold text-[#33435e]">Tìm theo<select disabled={!canManage || loading} value={searchBy} onChange={event => setSearchBy(event.target.value)} className="mt-2 h-10 w-full rounded-lg border border-[#c9d7e7] bg-white px-3 text-sm font-normal disabled:opacity-50">{TICKET_SEARCH_OPTIONS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
