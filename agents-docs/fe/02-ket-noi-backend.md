@@ -8,20 +8,23 @@
 - Xác thực bằng **JWT** trong cookie do BE đặt: `access_token` (sống 15 phút) và `refresh_token` (sống 7 ngày, có rotation), cả hai là **HttpOnly**. FE không đọc được và **không tự lưu token** vào `localStorage`/`sessionStorage`.
 - Gọi API bằng `fetch` qua `services/apiClient.js` và phải **gửi kèm cookie** (`credentials: 'include'`).
 - **CSRF:** BE đặt cookie `XSRF-TOKEN` (không HttpOnly). Với request thay đổi dữ liệu (POST, PUT, PATCH, DELETE), FE đọc giá trị cookie đó và gửi trong header **`X-XSRF-TOKEN`**. Không tắt hay bỏ qua CSRF.
+- Nếu chưa có cookie CSRF, gọi `GET /api/v1/auth/csrf` trước request POST đầu tiên; `apiClient.js` tự gửi cookie và header CSRF cho request thay đổi dữ liệu.
 - `SameSite=Lax` (FE và BE cùng site; ở dev, `localhost` khác cổng vẫn là cùng site). `Secure` bật trên HTTPS. Nếu sau này FE và BE khác site, hỏi trước.
 
 | Việc                                   | Cách làm                                                                                                                      |
 | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | Đăng nhập, đăng ký                     | `POST /api/v1/auth/login`, `POST /api/v1/auth/register`                                                                       |
+| Khởi tạo CSRF khi chưa có cookie       | `GET /api/v1/auth/csrf`                                                                                                       |
 | Lấy người dùng hiện tại                | `GET /api/v1/auth/me`, BE trả `id`, họ tên, email, vai trò                                                                     |
 | Làm mới token khi access token hết hạn | `POST /api/v1/auth/refresh`; nếu thất bại thì đưa người dùng về trang đăng nhập                                               |
 | Đăng xuất                              | `POST /api/v1/auth/logout`                                                                                                    |
 | Đăng nhập Google/Facebook              | Chuyển hướng cả trang tới `<VITE_API_BASE_URL>/oauth2/authorization/google` hoặc `/facebook` (**không** có tiền tố `/api/v1`) |
 | Sau khi đăng nhập OAuth2               | BE chuyển hướng người dùng về trang FE **`/auth/callback`**                                                                   |
 
-- Màn hình đăng nhập và đăng ký hiện chưa gọi API; biểu mẫu đăng ký chỉ kiểm tra dữ liệu trên trình duyệt.
-- FE kiểm tra người đăng ký đủ 18 tuổi theo ngày `Asia/Ho_Chi_Minh`, số điện thoại và mật khẩu; hợp đồng BE cần được xác nhận lại trước khi kết nối.
-- Endpoint refresh trong bảng trên là hợp đồng đã chốt, nhưng BE hiện chưa triển khai; FE chưa tự làm mới phiên.
+- Màn hình đăng nhập và đăng ký gọi API qua `authService.js`. Đăng nhập nhận thông tin người dùng và cookie HttpOnly; đăng ký gửi email, mật khẩu, họ tên, số điện thoại, ngày sinh, giới tính, số giấy tờ và quốc tịch rồi chuyển người dùng sang trang đăng nhập.
+- FE kiểm tra người đăng ký đủ 18 tuổi theo ngày `Asia/Ho_Chi_Minh`, số điện thoại và mật khẩu; BE tiếp tục kiểm tra dữ liệu và lưu số giấy tờ/quốc tịch vào hồ sơ khách hàng.
+- BE hỗ trợ refresh token sau khi áp dụng migration `V20261117_1331__them_phien_lam_moi.sql`. Khi access token hết hạn, FE làm mới và thử lại một lần; các lần refresh được đồng bộ giữa các tab bằng Web Locks.
+- Khi chọn “Ghi nhớ đăng nhập”, cookie refresh có hạn tối đa 7 ngày từ lần đăng nhập. Nếu không chọn, cookie xác thực là cookie phiên; trình duyệt có thể khôi phục cookie phiên sau khi đóng và mở lại.
 
 - OAuth2 do BE xử lý bằng Authorization Code Flow. FE chỉ chuyển hướng sang BE và nhận kết quả khi quay về `/auth/callback`; FE không giữ client secret, không xử lý mã hay token OAuth2.
 - Nếu `GET /api/v1/auth/me` trả 401, FE gọi `/api/v1/auth/refresh` một lần rồi gọi lại endpoint; nếu vẫn 401 thì đưa người dùng về trang đăng nhập.

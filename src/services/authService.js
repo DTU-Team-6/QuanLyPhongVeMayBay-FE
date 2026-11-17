@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient, { refreshSession } from './apiClient';
 import { getCookie } from '../utils/csrf';
 
 async function ensureCsrfToken() {
@@ -53,8 +53,9 @@ export const authService = {
     try {
       const res = await apiClient('/auth/me');
       return res?.data;
-    } catch {
-      return null;
+    } catch (error) {
+      if (error?.status === 401) return null;
+      throw error;
     }
   },
 
@@ -70,12 +71,7 @@ export const authService = {
    * Làm mới access token
    */
   async refreshToken() {
-    try {
-      const res = await apiClient('/auth/refresh', { method: 'POST' });
-      return res?.data;
-    } catch {
-      return null;
-    }
+    await refreshSession();
   },
 };
 

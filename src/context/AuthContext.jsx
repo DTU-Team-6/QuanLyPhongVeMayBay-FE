@@ -6,12 +6,25 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [sessionExpired, setSessionExpired] = useState(false);
+
+  useEffect(() => {
+    const handleExpired = () => {
+      if (user) {
+        setUser(null);
+        setSessionExpired(true);
+      }
+    };
+    window.addEventListener('auth-session-expired', handleExpired);
+    return () => window.removeEventListener('auth-session-expired', handleExpired);
+  }, [user]);
 
   const checkAuth = useCallback(async () => {
     try {
       const currentUser = await authService.getCurrentUser();
       setUser(currentUser);
-    } catch {
+    } catch (error) {
+      console.warn('Không thể kiểm tra phiên đăng nhập:', error);
       setUser(null);
     } finally {
       setLoading(false);
@@ -30,12 +43,17 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (credentials) => {
     const authenticatedUser = await authService.login(credentials);
     setUser(authenticatedUser);
+    setSessionExpired(false);
     return authenticatedUser;
   }, []);
+
+  const clearSessionExpired = useCallback(() => setSessionExpired(false), []);
 
   const value = {
     user,
     loading,
+    sessionExpired,
+    clearSessionExpired,
     isAuthenticated: !!user,
     checkAuth,
     login,

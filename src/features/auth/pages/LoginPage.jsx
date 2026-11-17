@@ -98,7 +98,11 @@ export default function LoginPage() {
     setNotice('');
 
     try {
-      const user = await login({ email: values.email.trim(), password: values.password });
+      const user = await login({
+        email: values.email.trim(),
+        password: values.password,
+        rememberMe: values.rememberMe === 'on',
+      });
       const next = new URLSearchParams(location.search).get('next');
       navigate(next?.startsWith('/') && !next.startsWith('//')
         ? next
@@ -159,17 +163,13 @@ export default function LoginPage() {
             />
 
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <label className="inline-flex cursor-not-allowed items-center gap-2 text-xs text-[#475569]">
+              <label className="inline-flex items-center gap-2 text-xs text-[#475569]">
                 <input
                   type="checkbox"
-                  disabled
-                  title="Backend chưa hỗ trợ ghi nhớ đăng nhập."
-                  className="size-4 cursor-not-allowed accent-[#0284c7] disabled:opacity-50"
+                  name="rememberMe"
+                  className="size-4 accent-[#0284c7]"
                 />
-                <span>
-                  Ghi nhớ đăng nhập
-                  <span className="ml-1 text-[10px] text-[#94a3b8]">(chưa hỗ trợ)</span>
-                </span>
+                <span>Ghi nhớ đăng nhập</span>
               </label>
               <button
                 type="button"
