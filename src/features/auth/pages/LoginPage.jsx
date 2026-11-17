@@ -84,9 +84,9 @@ export default function LoginPage() {
   useEffect(() => {
     if (location.state?.message) {
       setNotice(location.state.message);
-      navigate(location.pathname, { replace: true, state: null });
+      navigate(`${location.pathname}${location.search}${location.hash}`, { replace: true, state: null });
     }
-  }, [location.pathname, location.state, navigate]);
+  }, [location.pathname, location.search, location.hash, location.state, navigate]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -98,8 +98,11 @@ export default function LoginPage() {
     setNotice('');
 
     try {
-      await login({ email: values.email.trim(), password: values.password });
-      navigate('/', { replace: true });
+      const user = await login({ email: values.email.trim(), password: values.password });
+      const next = new URLSearchParams(location.search).get('next');
+      navigate(next?.startsWith('/') && !next.startsWith('//')
+        ? next
+        : user.vaiTro === 'KHACH_HANG' ? '/' : '/quan-ly-ban-ve', { replace: true });
     } catch (error) {
       if (error?.code === 'INVALID_CREDENTIALS') {
         setErrorMessage('Email hoặc mật khẩu không đúng.');

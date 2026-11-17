@@ -22,6 +22,8 @@
 - `authService` khởi tạo cookie CSRF nếu chưa có trước POST đăng ký/đăng nhập.
 - Đăng xuất chuyển về trang đăng nhập sau khi BE xác nhận; hiển thị thông báo đăng ký, đăng xuất thành công hoặc lỗi đăng xuất.
 - Kiểm tra giao diện đăng ký và đăng xuất với API giả lập; kiểm tra đăng xuất trên desktop và mobile.
+- Nhập `develop`, giữ giao diện xác thực của nhánh và chuyển hướng đăng nhập theo `next` hoặc vai trò của `develop`.
+- Kiểm tra chuyển hướng đăng nhập với API giả lập; chưa kiểm tra lại với BE thật.
 
 ## Đang dở
 
@@ -43,5 +45,5 @@
 ## Lỗi đang gặp (nếu có)
 
 - `npm test`: đạt 20/20 test.
-- `npm run build`: thành công; Vite cảnh báo chunk JavaScript 610.38 kB lớn hơn 500 kB.
+- `npm run build`: thành công; Vite cảnh báo chunk JavaScript 634.94 kB lớn hơn 500 kB.
 - BE: `./gradlew test --tests 'com.team6.quanlyvemaybay.service.AuthServiceTest' --tests 'com.team6.quanlyvemaybay.controller.AuthControllerTest'` thành công.
