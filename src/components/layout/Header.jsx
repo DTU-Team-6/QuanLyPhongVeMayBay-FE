@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import planeIcon from '../../assets/plane.svg';
 
@@ -10,9 +10,31 @@ import planeIcon from '../../assets/plane.svg';
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const isAuthPage = ['/dang-ky', '/dang-nhap'].includes(location.pathname);
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    setLogoutError('');
+    try {
+      await logout();
+      setUserDropdownOpen(false);
+      setMobileMenuOpen(false);
+      navigate('/dang-nhap', {
+        replace: true,
+        state: { message: 'Đăng xuất thành công. Vui lòng đăng nhập lại.' },
+      });
+    } catch (error) {
+      setLogoutError(error?.message || 'Đăng xuất thất bại. Vui lòng thử lại.');
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   const navLinks = [
     { to: '/', label: 'Trang chủ' },
@@ -145,13 +167,11 @@ export default function Header() {
                   )}
                   <button
                     type="button"
-                    onClick={() => {
-                      setUserDropdownOpen(false);
-                      logout();
-                    }}
-                    className="w-full text-left px-4 py-2 text-[13px] text-red-600 hover:bg-red-50 border-t border-[#f1f5f9] cursor-pointer"
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className="w-full text-left px-4 py-2 text-[13px] text-red-600 hover:bg-red-50 border-t border-[#f1f5f9] cursor-pointer disabled:opacity-50"
                   >
-                    Đăng xuất
+                    {isLoggingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}
                   </button>
                 </div>
               )}
@@ -224,13 +244,11 @@ export default function Header() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    logout();
-                  }}
-                  className="text-left text-sm text-red-600 py-1"
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="text-left text-sm text-red-600 py-1 disabled:opacity-50"
                 >
-                  Đăng xuất
+                  {isLoggingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}
                 </button>
               </>
             ) : (
@@ -253,6 +271,11 @@ export default function Header() {
             )}
           </div>
         </div>
+      )}
+      {logoutError && (
+        <p role="alert" className="bg-red-50 px-6 py-2 text-sm text-red-700">
+          {logoutError}
+        </p>
       )}
     </header>
   );

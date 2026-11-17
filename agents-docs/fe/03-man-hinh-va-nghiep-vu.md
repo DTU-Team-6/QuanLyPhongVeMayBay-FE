@@ -11,7 +11,9 @@ Phân quyền hiển thị theo vai trò `ADMIN`, `NHAN_VIEN`, `KHACH_HANG`. Ẩ
 
 ## Quy tắc nghiệp vụ liên quan đến giao diện
 
-- Màn hình đăng ký và đăng nhập chưa gọi API BE. `AuthContext` vẫn kiểm tra phiên hiện tại dùng chung trong ứng dụng. Không lưu mật khẩu hoặc token vào `localStorage`/`sessionStorage`.
+- Màn hình đăng ký và đăng nhập gọi API BE qua `authService.js`; đăng nhập cập nhật `AuthContext`, đăng ký chuyển người dùng sang đăng nhập sau khi tạo tài khoản. Không lưu mật khẩu hoặc token vào `localStorage`/`sessionStorage`.
+- Sau khi đăng ký hoặc đăng xuất thành công, hiển thị thông báo tại trang đăng nhập; nếu đăng xuất thất bại, hiển thị lỗi và giữ phiên hiện tại.
+- Đăng nhập bằng Google và Facebook chưa được kết nối.
 - **Không hiển thị `gia_goc` (giá mua từ hãng) cho khách hàng và không đưa lên vé in.** Chỉ màn hình của nhân viên/admin được thấy, và chỉ khi backend trả về.
 - Tiền hiển thị đúng định dạng và đơn vị tiền tệ do backend trả (`tien_te`). Không tự tính lại tổng tiền ở frontend rồi gửi lên, tổng tiền do backend tính.
 - Khi đặt vé, ghế có thể bị người khác đặt trước. Phải xử lý lỗi "ghế đã bị chiếm" từ backend và cho người dùng chọn lại, không giả định chọn ghế luôn thành công. Backend trả **HTTP 409** với `code` = **`GHE_DA_BI_CHIEM`** trong JSON lỗi (RFC 9457 + `code` + `details`): FE nhận ra đúng `code` này (không đoán theo nội dung `detail`), báo người dùng và tải lại sơ đồ ghế để chọn lại.

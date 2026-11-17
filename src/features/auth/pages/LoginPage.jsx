@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 
 function LoginIcon() {
   return (
@@ -36,7 +37,7 @@ function EyeIcon({ visible }) {
   );
 }
 
-function AuthField({ label, type, name, autoComplete, visible, onToggle, icon, placeholder }) {
+function AuthField({ label, type, name, autoComplete, visible, onToggle, onChange, icon, placeholder }) {
   const inputType = type === 'password' && visible ? 'text' : type;
 
   return (
@@ -48,6 +49,7 @@ function AuthField({ label, type, name, autoComplete, visible, onToggle, icon, p
           type={inputType}
           name={name}
           autoComplete={autoComplete}
+          onChange={onChange}
           className="h-[42px] w-full rounded-[8px] border border-[#cbd5e1] bg-white px-3 pr-10 text-sm text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-2 focus:border-[#0284c7]"
           placeholder={placeholder || (type === 'email' ? 'name@example.com' : 'Nhập mật khẩu')}
         />
@@ -71,12 +73,46 @@ function AuthField({ label, type, name, autoComplete, visible, onToggle, icon, p
 }
 
 export default function LoginPage() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [notice, setNotice] = useState('');
+  const [notice, setNotice] = useState(location.state?.message || '');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (event) => {
+  useEffect(() => {
+    if (location.state?.message) {
+      setNotice(location.state.message);
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location.pathname, location.state, navigate]);
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    setNotice('Đăng nhập chưa được kết nối với hệ thống.');
+    if (isSubmitting) return;
+
+    const values = Object.fromEntries(new FormData(event.currentTarget));
+    setIsSubmitting(true);
+    setErrorMessage('');
+    setNotice('');
+
+    try {
+      await login({ email: values.email.trim(), password: values.password });
+      navigate('/', { replace: true });
+    } catch (error) {
+      if (error?.code === 'INVALID_CREDENTIALS') {
+        setErrorMessage('Email hoặc mật khẩu không đúng.');
+      } else if (error?.code === 'ACCOUNT_INACTIVE') {
+        setErrorMessage('Tài khoản đã bị khóa hoặc chưa được kích hoạt.');
+      } else if (error?.code === 'NETWORK_ERROR') {
+        setErrorMessage('Không thể kết nối Backend. Vui lòng kiểm tra mạng và thử lại.');
+      } else {
+        setErrorMessage(error?.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -93,14 +129,21 @@ export default function LoginPage() {
             Đăng nhập để quản lý hành trình của bạn.
           </p>
 
+          {notice && (
+            <p role="status" className="mt-4 rounded-lg bg-[#eff6ff] px-3 py-2 text-sm text-[#075985]">
+              {notice}
+            </p>
+          )}
+
           <form onSubmit={handleSubmit} className="mt-5 space-y-[14px]">
             <AuthField
-              label="Email/Tài khoản"
+              label="Email"
               type="email"
               name="email"
               autoComplete="email"
               placeholder="minhanh.nguyen@email.com"
               icon={<MailIcon />}
+              onChange={() => setErrorMessage('')}
             />
             <AuthField
               label="Mật khẩu"
@@ -109,6 +152,7 @@ export default function LoginPage() {
               autoComplete="current-password"
               visible={passwordVisible}
               onToggle={() => setPasswordVisible((current) => !current)}
+              onChange={() => setErrorMessage('')}
             />
 
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -136,10 +180,17 @@ export default function LoginPage() {
             <button
               type="submit"
               className="h-[42px] w-full rounded-[8px] bg-[#0284c7] text-sm font-semibold text-white transition hover:bg-[#0369a1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7] disabled:cursor-wait disabled:opacity-70"
+              disabled={isSubmitting}
             >
-              Đăng nhập
+              {isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
             </button>
           </form>
+
+          {errorMessage && (
+            <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
+              {errorMessage}
+            </p>
+          )}
 
           <div className="my-6 flex items-center gap-3 text-xs text-[#94a3b8]">
             <span className="h-px flex-1 bg-[#e2e8f0]" />
@@ -160,12 +211,6 @@ export default function LoginPage() {
               </button>
             ))}
           </div>
-
-          {notice && (
-            <p role="status" className="mt-3 rounded-lg bg-[#eff6ff] px-3 py-2 text-xs text-[#075985]">
-              {notice}
-            </p>
-          )}
 
           <p className="mt-6 flex flex-wrap items-center justify-center gap-1 text-xs text-[#64748b]">
             <span>Chưa có tài khoản?</span>

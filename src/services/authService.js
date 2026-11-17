@@ -1,9 +1,50 @@
 import apiClient from './apiClient';
+import { getCookie } from '../utils/csrf';
+
+async function ensureCsrfToken() {
+  if (getCookie('XSRF-TOKEN')) return;
+
+  await apiClient('/auth/csrf');
+  if (!getCookie('XSRF-TOKEN')) {
+    throw new Error('Không nhận được mã CSRF từ Backend. Vui lòng thử lại.');
+  }
+}
 
 /**
  * Service quản lý xác thực và phiên đăng nhập của người dùng
  */
 export const authService = {
+  async register(registration) {
+    await ensureCsrfToken();
+    const response = await apiClient('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(registration),
+    });
+
+    if (!response?.data) {
+      throw new Error('Backend trả về dữ liệu đăng ký không hợp lệ.');
+    }
+
+    return response.data;
+  },
+
+  /**
+   * Đăng nhập bằng email và mật khẩu; phiên được Backend đặt trong cookie HttpOnly.
+   */
+  async login(credentials) {
+    await ensureCsrfToken();
+    const response = await apiClient('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    });
+
+    if (!response?.data) {
+      throw new Error('Backend trả về dữ liệu đăng nhập không hợp lệ.');
+    }
+
+    return response.data;
+  },
+
   /**
    * Lấy thông tin người dùng hiện tại từ cookie HttpOnly
    * BE trả về id, hoTen, email, vaiTro (ADMIN, NHAN_VIEN, KHACH_HANG)
@@ -21,11 +62,8 @@ export const authService = {
    * Đăng xuất phiên hiện tại
    */
   async logout() {
-    try {
-      await apiClient('/auth/logout', { method: 'POST' });
-    } catch (e) {
-      console.warn('Lỗi khi gọi logout:', e);
-    }
+    await ensureCsrfToken();
+    await apiClient('/auth/logout', { method: 'POST' });
   },
 
   /**
