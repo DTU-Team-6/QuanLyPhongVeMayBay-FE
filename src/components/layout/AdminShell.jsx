@@ -35,6 +35,12 @@ export default function AdminShell({ user, activeKey = 'news', children }) {
       icon: <svg className="size-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M7 9h10M7 13h6" /></svg>,
     },
     {
+      key: 'chat',
+      to: '/quan-ly-chat',
+      label: 'Chat khách hàng',
+      icon: <svg className="size-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l2-3.2A7.5 7.5 0 1 1 20 11.5Z" /></svg>,
+    },
+    {
       key: 'reports',
       to: '/bao-cao',
       label: 'Thống kê báo cáo doanh thu',
@@ -59,10 +65,12 @@ export default function AdminShell({ user, activeKey = 'news', children }) {
     { key: 'home', to: '/', label: 'Tổng quan', icon: <img src={chartIcon} alt="" className="size-[18px] shrink-0" /> },
     { key: 'search', to: '/chuyen-bay', label: 'Tìm vé trống', icon: <img src={usersIcon} alt="" className="size-[18px] shrink-0" /> },
     { key: 'tickets', to: '/quan-ly-ban-ve', label: 'Quản lý bán vé', icon: <svg className="size-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M7 9h10M7 13h6" /></svg> },
+    { key: 'chat', to: '/quan-ly-chat', label: 'Chat khách hàng', icon: <svg className="size-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l2-3.2A7.5 7.5 0 1 1 20 11.5Z" /></svg> },
     { key: 'reports', to: '/bao-cao', label: 'Thống kê báo cáo', icon: <img src={chartIcon} alt="" className="size-[18px] shrink-0" /> },
     { key: 'profile', to: '/tai-khoan', label: 'Thông tin tài khoản', icon: <img src={userIcon} alt="" className="size-[18px] shrink-0" /> },
   ];
-  const navItems = ticketArea ? ticketNavItems : adminNavItems;
+  const navItems = (ticketArea ? ticketNavItems : adminNavItems)
+    .filter(item => item.key !== 'chat' || user?.vaiTro === 'ADMIN');
 
   return (
     <div className="min-h-screen bg-[#f7f9fc] font-['Inter',sans-serif] text-[#172137]">
