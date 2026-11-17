@@ -4,6 +4,13 @@ import apiClient from './apiClient';
  * Service quản lý xác thực và phiên đăng nhập của người dùng
  */
 export const authService = {
+  async login({ email, password }) {
+    await apiClient('/auth/csrf');
+    const response = await apiClient('/auth/login', {
+      method: 'POST', body: JSON.stringify({ email, password }),
+    });
+    return response?.data;
+  },
   /**
    * Lấy thông tin người dùng hiện tại từ cookie HttpOnly
    * BE trả về id, hoTen, email, vaiTro (ADMIN, NHAN_VIEN, KHACH_HANG)

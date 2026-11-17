@@ -91,7 +91,7 @@ export default function TicketPage() {
       <div><h1 className="text-[24px] font-bold tracking-tight">Quản lý bán vé</h1><p className="mt-1 text-sm text-[#667895]">Theo dõi đơn đặt chỗ, cập nhật vé và xuất vé điện tử.</p></div>
       <Link to="/chuyen-bay" className="rounded-lg bg-[#0284c7] px-5 py-3 text-sm font-semibold text-white hover:bg-[#0369a1]">Tìm vé trống</Link>
     </div>
-    {!authLoading && !canManage && <div role="alert" className="mb-5 rounded-lg border border-[#bae6fd] bg-[#e0f2fe] p-4 text-sm text-[#075985]">Cần đăng nhập bằng tài khoản Admin hoặc Nhân viên để quản lý bán vé. <Link to="/dang-nhap" className="font-semibold underline">Đến trang đăng nhập</Link></div>}
+    {!authLoading && !canManage && <div role="alert" className="mb-5 rounded-lg border border-[#bae6fd] bg-[#e0f2fe] p-4 text-sm text-[#075985]">Cần đăng nhập bằng tài khoản Admin hoặc Nhân viên để quản lý bán vé. <Link to="/dang-nhap?next=/quan-ly-ban-ve" className="font-semibold underline">Đến trang đăng nhập</Link></div>}
     {authLoading && <p role="status" className="mb-5 text-sm text-[#667895]">Đang kiểm tra phiên đăng nhập...</p>}
     {notice && <div role="status" className="mb-5 rounded-lg border border-[#a7e6c5] bg-[#ecfdf5] p-4 text-sm text-[#047857]">{notice}</div>}
     <div className="mb-6 grid gap-4 sm:grid-cols-3">
