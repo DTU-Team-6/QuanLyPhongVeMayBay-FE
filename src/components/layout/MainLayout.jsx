@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
+import CustomerChatWidget from '../../features/chat/components/CustomerChatWidget';
 
 /**
  * Layout Component dùng chung cho toàn hệ thống
@@ -14,6 +15,7 @@ export default function MainLayout() {
         <Outlet />
       </main>
       <Footer />
+      <CustomerChatWidget />
     </div>
   );
 }

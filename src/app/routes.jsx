@@ -5,6 +5,7 @@ import ReportPage from '../features/reports/pages/ReportPage';
 import PlaceholderPage from '../components/common/PlaceholderPage';
 import EmployeePage from '../features/employees/pages/EmployeePage';
 import TicketPage from '../features/tickets/pages/TicketPage';
+import AdminChatPage from '../features/chat/pages/AdminChatPage';
 import LoginPage from '../features/auth/pages/LoginPage';
 import FlightSearchPage from '../features/flight-search/pages/FlightSearchPage';
 import PassengerInfoPage from '../features/booking/pages/PassengerInfoPage';
@@ -19,6 +20,7 @@ import PublicNewsDetailPage from '../features/news/pages/PublicNewsDetailPage';
 export const router = createBrowserRouter([
   { path: '/quan-ly-nhan-vien', element: <EmployeePage /> },
   { path: '/quan-ly-ban-ve', element: <TicketPage /> },
+  { path: '/quan-ly-chat', element: <AdminChatPage /> },
   { path: '/quan-ly-tin-tuc', element: <AdminNewsListPage /> },
   { path: '/quan-ly-tin-tuc/them-moi', element: <AdminNewsFormPage mode="create" /> },
   { path: '/quan-ly-tin-tuc/:id/chinh-sua', element: <AdminNewsFormPage mode="edit" /> },
