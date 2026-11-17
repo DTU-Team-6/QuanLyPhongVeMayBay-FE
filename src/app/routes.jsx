@@ -7,7 +7,6 @@ import EmployeePage from '../features/employees/pages/EmployeePage';
 import TicketPage from '../features/tickets/pages/TicketPage';
 import AdminChatPage from '../features/chat/pages/AdminChatPage';
 import MyFlightsPage from '../features/my-flights/pages/MyFlightsPage';
-import LoginPage from '../features/auth/pages/LoginPage';
 import FlightSearchPage from '../features/flight-search/pages/FlightSearchPage';
 import PassengerInfoPage from '../features/booking/pages/PassengerInfoPage';
 import PaymentPage from '../features/payment/pages/PaymentPage';
@@ -17,6 +16,8 @@ import AdminNewsListPage from '../features/news/pages/AdminNewsListPage';
 import AdminNewsFormPage from '../features/news/pages/AdminNewsFormPage';
 import PublicNewsListPage from '../features/news/pages/PublicNewsListPage';
 import PublicNewsDetailPage from '../features/news/pages/PublicNewsDetailPage';
+import LoginPage from '../features/auth/pages/LoginPage';
+import RegisterPage from '../features/auth/pages/RegisterPage';
 
 export const router = createBrowserRouter([
   { path: '/quan-ly-nhan-vien', element: <EmployeePage /> },
@@ -138,12 +139,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'dang-ky',
-        element: (
-          <PlaceholderPage
-            title="Đăng ký tài khoản"
-            description="Màn hình đăng ký tài khoản khách hàng mới."
-          />
-        ),
+        element: <RegisterPage />,
       },
       {
         path: '*',

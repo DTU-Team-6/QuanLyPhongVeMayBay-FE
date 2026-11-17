@@ -1,3 +1,14 @@
+export function getInitials(name, email) {
+  if (name && name.trim()) {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[parts.length - 2][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+  return (email || 'KH').slice(0, 2).toUpperCase();
+}
+
 /**
  * Định dạng tiền tệ VND theo quy ước giao diện (ví dụ: 1.800.000 ₫)
  * Tuyệt đối không tự tính lại tiền, chỉ format giá trị BE trả về.

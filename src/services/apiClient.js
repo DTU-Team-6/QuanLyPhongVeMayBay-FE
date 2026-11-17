@@ -6,6 +6,8 @@ import { getCookie } from '../utils/csrf';
  */
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/+$/, '');
 const API_PREFIX = '/api/v1';
+const AUTH_ENDPOINTS = new Set(['/auth/csrf', '/auth/login', '/auth/register', '/auth/logout', '/auth/refresh']);
+let refreshInFlight = null;
 
 /**
  * Lớp lỗi chuẩn hóa từ phản hồi RFC 9457 của backend
@@ -27,6 +29,10 @@ export class ApiError extends Error {
  * @param {RequestInit} [options] - Cấu hình fetch
  */
 export async function apiClient(endpoint, options = {}) {
+  const method = (options.method || 'GET').toUpperCase();
+  if (method === 'POST' && ['/auth/login', '/auth/logout'].includes(endpoint)) {
+    return withSessionLock(() => request(endpoint, options, false));
+  }
   return request(endpoint, options, false);
 }
 
@@ -35,7 +41,42 @@ export async function apiClientBlob(endpoint, options = {}) {
   return request(endpoint, options, true);
 }
 
-async function request(endpoint, options, binary) {
+async function withSessionLock(action, required = false) {
+  if (typeof navigator !== 'undefined' && navigator.locks) {
+    return navigator.locks.request('auth-session', action);
+  }
+  if (required) {
+    throw new ApiError({
+      message: 'Trình duyệt không hỗ trợ đồng bộ phiên đăng nhập. Vui lòng đăng nhập lại hoặc dùng trình duyệt mới hơn.',
+      status: 0,
+      code: 'SESSION_LOCK_UNAVAILABLE',
+    });
+  }
+  return action();
+}
+
+export function refreshSession() {
+  if (!refreshInFlight) {
+    refreshInFlight = withSessionLock(async () => {
+      if (!getCookie('XSRF-TOKEN')) {
+        await request('/auth/csrf', {}, false, false);
+      }
+      if (!getCookie('XSRF-TOKEN')) {
+        throw new ApiError({
+          message: 'Không nhận được mã CSRF từ Backend. Vui lòng thử lại.',
+          status: 0,
+          code: 'CSRF_TOKEN_MISSING',
+        });
+      }
+      await request('/auth/refresh', { method: 'POST' }, false, false);
+    }, true).finally(() => {
+      refreshInFlight = null;
+    });
+  }
+  return refreshInFlight;
+}
+
+async function request(endpoint, options, binary, allowRefresh = true) {
   const url = `${BASE_URL}${API_PREFIX}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
   const method = (options.method || 'GET').toUpperCase();
@@ -64,6 +105,23 @@ async function request(endpoint, options, binary) {
 
   try {
     const response = await fetch(url, fetchOptions);
+
+    if (response.status === 401 && !AUTH_ENDPOINTS.has(endpoint)) {
+      if (allowRefresh) {
+        try {
+          await refreshSession();
+        } catch (error) {
+          if (error?.status === 401 && typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('auth-session-expired'));
+          }
+          throw error;
+        }
+        return request(endpoint, options, binary, false);
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('auth-session-expired'));
+      }
+    }
 
     // Xử lý phản hồi 204 No Content
     if (response.status === 204) {

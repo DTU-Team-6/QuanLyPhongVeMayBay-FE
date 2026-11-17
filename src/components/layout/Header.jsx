@@ -1,17 +1,41 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import planeIcon from '../../assets/plane.svg';
+import { getInitials } from '../../utils/formatters';
 
 /**
  * Header Component dùng chung cho toàn hệ thống
  * Hiển thị Menu điều hướng và Trạng thái đăng nhập theo thiết kế Figma
  */
 export default function Header() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, loading, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const isAuthPage = ['/dang-ky', '/dang-nhap'].includes(location.pathname);
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    setLogoutError('');
+    try {
+      await logout();
+      setUserDropdownOpen(false);
+      setMobileMenuOpen(false);
+      navigate('/dang-nhap', {
+        replace: true,
+        state: { message: 'Đăng xuất thành công. Vui lòng đăng nhập lại.' },
+      });
+    } catch (error) {
+      setLogoutError(error?.message || 'Đăng xuất thất bại. Vui lòng thử lại.');
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   const navLinks = [
     { to: '/', label: 'Trang chủ' },
@@ -21,8 +45,12 @@ export default function Header() {
     { to: '/quy-dinh-hanh-ly', label: 'Quy định hành lý' },
     { to: '/bao-cao', label: 'Thống kê báo cáo' },
   ];
+  const visibleNavLinks = isAuthPage
+    ? navLinks.filter((link) => ['/', '/khuyen-mai', '/gioi-thieu', '/quy-dinh-hanh-ly'].includes(link.to))
+    : navLinks;
 
   const isActive = (path) => {
+    if (isAuthPage && path === '/') return true;
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
@@ -47,7 +75,7 @@ export default function Header() {
 
         {/* Liên kết điều hướng Desktop */}
         <nav className="hidden md:flex items-center gap-[24px] text-[14px]">
-          {navLinks.map((link) => (
+          {visibleNavLinks.map((link) => (
             <Link
               key={link.to}
               to={link.to}
@@ -64,89 +92,56 @@ export default function Header() {
 
         {/* Khu vực trạng thái tài khoản */}
         <div className="hidden md:flex items-center gap-[16px]">
-          {isAuthenticated && user ? (
+          {loading ? (
+            <div role="status" className="flex items-center gap-2 animate-pulse">
+              <span className="sr-only">Đang kiểm tra phiên đăng nhập</span>
+              <span className="size-9 rounded-full bg-[#e0f2fe]" aria-hidden="true" />
+              <span className="flex flex-col gap-1.5" aria-hidden="true">
+                <span className="h-2.5 w-24 rounded bg-slate-200" />
+                <span className="h-2 w-14 rounded bg-slate-100" />
+              </span>
+            </div>
+          ) : isAuthenticated && user ? (
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#e2e8f0] hover:bg-slate-50 transition cursor-pointer"
+                aria-expanded={userDropdownOpen}
+                aria-haspopup="true"
+                className="flex items-center gap-2 rounded-lg py-1.5 hover:bg-slate-50 transition cursor-pointer focus-visible:outline-2 focus-visible:outline-[#0284c7]"
               >
-                <div className="size-8 rounded-full bg-[#e0f2fe] text-[#0284c7] font-bold text-sm flex items-center justify-center">
-                  {(user.hoTen || user.email || 'U').charAt(0).toUpperCase()}
+                <div className="size-9 shrink-0 rounded-full bg-[#e0f2fe] text-[#0369a1] font-bold text-sm flex items-center justify-center">
+                  {getInitials(user.hoTen, user.email)}
                 </div>
                 <div className="flex flex-col text-left">
                   <span className="text-[13px] font-semibold text-[#0f172a] max-w-[120px] truncate">
                     {user.hoTen || user.email}
                   </span>
-                  {user.vaiTro && user.vaiTro !== 'KHACH_HANG' && (
-                    <span className="text-[10px] font-medium text-[#0284c7]">
-                      {user.vaiTro}
-                    </span>
-                  )}
+                  <span className="text-[10px] text-[#64748b]">
+                    {user.vaiTro === 'ADMIN' ? 'Quản trị viên' : user.vaiTro === 'NHAN_VIEN' ? 'Nhân viên phòng vé' : 'Thành viên'}
+                  </span>
                 </div>
+                <svg className={`size-4 text-[#64748b] transition-transform ${userDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="m6 9 6 6 6-6" />
+                </svg>
               </button>
 
               {userDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-[#e2e8f0] py-1 z-50">
-                  <div className="px-4 py-2 border-b border-[#f1f5f9]">
-                    <p className="text-xs text-[#64748b]">Đăng nhập với</p>
-                    <p className="text-xs font-semibold text-[#0f172a] truncate">{user.email}</p>
-                  </div>
                   <Link
                     to="/tai-khoan"
                     onClick={() => setUserDropdownOpen(false)}
                     className="block px-4 py-2 text-[13px] text-[#334155] hover:bg-[#f8fafc]"
                   >
-                    Tài khoản cá nhân
+                    Thông tin cá nhân
                   </Link>
-                  <Link
-                    to="/tai-khoan/thanh-toan"
-                    onClick={() => setUserDropdownOpen(false)}
-                    className="block px-4 py-2 text-[13px] text-[#334155] hover:bg-[#f8fafc]"
-                  >
-                    Thanh toán vé
-                  </Link>
-                  <Link
-                    to="/tai-khoan/lich-su-giao-dich"
-                    onClick={() => setUserDropdownOpen(false)}
-                    className="block px-4 py-2 text-[13px] text-[#334155] hover:bg-[#f8fafc]"
-                  >
-                    Lịch sử giao dịch
-                  </Link>
-                  <Link
-                    to="/bao-cao"
-                    onClick={() => setUserDropdownOpen(false)}
-                    className="block px-4 py-2 text-[13px] text-[#0284c7] font-medium hover:bg-[#f8fafc]"
-                  >
-                    Thống kê báo cáo
-                  </Link>
-                  {(user.vaiTro === 'ADMIN' || user.vaiTro === 'NHAN_VIEN') && (
-                    <Link
-                      to="/quan-ly-tin-tuc"
-                      onClick={() => setUserDropdownOpen(false)}
-                      className="block px-4 py-2 text-[13px] text-[#0284c7] font-medium hover:bg-[#f8fafc]"
-                    >
-                      Quản lý tin tức
-                    </Link>
-                  )}
-                  {user.vaiTro === 'ADMIN' && (
-                    <Link
-                      to="/quan-ly-nhan-vien"
-                      onClick={() => setUserDropdownOpen(false)}
-                      className="block px-4 py-2 text-[13px] text-[#0284c7] font-medium hover:bg-[#f8fafc]"
-                    >
-                      Quản lý nhân viên
-                    </Link>
-                  )}
                   <button
                     type="button"
-                    onClick={() => {
-                      setUserDropdownOpen(false);
-                      logout();
-                    }}
-                    className="w-full text-left px-4 py-2 text-[13px] text-red-600 hover:bg-red-50 border-t border-[#f1f5f9] cursor-pointer"
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className="w-full text-left px-4 py-2 text-[13px] text-red-600 hover:bg-red-50 border-t border-[#f1f5f9] cursor-pointer disabled:opacity-50"
                   >
-                    Đăng xuất
+                    {isLoggingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}
                   </button>
                 </div>
               )}
@@ -171,6 +166,14 @@ export default function Header() {
 
         {/* Nút bật/tắt Menu Mobile */}
         <div className="flex md:hidden items-center">
+          {!loading && !isAuthenticated && (
+            <Link
+              to="/dang-nhap"
+              className="mr-3 text-[14px] font-semibold text-[#0284c7]"
+            >
+              Đăng nhập
+            </Link>
+          )}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -191,7 +194,7 @@ export default function Header() {
       {/* Menu thả xuống Mobile */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-[#e2e8f0] bg-white px-6 py-4 flex flex-col gap-3">
-          {navLinks.map((link) => (
+          {visibleNavLinks.map((link) => (
             <Link
               key={link.to}
               to={link.to}
@@ -204,20 +207,24 @@ export default function Header() {
             </Link>
           ))}
           <div className="pt-3 border-t border-[#f1f5f9] flex flex-col gap-2">
-            {isAuthenticated && user ? (
+            {loading ? (
+              <p role="status" className="text-sm text-[#64748b]">Đang kiểm tra phiên đăng nhập...</p>
+            ) : isAuthenticated && user ? (
               <>
-                <div className="flex items-center gap-2 py-1 text-sm font-semibold text-[#0f172a]">
-                  <span>Chào, {user.hoTen || user.email}</span>
-                </div>
+                <Link
+                  to="/tai-khoan"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-sm text-[#334155] py-1"
+                >
+                  Thông tin cá nhân
+                </Link>
                 <button
                   type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    logout();
-                  }}
-                  className="text-left text-sm text-red-600 py-1"
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="text-left text-sm text-red-600 py-1 disabled:opacity-50"
                 >
-                  Đăng xuất
+                  {isLoggingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}
                 </button>
               </>
             ) : (
@@ -240,6 +247,11 @@ export default function Header() {
             )}
           </div>
         </div>
+      )}
+      {logoutError && (
+        <p role="alert" className="bg-red-50 px-6 py-2 text-sm text-red-700">
+          {logoutError}
+        </p>
       )}
     </header>
   );
