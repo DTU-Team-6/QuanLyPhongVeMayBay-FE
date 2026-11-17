@@ -28,6 +28,12 @@ export default function AdminShell({ user, activeKey = 'news', children }) {
       icon: <img src={usersIcon} alt="" className="size-[18px] shrink-0" />,
     },
     {
+      key: 'tickets',
+      to: '/quan-ly-ban-ve',
+      label: 'Quản lý bán vé',
+      icon: <svg className="size-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M7 9h10M7 13h6" /></svg>,
+    },
+    {
       key: 'reports',
       to: '/bao-cao',
       label: 'Thống kê báo cáo doanh thu',
