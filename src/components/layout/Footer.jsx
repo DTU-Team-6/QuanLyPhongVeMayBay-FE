@@ -55,6 +55,9 @@ export default function Footer() {
             <p className="font-semibold text-white text-[14px]">
               Thông tin cần biết
             </p>
+            <Link to="/chuyen-bay-cua-toi" className="text-[#cbd5e1] hover:text-white text-[13px] leading-[1.5] transition-colors">
+              Xem chuyến bay của tôi
+            </Link>
             <Link
               to="/dieu-khoan"
               className="text-[#cbd5e1] hover:text-white text-[13px] leading-[1.5] transition-colors"
