@@ -10,17 +10,17 @@
 
 - Đối chiếu Figma các frame danh sách, sửa nhanh và trạng thái trống.
 - Kiểm tra hợp đồng Backend develop qua GitHub: GET danh sách, PUT sửa, GET PDF; chưa thấy API hủy vé.
+- Task 1 đã commit `30f93e2`: danh sách, tìm kiếm, lọc, phân trang; build thành công, 17/17 test FE qua.
 
 ## Đang dở
 
-- Task 1: danh sách, tìm kiếm, lọc, phân trang và trạng thái tải/lỗi.
+- Task 2: modal xác nhận hủy vé; chặn thao tác vì Backend chưa có API.
 
 ## Việc tiếp theo
 
-1. Build/test và commit Task 1.
-2. Modal hủy vé theo hợp đồng hiện có.
-3. Form sửa vé và validation.
-4. Xuất PDF, build/test, merge develop, push và chuẩn bị PR.
+1. Build/test và commit Task 2.
+2. Form sửa vé và validation.
+3. Xuất PDF, build/test, merge develop, push và chuẩn bị PR.
 
 ## Quyết định đã chốt
 
