@@ -94,6 +94,19 @@ export function AuthProvider({ children }) {
     return authenticatedUser;
   }, []);
 
+  const finishOAuthLogin = useCallback(async () => {
+    const authenticatedUser = await authService.getCurrentUser();
+    if (!authenticatedUser) {
+      throw new Error('Không xác nhận được phiên đăng nhập. Vui lòng thử lại.');
+    }
+    authCheckRef.current += 1;
+    setUser(authenticatedUser);
+    setLoading(false);
+    setSessionExpired(false);
+    channelRef.current?.postMessage('login');
+    return authenticatedUser;
+  }, []);
+
   const clearSessionExpired = useCallback(() => setSessionExpired(false), []);
 
   const value = {
@@ -104,6 +117,7 @@ export function AuthProvider({ children }) {
     isAuthenticated: !!user,
     checkAuth,
     login,
+    finishOAuthLogin,
     logout,
   };
 

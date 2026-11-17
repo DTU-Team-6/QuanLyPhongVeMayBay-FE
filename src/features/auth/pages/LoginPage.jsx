@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
+import authService from '../../../services/authService';
 
 function LoginIcon() {
   return (
@@ -122,6 +123,23 @@ export default function LoginPage() {
     }
   };
 
+  const handleOAuthLogin = (provider) => {
+    setErrorMessage('');
+    setNotice('');
+    try {
+      const url = authService.getOAuthUrl(provider);
+      const next = new URLSearchParams(location.search).get('next');
+      if (next?.startsWith('/') && !next.startsWith('//') && !next.includes('\\')) {
+        sessionStorage.setItem('oauth-login-next', next);
+      } else {
+        sessionStorage.removeItem('oauth-login-next');
+      }
+      window.location.assign(url);
+    } catch (error) {
+      setErrorMessage(error.message || 'Không thể bắt đầu đăng nhập. Vui lòng thử lại.');
+    }
+  };
+
   return (
     <section className="w-full flex-1 bg-[#f8fafc] px-4 py-10 md:px-6 md:py-9">
       <div className="mx-auto w-full max-w-[480px]">
@@ -206,7 +224,7 @@ export default function LoginPage() {
               <button
                 key={provider}
                 type="button"
-                onClick={() => setNotice(`Đăng nhập ${provider} sẽ được kết nối sau.`)}
+                onClick={() => handleOAuthLogin(provider.toLowerCase())}
                 className="flex h-[42px] items-center justify-center gap-2 rounded-[8px] border border-[#cbd5e1] text-sm font-medium text-[#475569] transition hover:border-[#0284c7] hover:bg-[#f8fafc]"
               >
                 <span className="font-bold text-[#0284c7]">{provider === 'Google' ? 'G' : 'f'}</span>
@@ -214,6 +232,9 @@ export default function LoginPage() {
               </button>
             ))}
           </div>
+          <p className="mt-2 text-center text-xs text-[#64748b]">
+            Ghi nhớ đăng nhập chỉ áp dụng khi đăng nhập bằng mật khẩu.
+          </p>
 
           <p className="mt-6 flex flex-wrap items-center justify-center gap-1 text-xs text-[#64748b]">
             <span>Chưa có tài khoản?</span>

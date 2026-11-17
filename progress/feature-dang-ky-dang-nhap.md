@@ -27,7 +27,9 @@
 
 ## Đang dở
 
-- Đã kết nối ghi nhớ đăng nhập và refresh token; người dùng đã áp dụng migration BE vào database kiểm thử. Đăng nhập Google/Facebook và khôi phục mật khẩu chưa triển khai.
+- Đã kết nối ghi nhớ đăng nhập và refresh token; người dùng đã áp dụng migration BE vào database kiểm thử. Khôi phục mật khẩu chưa triển khai.
+- Đã nối nút đăng nhập Google/Facebook và callback FE; BE có luồng OAuth nhưng chưa áp dụng migration hoặc kiểm tra với nhà cung cấp thật.
+- Kiểm tra giả lập callback OAuth thành công, email trùng và phiên không hợp lệ; các nút chuyển tới đúng đường dẫn BE. OAuth dùng cookie phiên, không áp dụng lựa chọn ghi nhớ.
 - Kiểm tra giả lập: checkbox gửi đúng cả hai giá trị; hai request 401 đồng thời dùng một refresh trong cùng tab; refresh thất bại hoặc request thử lại vẫn 401 chuyển phiên đã đăng nhập về trang đăng nhập.
 - Kiểm tra API BE với database thật: cookie phiên/có thời hạn, rotation, đăng xuất, dùng lại token và hai refresh đồng thời đều đạt. Đã tạo tài khoản giả trong database kiểm thử; không xoá dữ liệu.
 - Người dùng báo đăng nhập không chọn ghi nhớ, sau 15 phút tải lại vẫn đăng nhập.
@@ -41,7 +43,8 @@
 ## Việc tiếp theo (theo thứ tự)
 
 1. Kiểm tra luồng FE/BE thật trên giao diện và kiểm tra đồng bộ nhiều tab.
-2. Tích hợp OAuth Google/Facebook và khôi phục mật khẩu khi được yêu cầu.
+2. Cấu hình provider OAuth, áp dụng migration vào database được chọn và kiểm tra đăng nhập thật.
+3. Tích hợp khôi phục mật khẩu khi được yêu cầu.
 
 ## Quyết định đã chốt và lưu ý
 
@@ -54,5 +57,5 @@
 ## Lỗi đang gặp (nếu có)
 
 - `npm test`: đạt 20/20 test.
-- `npm run build`: thành công; Vite cảnh báo chunk JavaScript 665.85 kB lớn hơn 500 kB.
+- `npm run build`: thành công; Vite cảnh báo chunk JavaScript 668.22 kB lớn hơn 500 kB.
 - BE: `./gradlew test --tests 'com.team6.quanlyvemaybay.service.AuthServiceTest' --tests 'com.team6.quanlyvemaybay.controller.AuthControllerTest'` thành công.

@@ -14,6 +14,17 @@ async function ensureCsrfToken() {
  * Service quản lý xác thực và phiên đăng nhập của người dùng
  */
 export const authService = {
+  getOAuthUrl(provider) {
+    if (!['google', 'facebook'].includes(provider)) {
+      throw new Error('Nhà cung cấp đăng nhập không hợp lệ.');
+    }
+    const baseUrl = (import.meta.env.VITE_API_BASE_URL || '').trim().replace(/\/+$/, '');
+    if (!baseUrl) {
+      throw new Error('Chưa cấu hình VITE_API_BASE_URL. Hãy tạo file .env theo .env.example.');
+    }
+    return `${baseUrl}/oauth2/authorization/${provider}`;
+  },
+
   async register(registration) {
     await ensureCsrfToken();
     const response = await apiClient('/auth/register', {
