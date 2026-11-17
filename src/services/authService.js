@@ -9,35 +9,31 @@ export const authService = {
    * BE trả về id, hoTen, email, vaiTro (ADMIN, NHAN_VIEN, KHACH_HANG)
    */
   async getCurrentUser() {
-    try {
-      const res = await apiClient('/auth/me');
-      return res?.data;
-    } catch {
-      return null;
-    }
+    const res = await apiClient('/auth/me');
+    return res?.data;
+  },
+
+  /** Lấy cookie CSRF trước thao tác thay đổi dữ liệu, kể cả đăng nhập. */
+  async ensureCsrf() {
+    await apiClient('/auth/csrf');
+  },
+
+  /** Đăng nhập bằng cookie HttpOnly do Backend cấp. */
+  async login(email, password) {
+    await this.ensureCsrf();
+    const res = await apiClient('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+    return res?.data;
   },
 
   /**
    * Đăng xuất phiên hiện tại
    */
   async logout() {
-    try {
-      await apiClient('/auth/logout', { method: 'POST' });
-    } catch (e) {
-      console.warn('Lỗi khi gọi logout:', e);
-    }
-  },
-
-  /**
-   * Làm mới access token
-   */
-  async refreshToken() {
-    try {
-      const res = await apiClient('/auth/refresh', { method: 'POST' });
-      return res?.data;
-    } catch {
-      return null;
-    }
+    await this.ensureCsrf();
+    await apiClient('/auth/logout', { method: 'POST' });
   },
 };
 

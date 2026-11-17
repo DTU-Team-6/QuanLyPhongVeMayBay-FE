@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
+import { Link } from 'react-router-dom';
 import AdminShell from '../../../components/layout/AdminShell';
 import employeeService from '../employeeService';
 import { TIEU_CHI_TIM } from '../employeeTypes';
@@ -26,7 +27,7 @@ function EmployeeShell({ children, user }) {
 }
 
 export default function EmployeePage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, checkAuth } = useAuth();
   const [searchBy, setSearchBy] = useState('MA_NHAN_VIEN');
   const [keyword, setKeyword] = useState('');
   const [filter, setFilter] = useState({ trang: 0, kichThuoc: PAGE_SIZE });
@@ -47,14 +48,24 @@ export default function EmployeePage() {
     } catch (requestError) {
       setData(null);
       setError(requestError);
+      if (requestError.status === 401) checkAuth();
     } finally {
       setLoading(false);
     }
-  }, [filter]);
+  }, [filter, checkAuth]);
 
   useEffect(() => {
     if (!authLoading && user?.vaiTro === 'ADMIN') load();
   }, [authLoading, user?.vaiTro, load]);
+
+  useEffect(() => {
+    if (!authLoading && user?.vaiTro !== 'ADMIN') {
+      setData(null);
+      setDeleteTarget(null);
+      setFormMode(null);
+      setSelectedEmployee(null);
+    }
+  }, [authLoading, user?.vaiTro]);
 
   const isAdmin = !authLoading && user?.vaiTro === 'ADMIN';
 
@@ -85,21 +96,23 @@ export default function EmployeePage() {
       await employeeService.create(payload);
       setNotice('Thêm nhân viên thành công.');
       setFormMode(null);
-      load();
+      await load();
     } else if (formMode === 'edit' && selectedEmployee) {
       await employeeService.update(selectedEmployee.id, payload);
       setNotice(`Cập nhật nhân viên ${selectedEmployee.maNhanVien} thành công.`);
       setFormMode(null);
       setSelectedEmployee(null);
-      load();
+      await load();
     }
   }
 
   async function deleteEmployee(employee) {
+    if (!isAdmin) throw new Error('Cần đăng nhập Admin để xóa nhân viên.');
     await employeeService.remove(employee.id);
     setDeleteTarget(null);
     setNotice(`Xóa nhân viên ${employee.maNhanVien} - ${employee.hoTen} thành công.`);
-    load();
+    if (employees.length === 1 && filter.trang > 0) setFilter((current) => ({ ...current, trang: current.trang - 1 }));
+    else await load();
   }
 
   if (formMode === 'create') return <EmployeeShell user={user}>
@@ -112,7 +125,7 @@ export default function EmployeePage() {
   if (formMode === 'edit' && selectedEmployee) return <EmployeeShell user={user}>
     <div className="mb-6 flex justify-between text-xs text-[#64748b]"><span>Quản trị / Quản lý nhân viên</span><span>Vân Việt • HCM</span></div>
     <div className="mb-6"><h1 className="text-2xl font-bold text-[#0f172a]">Sửa nhân viên</h1><p className="mt-1 text-sm text-[#64748b]">{selectedEmployee.maNhanVien} – {selectedEmployee.hoTen} • Cập nhật thông tin và quyền truy cập.</p></div>
-    <EmployeeForm mode="edit" employee={selectedEmployee} onCancel={() => { setFormMode(null); setSelectedEmployee(null); }} onSave={saveEmployee} />
+    <EmployeeForm mode="edit" employee={selectedEmployee} canSubmit={isAdmin} onCancel={() => { setFormMode(null); setSelectedEmployee(null); }} onSave={saveEmployee} />
     <EmployeeFormInfo mode="edit" />
   </EmployeeShell>;
 
@@ -121,9 +134,9 @@ export default function EmployeePage() {
       <div className="mb-7 flex items-center justify-between text-xs text-[#667895]"><span>Quản trị / Quản lý nhân viên</span><span>Vân Việt • HCM</span></div>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div><h1 className="text-[24px] font-bold tracking-tight">Quản lý nhân viên</h1><p className="mt-1 text-sm text-[#667895]">{data ? `${total} tài khoản` : 'Tài khoản'} • Quản lý thông tin và phân quyền đội ngũ phòng vé.</p></div>
-        <button type="button" onClick={() => { setNotice(''); setFormMode('create'); }} className="inline-flex items-center gap-2 rounded-lg bg-[#0284c7] px-5 py-3 text-sm font-semibold text-white hover:bg-[#0369a1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7]"><img src={plusIcon} alt="" className="size-4" />Thêm nhân viên</button>
+        {isAdmin && <button type="button" onClick={() => { setNotice(''); setFormMode('create'); }} className="inline-flex items-center gap-2 rounded-lg bg-[#0284c7] px-5 py-3 text-sm font-semibold text-white hover:bg-[#0369a1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7]"><img src={plusIcon} alt="" className="size-4" />Thêm nhân viên</button>}
       </div>
-      {!isAdmin && <div role="status" className="mb-6 rounded-lg border border-[#bae6fd] bg-[#e0f2fe] px-4 py-3 text-sm text-[#075985]">{authLoading ? 'Đang kiểm tra phiên đăng nhập...' : 'Đây là bản xem giao diện. Đăng nhập bằng tài khoản Admin và chạy Backend để xem dữ liệu, thêm, sửa hoặc xóa nhân viên.'}</div>}
+      {!isAdmin && <div role="status" className="mb-6 rounded-lg border border-[#bae6fd] bg-[#e0f2fe] px-4 py-3 text-sm text-[#075985]">{authLoading ? 'Đang kiểm tra phiên đăng nhập...' : 'Cần đăng nhập Admin để xem và quản lý nhân viên.'}{!authLoading && <Link to="/dang-nhap" state={{ from: '/quan-ly-nhan-vien' }} className="ml-3 font-semibold underline">Đăng nhập Admin</Link>}</div>}
       {notice && <div role="status" className="mb-6 rounded-lg border border-[#9be8c4] bg-[#eafbf3] px-4 py-3 text-sm font-semibold text-[#086b51]">{notice}</div>}
       <form onSubmit={search} className="mb-6 grid gap-4 rounded-xl border border-[#dce5ef] bg-white p-5 shadow-sm md:grid-cols-[240px_minmax(0,1fr)_auto_auto] md:items-end">
         <label className="block text-xs font-semibold text-[#33435e]">Tìm theo<select disabled={!isAdmin} className="mt-2 h-10 w-full rounded-lg border border-[#c9d7e7] bg-white px-3 text-sm font-normal text-[#23324a] focus:border-[#0284c7] focus:outline-none disabled:opacity-50" value={searchBy} onChange={(event) => setSearchBy(event.target.value)}>{TIEU_CHI_TIM.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>

@@ -4,7 +4,7 @@
 
 - Chức năng: Quản lý nhân viên (Danh sách → Thêm → Sửa → Xóa)
 - Nhánh: `feature/quan-ly-nhan-vien`
-- Cập nhật lần cuối: 12/11/2026
+- Cập nhật lần cuối: 17/11/2026
 
 ## Đã xong (đã commit)
 
@@ -16,12 +16,15 @@
 - Xóa: hộp thoại xác nhận theo Figma frame `1:2809`; chỉ gọi DELETE sau nút xác nhận, hiển thị lỗi và chống gửi trùng. Backend thực hiện soft delete. `npm run build` thành công; `npm test` đạt 13/13.
 - Đã mở giao diện trên trình duyệt với API mô phỏng chỉ chạy cục bộ: danh sách hiển thị 8 dòng, mở/đóng trang Thêm và Sửa, mở/hủy hộp thoại Xóa; console không có lỗi. Dữ liệu mô phỏng không nằm trong source.
 - Khi chưa đăng nhập Admin, trang vẫn hiển thị bố cục danh sách và mở được form Thêm để xem; không gọi API danh sách, các nút tìm kiếm/lưu bị khóa và không có dữ liệu nhân viên giả. Đã kiểm tra trên trình duyệt không có Backend; `npm run build` thành công, `npm test` đạt 13/13.
+- Đã đồng bộ `origin/develop` tại `8737bce` bằng fast-forward, không có conflict. Backend `develop` tại `d7a8022` chưa có GET `/api/v1/nhan-vien`.
+- Thêm đăng nhập qua `POST /api/v1/auth/login`, lấy CSRF qua `GET /api/v1/auth/csrf`; chỉ Admin được mở thao tác quản trị, form Sửa và Xóa kiểm tra lại quyền trước khi gửi. Bỏ đường gọi refresh vì Backend `develop` hiện không có endpoint đó.
+- Kiểm tra bằng trình duyệt: khi chưa đăng nhập, trang nhân viên không tải dữ liệu, không hiện nút Thêm, các ô tìm kiếm bị khóa; liên kết Đăng nhập Admin mở form đăng nhập. `npm run build` thành công, `npm test` đạt 17/17.
 
 ## Đang dở
 
 - GET danh sách chưa có trên Backend `develop`; chưa thể kiểm thử dữ liệu thật.
 - Figma có hai trường `Tài khoản` và `Chi nhánh` mà DTO Backend `develop` không nhận; chưa có hợp đồng để lưu hai trường này.
-- Chưa thử POST/PUT/DELETE với Backend thật hoặc tài khoản Admin thật.
+- Backend không chạy ở `localhost:8080` trong phiên này và chưa có thông tin đăng nhập Admin; chưa thử POST/PUT/DELETE với dữ liệu thật.
 
 ## Việc tiếp theo
 

@@ -27,11 +27,18 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  const login = useCallback(async (email, password) => {
+    const currentUser = await authService.login(email, password);
+    setUser(currentUser);
+    return currentUser;
+  }, []);
+
   const value = {
     user,
     loading,
     isAuthenticated: !!user,
     checkAuth,
+    login,
     logout,
   };
 
