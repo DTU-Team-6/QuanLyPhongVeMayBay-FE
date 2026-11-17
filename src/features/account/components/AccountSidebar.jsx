@@ -1,19 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-
-/**
- * Lấy chữ cái viết tắt từ họ tên (VD: "Nguyễn Minh Anh" -> "NA" hoặc "MA")
- */
-function getInitials(name, email) {
-  if (name && name.trim()) {
-    const parts = name.trim().split(/\s+/);
-    if (parts.length >= 2) {
-      return (parts[parts.length - 2][0] + parts[parts.length - 1][0]).toUpperCase();
-    }
-    return parts[0].slice(0, 2).toUpperCase();
-  }
-  return (email || 'KH').slice(0, 2).toUpperCase();
-}
+import { getInitials } from '../../../utils/formatters';
 
 const MENU_ITEMS = [
   {

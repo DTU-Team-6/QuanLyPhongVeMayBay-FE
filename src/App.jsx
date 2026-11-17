@@ -16,6 +16,18 @@ function AuthRouter() {
     }
   }, [sessionExpired, clearSessionExpired]);
 
+  useEffect(() => {
+    const handleLoginOtherTab = (event) => {
+      if (!['/dang-nhap', '/dang-ky'].includes(router.state.location.pathname)) return;
+      const next = new URLSearchParams(router.state.location.search).get('next');
+      router.navigate(next?.startsWith('/') && !next.startsWith('//')
+        ? next
+        : event.detail.vaiTro === 'KHACH_HANG' ? '/' : '/quan-ly-ban-ve', { replace: true });
+    };
+    window.addEventListener('auth-login-other-tab', handleLoginOtherTab);
+    return () => window.removeEventListener('auth-login-other-tab', handleLoginOtherTab);
+  }, []);
+
   return <RouterProvider router={router} />;
 }
 

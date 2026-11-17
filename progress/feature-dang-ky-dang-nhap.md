@@ -31,6 +31,8 @@
 - Kiểm tra giả lập: checkbox gửi đúng cả hai giá trị; hai request 401 đồng thời dùng một refresh trong cùng tab; refresh thất bại hoặc request thử lại vẫn 401 chuyển phiên đã đăng nhập về trang đăng nhập.
 - Kiểm tra API BE với database thật: cookie phiên/có thời hạn, rotation, đăng xuất, dùng lại token và hai refresh đồng thời đều đạt. Đã tạo tài khoản giả trong database kiểm thử; không xoá dữ liệu.
 - Người dùng báo đăng nhập không chọn ghi nhớ, sau 15 phút tải lại vẫn đăng nhập.
+- Đã sửa đồng bộ trạng thái đăng nhập/đăng xuất giữa các tab; kiểm tra giả lập hai tab, kể cả khi BroadcastChannel không có và quay lại tab.
+- Đã chỉnh biểu tượng tài khoản, trạng thái chờ xác thực và menu tài khoản chỉ gồm thông tin cá nhân, đăng xuất; kiểm tra menu desktop/mobile với API giả lập.
 - Chưa xác nhận đầy đủ luồng FE/BE thật trên giao diện với lựa chọn ghi nhớ, đóng/mở trình duyệt, đồng bộ nhiều tab hoặc chờ hết hạn thực tế 7 ngày.
 
 ## Việc tiếp theo (theo thứ tự)
@@ -49,5 +51,5 @@
 ## Lỗi đang gặp (nếu có)
 
 - `npm test`: đạt 20/20 test.
-- `npm run build`: thành công; Vite cảnh báo chunk JavaScript 653.02 kB lớn hơn 500 kB.
+- `npm run build`: thành công; Vite cảnh báo chunk JavaScript 654.06 kB lớn hơn 500 kB.
 - BE: `./gradlew test --tests 'com.team6.quanlyvemaybay.service.AuthServiceTest' --tests 'com.team6.quanlyvemaybay.controller.AuthControllerTest'` thành công.
