@@ -18,6 +18,7 @@ import PublicNewsListPage from '../features/news/pages/PublicNewsListPage';
 import PublicNewsDetailPage from '../features/news/pages/PublicNewsDetailPage';
 import LoginPage from '../features/auth/pages/LoginPage';
 import RegisterPage from '../features/auth/pages/RegisterPage';
+import PersonalInfoPage from '../features/account/pages/PersonalInfoPage';
 
 export const router = createBrowserRouter([
   { path: '/quan-ly-nhan-vien', element: <EmployeePage /> },
@@ -99,12 +100,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'tai-khoan',
-        element: (
-          <PlaceholderPage
-            title="Thông tin cá nhân"
-            description="Màn hình quản lý thông tin tài khoản cá nhân."
-          />
-        ),
+        element: <PersonalInfoPage />,
       },
       {
         // 6.4.3 – Thanh toán vé trong khu vực tài khoản

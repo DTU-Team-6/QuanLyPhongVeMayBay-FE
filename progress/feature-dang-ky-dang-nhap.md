@@ -34,7 +34,8 @@
 - Đã sửa đồng bộ trạng thái đăng nhập/đăng xuất giữa các tab; kiểm tra giả lập hai tab, kể cả khi BroadcastChannel không có và quay lại tab.
 - Đã chỉnh biểu tượng tài khoản, trạng thái chờ xác thực và menu tài khoản chỉ gồm thông tin cá nhân, đăng xuất; kiểm tra menu desktop/mobile với API giả lập.
 - Dropdown tài khoản và menu mobile tự đóng khi nhấn bên ngoài hoặc nhấn Escape; đã kiểm tra bằng API giả lập.
-- Đang làm giao diện thông tin cá nhân, hộp chỉnh sửa và đổi mật khẩu; chưa kết nối API lưu.
+- Đã làm giao diện thông tin cá nhân và hộp chỉnh sửa; dữ liệu chưa có hiển thị trống, thao tác lưu báo chưa hỗ trợ. Đã kiểm tra giả lập desktop/mobile, không gửi API lưu.
+- Đang làm giao diện đổi mật khẩu; chưa kết nối API.
 - Chưa xác nhận đầy đủ luồng FE/BE thật trên giao diện với lựa chọn ghi nhớ, đóng/mở trình duyệt, đồng bộ nhiều tab hoặc chờ hết hạn thực tế 7 ngày.
 
 ## Việc tiếp theo (theo thứ tự)
