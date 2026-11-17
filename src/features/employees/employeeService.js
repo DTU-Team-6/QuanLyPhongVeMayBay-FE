@@ -1,4 +1,5 @@
 import apiClient from '../../services/apiClient';
+import { requireEmployeeList } from './employeeResponse';
 
 const RESOURCE = '/nhan-vien';
 
@@ -16,7 +17,7 @@ export const employeeService = {
     });
     const query = params.toString();
     const response = await apiClient(`${RESOURCE}${query ? `?${query}` : ''}`);
-    return response?.data;
+    return requireEmployeeList(response);
   },
 
   /** @param {import('./employeeTypes').ThemNhanVienRequest} payload */

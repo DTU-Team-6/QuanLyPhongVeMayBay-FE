@@ -19,6 +19,8 @@
 - Đã đồng bộ `origin/develop` tại `8737bce` bằng fast-forward, không có conflict. Backend `develop` tại `d7a8022` chưa có GET `/api/v1/nhan-vien`.
 - Thêm đăng nhập qua `POST /api/v1/auth/login`, lấy CSRF qua `GET /api/v1/auth/csrf`; chỉ Admin được mở thao tác quản trị, form Sửa và Xóa kiểm tra lại quyền trước khi gửi. Bỏ đường gọi refresh vì Backend `develop` hiện không có endpoint đó.
 - Kiểm tra bằng trình duyệt: khi chưa đăng nhập, trang nhân viên không tải dữ liệu, không hiện nút Thêm, các ô tìm kiếm bị khóa; liên kết Đăng nhập Admin mở form đăng nhập. `npm run build` thành công, `npm test` đạt 17/17.
+- Ngày 17/11: FE `origin/develop` vẫn là tổ tiên của nhánh tính năng (`git merge --ff-only origin/develop`: `Already up to date`). Bỏ fallback API URL viết cứng; cần `VITE_API_BASE_URL` trong `.env` (file này được ignore). Danh sách kiểm tra cấu trúc response, ngăn phản hồi lỗi thành trạng thái rỗng; chống kết quả tìm kiếm cũ ghi đè, kiểm tra lại phiên khi CRUD nhận 401. Modal Xóa có phím Escape và focus ban đầu ở Hủy.
+- Kiểm tra trình duyệt ở desktop và mobile 390 px: trang Danh sách không lộ dữ liệu/chức năng khi chưa đăng nhập, link đăng nhập mở đúng route; form đăng nhập hiển thị đúng và validation `required` chặn gửi rỗng. Không kiểm thử trực quan form Thêm/Sửa/modal Xóa với phiên Admin vì chưa có Backend hoạt động. `npm run build` thành công, `npm test` đạt 19/19 tại thời điểm ghi.
 
 ## Đang dở
 

@@ -4,7 +4,7 @@ import { getCookie } from '../utils/csrf';
  * Địa chỉ gốc backend đọc từ biến môi trường VITE_API_BASE_URL,
  * không viết cứng trong code. Tiền tố /api/v1 đặt tại đây.
  */
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/+$/, '');
+const BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/+$/, '');
 const API_PREFIX = '/api/v1';
 
 /**
@@ -27,6 +27,13 @@ export class ApiError extends Error {
  * @param {RequestInit} [options] - Cấu hình fetch
  */
 export async function apiClient(endpoint, options = {}) {
+  if (!BASE_URL) {
+    throw new ApiError({
+      message: 'Chưa cấu hình VITE_API_BASE_URL để kết nối Backend.',
+      status: 0,
+      code: 'API_BASE_URL_MISSING',
+    });
+  }
   const url = `${BASE_URL}${API_PREFIX}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
   const method = (options.method || 'GET').toUpperCase();

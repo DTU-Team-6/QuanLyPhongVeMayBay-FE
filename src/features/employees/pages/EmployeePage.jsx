@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { Link } from 'react-router-dom';
 import AdminShell from '../../../components/layout/AdminShell';
@@ -38,21 +38,26 @@ export default function EmployeePage() {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [notice, setNotice] = useState('');
+  const requestSerial = useRef(0);
 
   const load = useCallback(async () => {
+    if (authLoading || user?.vaiTro !== 'ADMIN') return;
+    const serial = ++requestSerial.current;
     setLoading(true);
     setError(null);
     try {
       const result = await employeeService.list(filter);
-      setData(result);
+      if (serial === requestSerial.current) setData(result);
     } catch (requestError) {
-      setData(null);
-      setError(requestError);
-      if (requestError.status === 401) checkAuth();
+      if (serial === requestSerial.current) {
+        setData(null);
+        setError(requestError);
+        if (requestError.status === 401) checkAuth();
+      }
     } finally {
-      setLoading(false);
+      if (serial === requestSerial.current) setLoading(false);
     }
-  }, [filter, checkAuth]);
+  }, [authLoading, user?.vaiTro, filter, checkAuth]);
 
   useEffect(() => {
     if (!authLoading && user?.vaiTro === 'ADMIN') load();
@@ -60,7 +65,11 @@ export default function EmployeePage() {
 
   useEffect(() => {
     if (!authLoading && user?.vaiTro !== 'ADMIN') {
+      requestSerial.current += 1;
       setData(null);
+      setLoading(false);
+      setError(null);
+      setNotice('');
       setDeleteTarget(null);
       setFormMode(null);
       setSelectedEmployee(null);
@@ -79,26 +88,41 @@ export default function EmployeePage() {
     event.preventDefault();
     if (!isAdmin) return;
     const term = keyword.trim();
-    setFilter(term
+    const nextFilter = term
       ? { tieuChi: searchBy, tuKhoa: term, trang: 0, kichThuoc: PAGE_SIZE }
-      : { trang: 0, kichThuoc: PAGE_SIZE });
+      : { trang: 0, kichThuoc: PAGE_SIZE };
+    if (JSON.stringify(nextFilter) === JSON.stringify(filter)) load();
+    else setFilter(nextFilter);
   }
 
   function reset() {
+    if (!isAdmin) return;
     setSearchBy('MA_NHAN_VIEN');
     setKeyword('');
-    setFilter({ trang: 0, kichThuoc: PAGE_SIZE });
+    const nextFilter = { trang: 0, kichThuoc: PAGE_SIZE };
+    if (JSON.stringify(nextFilter) === JSON.stringify(filter)) load();
+    else setFilter(nextFilter);
   }
 
   async function saveEmployee(payload) {
     if (!isAdmin) throw new Error('Cần đăng nhập Admin để lưu thông tin nhân viên.');
     if (formMode === 'create') {
-      await employeeService.create(payload);
+      try {
+        await employeeService.create(payload);
+      } catch (requestError) {
+        if (requestError.status === 401) await checkAuth();
+        throw requestError;
+      }
       setNotice('Thêm nhân viên thành công.');
       setFormMode(null);
       await load();
     } else if (formMode === 'edit' && selectedEmployee) {
-      await employeeService.update(selectedEmployee.id, payload);
+      try {
+        await employeeService.update(selectedEmployee.id, payload);
+      } catch (requestError) {
+        if (requestError.status === 401) await checkAuth();
+        throw requestError;
+      }
       setNotice(`Cập nhật nhân viên ${selectedEmployee.maNhanVien} thành công.`);
       setFormMode(null);
       setSelectedEmployee(null);
@@ -108,7 +132,12 @@ export default function EmployeePage() {
 
   async function deleteEmployee(employee) {
     if (!isAdmin) throw new Error('Cần đăng nhập Admin để xóa nhân viên.');
-    await employeeService.remove(employee.id);
+    try {
+      await employeeService.remove(employee.id);
+    } catch (requestError) {
+      if (requestError.status === 401) await checkAuth();
+      throw requestError;
+    }
     setDeleteTarget(null);
     setNotice(`Xóa nhân viên ${employee.maNhanVien} - ${employee.hoTen} thành công.`);
     if (employees.length === 1 && filter.trang > 0) setFilter((current) => ({ ...current, trang: current.trang - 1 }));
@@ -162,7 +191,7 @@ export default function EmployeePage() {
           </tbody>
         </table>
         {loading && <div className="p-12 text-center text-sm text-[#667895]" role="status">Đang tải danh sách nhân viên...</div>}
-        {!loading && error && <div className="p-12 text-center text-sm" role="alert"><p className="font-semibold text-[#172137]">{backendPending ? 'API danh sách nhân viên đang chờ Backend cập nhật' : 'Không tải được danh sách nhân viên'}</p><p className="mt-2 text-[#667895]">{backendPending ? 'Endpoint GET /api/v1/nhan-vien chưa có trên nhánh develop.' : error.message}</p><button type="button" onClick={load} className="mt-4 rounded-lg bg-[#0284c7] px-4 py-2 font-semibold text-white">Thử lại</button></div>}
+        {!loading && error && <div className="p-12 text-center text-sm" role="alert"><p className="font-semibold text-[#172137]">{backendPending ? 'API danh sách nhân viên chưa khả dụng' : 'Không tải được danh sách nhân viên'}</p><p className="mt-2 text-[#667895]">{error.message}</p><button type="button" onClick={load} className="mt-4 rounded-lg bg-[#0284c7] px-4 py-2 font-semibold text-white">Thử lại</button></div>}
         {!loading && !error && employees.length === 0 && <div className="p-12 text-center text-sm"><p className="font-semibold">{!isAdmin ? 'Đăng nhập Admin để tải danh sách' : filter.tuKhoa ? 'Không có kết quả phù hợp' : 'Chưa có nhân viên'}</p><p className="mt-2 text-[#667895]">{!isAdmin ? 'Dữ liệu nhân viên không hiển thị khi chưa xác thực.' : filter.tuKhoa ? 'Thử thay đổi từ khóa hoặc tiêu chí tìm kiếm.' : 'Danh sách nhân viên sẽ hiển thị tại đây.'}</p></div>}
       </div>
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4 text-xs text-[#667895]"><span>Hiển thị {start}–{end} trong {total} bản ghi</span><div className="flex items-center gap-2"><button type="button" disabled={filter.trang === 0 || loading} onClick={() => setFilter((current) => ({ ...current, trang: current.trang - 1 }))} className="rounded-lg border border-[#c9d7e7] px-4 py-2 disabled:opacity-50">Trước</button><span className="rounded-lg bg-[#0284c7] px-3 py-2 font-semibold text-white">{filter.trang + 1}</span><button type="button" disabled={!data || filter.trang >= data.tongTrang - 1 || loading} onClick={() => setFilter((current) => ({ ...current, trang: current.trang + 1 }))} className="rounded-lg border border-[#c9d7e7] px-4 py-2 disabled:opacity-50">Sau</button></div></div>

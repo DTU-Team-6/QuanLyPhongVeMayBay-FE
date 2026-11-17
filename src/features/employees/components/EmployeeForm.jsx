@@ -36,7 +36,7 @@ export default function EmployeeForm({ mode, employee, onCancel, onSave, canSubm
 
   async function submit(event) {
     event.preventDefault();
-    if (saving) return;
+    if (saving || !canSubmit) return;
     const nextErrors = validateEmployee(values, mode);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;

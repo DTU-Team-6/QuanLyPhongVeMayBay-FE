@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import closeIcon from '../../../assets/employees/close.svg';
 import trashIcon from '../../../assets/employees/trash.svg';
 import trashWhiteIcon from '../../../assets/employees/trashWhite.svg';
@@ -7,6 +7,14 @@ import warningIcon from '../../../assets/employees/warning.svg';
 export default function EmployeeDeleteDialog({ employee, onCancel, onConfirm }) {
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    function handleKeyDown(event) {
+      if (event.key === 'Escape' && !saving) onCancel();
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onCancel, saving]);
 
   async function confirm() {
     if (saving) return;
@@ -30,7 +38,7 @@ export default function EmployeeDeleteDialog({ employee, onCancel, onConfirm }) 
         <div className="flex items-start gap-3 rounded-lg bg-[#fffbeb] p-4 text-[13px] text-[#92400e]"><img src={warningIcon} alt="" className="mt-0.5 size-[18px]" /><span>Thao tác này không thể hoàn tác. Vui lòng kiểm tra kỹ thông tin trước khi xác nhận.</span></div>
         {errorMessage && <p role="alert" className="text-sm text-red-600">{errorMessage}</p>}
       </div>
-      <footer className="flex justify-end gap-3 bg-[#f8fafc] px-6 py-4"><button type="button" onClick={onCancel} disabled={saving} className="h-10 rounded-lg border border-[#cbd5e1] bg-white px-4 text-sm font-semibold text-[#334155] hover:bg-[#f1f5f9] disabled:opacity-50">Hủy</button><button type="button" onClick={confirm} disabled={saving} className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#ef4444] px-4 text-sm font-semibold text-white hover:bg-[#dc2626] disabled:opacity-50"><img src={trashWhiteIcon} alt="" className="size-4" />{saving ? 'Đang xóa...' : 'Xác nhận xóa'}</button></footer>
+      <footer className="flex justify-end gap-3 bg-[#f8fafc] px-6 py-4"><button type="button" autoFocus onClick={onCancel} disabled={saving} className="h-10 rounded-lg border border-[#cbd5e1] bg-white px-4 text-sm font-semibold text-[#334155] hover:bg-[#f1f5f9] disabled:opacity-50">Hủy</button><button type="button" onClick={confirm} disabled={saving} className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#ef4444] px-4 text-sm font-semibold text-white hover:bg-[#dc2626] disabled:opacity-50"><img src={trashWhiteIcon} alt="" className="size-4" />{saving ? 'Đang xóa...' : 'Xác nhận xóa'}</button></footer>
     </section>
   </div>;
 }
