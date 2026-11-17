@@ -5,6 +5,7 @@ import ReportPage from '../features/reports/pages/ReportPage';
 import PlaceholderPage from '../components/common/PlaceholderPage';
 import EmployeePage from '../features/employees/pages/EmployeePage';
 import TicketPage from '../features/tickets/pages/TicketPage';
+import MyFlightsPage from '../features/my-flights/pages/MyFlightsPage';
 import LoginPage from '../features/auth/pages/LoginPage';
 import FlightSearchPage from '../features/flight-search/pages/FlightSearchPage';
 import PassengerInfoPage from '../features/booking/pages/PassengerInfoPage';
@@ -29,6 +30,10 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <HomePage />,
+      },
+      {
+        path: 'chuyen-bay-cua-toi',
+        element: <MyFlightsPage />,
       },
       {
         path: 'tin-tuc',
