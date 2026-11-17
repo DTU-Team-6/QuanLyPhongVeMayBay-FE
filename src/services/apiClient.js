@@ -27,6 +27,15 @@ export class ApiError extends Error {
  * @param {RequestInit} [options] - Cấu hình fetch
  */
 export async function apiClient(endpoint, options = {}) {
+  return request(endpoint, options, false);
+}
+
+/** Tải tệp nhị phân với cùng cookie, CSRF và xử lý lỗi như API JSON. */
+export async function apiClientBlob(endpoint, options = {}) {
+  return request(endpoint, options, true);
+}
+
+async function request(endpoint, options, binary) {
   const url = `${BASE_URL}${API_PREFIX}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
   const method = (options.method || 'GET').toUpperCase();
@@ -81,6 +90,10 @@ export async function apiClient(endpoint, options = {}) {
       });
     }
 
+    if (binary) {
+      const blob = await response.blob();
+      return { blob, contentType, disposition: response.headers.get('content-disposition') || '' };
+    }
     return data;
   } catch (error) {
     if (error instanceof ApiError) {

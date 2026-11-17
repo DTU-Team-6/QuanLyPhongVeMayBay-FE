@@ -12,9 +12,10 @@ import chartIcon from '../../assets/employees/chart.svg';
  */
 export default function AdminShell({ user, activeKey = 'news', children }) {
   const isStaffOrAdmin = user?.vaiTro === 'ADMIN' || user?.vaiTro === 'NHAN_VIEN';
+  const ticketArea = activeKey === 'tickets';
   const roleLabel = user?.vaiTro === 'ADMIN' ? 'Admin' : 'Nhân viên';
 
-  const navItems = [
+  const adminNavItems = [
     {
       key: 'profile',
       to: '/tai-khoan',
@@ -26,6 +27,12 @@ export default function AdminShell({ user, activeKey = 'news', children }) {
       to: '/quan-ly-nhan-vien',
       label: 'Quản lý nhân viên',
       icon: <img src={usersIcon} alt="" className="size-[18px] shrink-0" />,
+    },
+    {
+      key: 'tickets',
+      to: '/quan-ly-ban-ve',
+      label: 'Quản lý bán vé',
+      icon: <svg className="size-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M7 9h10M7 13h6" /></svg>,
     },
     {
       key: 'reports',
@@ -48,6 +55,14 @@ export default function AdminShell({ user, activeKey = 'news', children }) {
       ),
     },
   ];
+  const ticketNavItems = [
+    { key: 'home', to: '/', label: 'Tổng quan', icon: <img src={chartIcon} alt="" className="size-[18px] shrink-0" /> },
+    { key: 'search', to: '/chuyen-bay', label: 'Tìm vé trống', icon: <img src={usersIcon} alt="" className="size-[18px] shrink-0" /> },
+    { key: 'tickets', to: '/quan-ly-ban-ve', label: 'Quản lý bán vé', icon: <svg className="size-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M7 9h10M7 13h6" /></svg> },
+    { key: 'reports', to: '/bao-cao', label: 'Thống kê báo cáo', icon: <img src={chartIcon} alt="" className="size-[18px] shrink-0" /> },
+    { key: 'profile', to: '/tai-khoan', label: 'Thông tin tài khoản', icon: <img src={userIcon} alt="" className="size-[18px] shrink-0" /> },
+  ];
+  const navItems = ticketArea ? ticketNavItems : adminNavItems;
 
   return (
     <div className="min-h-screen bg-[#f7f9fc] font-['Inter',sans-serif] text-[#172137]">
@@ -98,7 +113,7 @@ export default function AdminShell({ user, activeKey = 'news', children }) {
       <div className="mx-auto flex max-w-[1440px] min-h-[calc(100vh-64px)]">
         <aside className="hidden w-[250px] shrink-0 border-r border-[#dbe4ee] bg-white px-4 py-6 lg:block">
           <p className="mb-4 px-2 text-[11px] font-semibold uppercase tracking-wide text-[#667895]">
-            KHÔNG GIAN QUẢN TRỊ
+            {ticketArea ? 'KHÔNG GIAN NHÂN VIÊN' : 'KHÔNG GIAN QUẢN TRỊ'}
           </p>
           <nav className="space-y-1.5 text-sm">
             {navItems.map((item) => {
