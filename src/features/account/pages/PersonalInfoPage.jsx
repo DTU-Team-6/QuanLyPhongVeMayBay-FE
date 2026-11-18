@@ -4,7 +4,7 @@ import { getInitials } from '../../../utils/formatters';
 import AccountPageLayout from '../components/AccountPageLayout';
 import { uploadAvatarImage } from '../services/imageUploadService';
 
-const fieldClass = 'w-full h-10 px-3 bg-white border border-[#cbd5e1] rounded-[8px] text-[13px] text-[#0f172a] focus:outline-none focus:border-[#0284c7]';
+const fieldClass = 'w-full min-w-0 h-12 px-3 bg-white border border-[#cbd5e1] rounded-[8px] text-[16px] font-normal text-[#0f172a] focus:outline-none focus:border-[#0284c7] sm:h-10 sm:text-[13px] sm:font-semibold';
 
 function EditPersonalInfo({ user, onClose, onSave }) {
   const dialogRef = useRef(null);
@@ -70,7 +70,7 @@ function EditPersonalInfo({ user, onClose, onSave }) {
         if (!savingRef.current) onClose();
       }}
       aria-labelledby="edit-personal-info-title"
-      className="m-auto w-[calc(100%-2rem)] max-w-[760px] max-h-[90vh] overflow-y-auto rounded-[14px] bg-white p-0 text-[#0f172a] shadow-xl backdrop:bg-[#0f172a]/50"
+      className="fixed inset-x-0 top-[60px] bottom-0 m-0 h-[calc(100dvh-60px)] max-h-none w-full max-w-none overflow-y-auto bg-white p-0 text-[#0f172a] backdrop:bg-transparent sm:inset-0 sm:m-auto sm:h-fit sm:max-h-[90vh] sm:w-[calc(100%-2rem)] sm:max-w-[760px] sm:rounded-[14px] sm:shadow-xl sm:backdrop:bg-[#0f172a]/50"
     >
       <form onSubmit={handleSubmit}>
         <div className="flex items-start justify-between gap-4 border-b border-[#e2e8f0] px-5 py-5 sm:px-6">
@@ -84,7 +84,7 @@ function EditPersonalInfo({ user, onClose, onSave }) {
             </svg>
           </button>
         </div>
-        <fieldset disabled={saving} className="grid gap-4 px-5 py-5 sm:grid-cols-2 sm:px-6">
+        <fieldset disabled={saving} className="grid gap-5 px-4 py-6 sm:grid-cols-2 sm:gap-4 sm:px-6 sm:py-5">
           <label className="text-[12px] font-semibold text-[#334155]">
             Họ và tên
             <input name="hoTen" required maxLength={100} defaultValue={user?.hoTen || ''} className={`${fieldClass} mt-1.5`} />
@@ -127,9 +127,9 @@ function EditPersonalInfo({ user, onClose, onSave }) {
           </p>
           {notice && <p role="alert" className="text-[13px] text-[#b45309] sm:col-span-2">{notice}</p>}
         </fieldset>
-        <div className="flex justify-end gap-2 bg-[#f8fafc] px-5 py-4 sm:px-6">
-          <button type="button" onClick={onClose} disabled={saving} className="rounded-[8px] border border-[#cbd5e1] bg-white px-4 py-2 text-[13px] font-semibold text-[#475569] hover:bg-slate-50 disabled:opacity-50">Hủy</button>
-          <button type="submit" disabled={saving} className="rounded-[8px] bg-[#0284c7] px-4 py-2 text-[13px] font-semibold text-white hover:bg-[#0369a1] disabled:opacity-50">{saving ? 'Đang lưu...' : 'Lưu thay đổi'}</button>
+        <div className="flex justify-end gap-3 bg-[#f8fafc] px-4 py-4 sm:gap-2 sm:px-6">
+          <button type="button" onClick={onClose} disabled={saving} className="flex-1 rounded-[8px] border border-[#cbd5e1] bg-white px-4 py-3 text-[14px] font-semibold text-[#475569] hover:bg-slate-50 disabled:opacity-50 sm:flex-none sm:py-2 sm:text-[13px]">Hủy</button>
+          <button type="submit" disabled={saving} className="flex-1 rounded-[8px] bg-[#0284c7] px-4 py-3 text-[14px] font-semibold text-white hover:bg-[#0369a1] disabled:opacity-50 sm:flex-none sm:py-2 sm:text-[13px]">{saving ? 'Đang lưu...' : 'Lưu thay đổi'}</button>
         </div>
       </form>
     </dialog>
@@ -231,8 +231,8 @@ export default function PersonalInfoPage() {
   return (
     <AccountPageLayout title="Thông tin cá nhân" description="Quản lý thông tin để đặt vé nhanh hơn trong những lần tiếp theo.">
       <section className="rounded-[12px] border border-[#e2e8f0] bg-white p-5 shadow-[0px_2px_8px_rgba(15,23,42,0.03)] sm:p-6">
-        <div className="flex items-center gap-4 border-b border-[#e2e8f0] pb-5">
-          <div className="relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#e0f2fe] text-[20px] font-bold text-[#0284c7]">
+        <div className="flex flex-wrap items-center gap-4 border-b border-[#e2e8f0] pb-5 sm:flex-nowrap">
+          <div className="relative order-1 flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#e0f2fe] text-[20px] font-bold text-[#0284c7]">
             {getInitials(user?.hoTen, user?.email)}
             {(avatarPreview || user?.anhDaiDien) && (
               <img
@@ -244,7 +244,7 @@ export default function PersonalInfoPage() {
               />
             )}
           </div>
-          <div className="min-w-0">
+          <div className="order-3 min-w-0 w-full sm:order-2 sm:w-auto">
             <h2 className="break-words text-[18px] font-bold">{user?.hoTen || user?.email || 'Thông tin tài khoản'}</h2>
             <p className="mt-1 text-[12px] text-[#64748b]">Thông tin hồ sơ của bạn.</p>
             <p className="mt-1 text-[11px] text-[#64748b]">JPEG, PNG hoặc WebP, tối đa 5 MB.</p>
@@ -253,7 +253,7 @@ export default function PersonalInfoPage() {
             type="button"
             onClick={() => avatarInputRef.current?.click()}
             disabled={loading || profileLoading || avatarUploading || !user}
-            className="ml-auto inline-flex shrink-0 items-center gap-2 rounded-[8px] border border-[#cbd5e1] px-3 py-2 text-[12px] font-semibold text-[#475569] hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:text-[13px]"
+            className="order-2 ml-auto inline-flex shrink-0 items-center gap-2 rounded-[8px] border border-[#cbd5e1] px-3 py-2 text-[12px] font-semibold text-[#475569] hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-3 sm:px-4 sm:text-[13px]"
           >
             <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="m16.862 4.487 2.651 2.651M8 16l8.4-8.4a1.875 1.875 0 0 1 2.652 2.652L10.65 18.65 7 19l.35-3.65Z" />
@@ -286,7 +286,7 @@ export default function PersonalInfoPage() {
           ))}
         </dl>
         <div className="flex justify-end border-t border-[#e2e8f0] pt-4">
-          <button type="button" onClick={() => { setNotice(''); setEditingUserId(user.id); }} disabled={loading || profileLoading || Boolean(profileError) || !user} className="rounded-[8px] border border-[#cbd5e1] px-4 py-2 text-[13px] font-semibold text-[#475569] hover:bg-slate-50 disabled:opacity-50">
+          <button type="button" onClick={() => { setNotice(''); setEditingUserId(user.id); }} disabled={loading || profileLoading || Boolean(profileError) || !user} className="w-full rounded-[8px] border border-[#cbd5e1] px-4 py-2 text-[13px] font-semibold text-[#475569] hover:bg-slate-50 disabled:opacity-50 sm:w-auto">
             Chỉnh sửa
           </button>
         </div>

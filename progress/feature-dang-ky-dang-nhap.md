@@ -13,6 +13,8 @@
 - Tăng cỡ chữ desktop và chiều cao ô nhập sau khi kiểm tra trên màn hình thực tế.
 - Căn card đăng nhập theo thiết kế 480px rộng, cao tự ôm nội dung (xấp xỉ 575px); không khóa chiều cao.
 - Căn card đăng ký theo thiết kế 800px rộng với chiều cao tự ôm nội dung; thay icon đầu trang đăng nhập theo biểu tượng cổng và mũi tên được cung cấp.
+- Đã chỉnh giao diện mobile trang thông tin cá nhân và form chỉnh sửa. Kiểm tra trình duyệt với API giả lập: không tràn ngang ở 320px và 375px, lưu/hủy và Escape hoạt động, email chỉ đọc, payload giữ địa chỉ/quốc tịch/giấy tờ; dialog desktop căn giữa ở 1440px. `npm run build` và `git diff --check` thành công; chưa kiểm tra thay đổi này với BE thật.
+- Đã chỉnh giao diện mobile trang đổi mật khẩu. Kiểm tra trình duyệt với API giả lập: không tràn ngang ở 320px và 375px; quên mật khẩu, hiện mật khẩu, kiểm tra xác nhận, hủy và gửi thành công hoạt động; request có CSRF và cookie. Ô nhập và nút desktop giữ kích thước/bố cục cũ ở 1440px. `npm run build` và `git diff --check` thành công; chưa kiểm tra đổi mật khẩu với BE thật.
 
 ## Đã xong
 

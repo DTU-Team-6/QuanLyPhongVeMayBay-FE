@@ -20,7 +20,7 @@ function PasswordField({ label, name, value, onChange, error, disabled }) {
           autoComplete={name === 'currentPassword' ? 'current-password' : 'new-password'}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? errorId : undefined}
-          className={`h-10 w-full rounded-[8px] border bg-white px-3 pr-10 text-[13px] text-[#0f172a] outline-none focus:border-[#0284c7] ${error ? 'border-red-500' : 'border-[#cbd5e1]'}`}
+          className={`h-12 w-full rounded-[8px] border bg-white px-3 pr-10 text-[16px] text-[#0f172a] outline-none focus:border-[#0284c7] sm:h-10 sm:text-[13px] ${error ? 'border-red-500' : 'border-[#cbd5e1]'}`}
         />
         <button
           type="button"
@@ -41,7 +41,7 @@ function PasswordField({ label, name, value, onChange, error, disabled }) {
           </svg>
         </button>
       </span>
-      {error && <span id={errorId} className="mt-1 block text-[12px] text-red-600">{error}</span>}
+      {error && <span id={errorId} className="mt-1 block text-[14px] text-red-600 sm:text-[12px]">{error}</span>}
     </label>
   );
 }
@@ -127,8 +127,8 @@ export default function ChangePasswordPage() {
 
   return (
     <AccountPageLayout title="Đổi mật khẩu" description="Cập nhật mật khẩu thường xuyên để bảo vệ tài khoản của bạn.">
-      <section className="rounded-[12px] border border-[#e2e8f0] bg-white p-5 shadow-[0px_2px_8px_rgba(15,23,42,0.03)] sm:p-6">
-        <h2 className="text-[16px] font-bold text-[#0f172a]">Bảo mật tài khoản</h2>
+      <section className="rounded-[12px] border border-[#e2e8f0] bg-white p-4 shadow-[0px_2px_8px_rgba(15,23,42,0.03)] sm:p-6">
+        <h2 className="text-[18px] font-bold text-[#0f172a] sm:text-[16px]">Bảo mật tài khoản</h2>
         <form onSubmit={handleSubmit} className="mt-5 max-w-[500px] space-y-4">
           <div>
             <PasswordField
@@ -171,7 +171,7 @@ export default function ChangePasswordPage() {
                 />
               ))}
             </div>
-            <p className={`mt-1 text-[12px] ${isStrong ? 'text-[#059669]' : 'text-[#64748b]'}`}>
+            <p className={`mt-1 text-[14px] sm:text-[12px] ${isStrong ? 'text-[#059669]' : 'text-[#64748b]'}`}>
               {isStrong ? 'Đã đáp ứng yêu cầu. ' : ''}Tối thiểu 8 ký tự, có chữ hoa, chữ thường và số; tối đa 72 byte khi mã hóa.
             </p>
           </div>
@@ -189,15 +189,15 @@ export default function ChangePasswordPage() {
           />
           {notice && <p role="status" className="text-[13px] text-[#0369a1]">{notice}</p>}
           {errorMessage && <p role="alert" className="text-[13px] text-red-600">{errorMessage}</p>}
-          <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={reset} disabled={isSubmitting} className="rounded-[8px] border border-[#cbd5e1] px-4 py-2 text-[13px] font-semibold text-[#475569] hover:bg-slate-50 disabled:cursor-wait disabled:opacity-70">Hủy</button>
-            <button type="submit" disabled={isSubmitting} className="rounded-[8px] bg-[#0284c7] px-4 py-2 text-[13px] font-semibold text-white hover:bg-[#0369a1] disabled:cursor-wait disabled:opacity-70">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <button type="button" onClick={reset} disabled={isSubmitting} className="min-h-12 rounded-[8px] border border-[#cbd5e1] px-4 py-2 text-[14px] font-semibold text-[#475569] hover:bg-slate-50 disabled:cursor-wait disabled:opacity-70 sm:min-h-0 sm:text-[13px]">Hủy</button>
+            <button type="submit" disabled={isSubmitting} className="min-h-12 rounded-[8px] bg-[#0284c7] px-4 py-2 text-[14px] font-semibold text-white hover:bg-[#0369a1] disabled:cursor-wait disabled:opacity-70 sm:min-h-0 sm:text-[13px]">
               {isSubmitting ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}
             </button>
           </div>
         </form>
       </section>
-      <p className="mt-5 rounded-[8px] bg-[#e0f2fe] px-4 py-3 text-[12px] text-[#0369a1]">
+      <p className="mt-5 rounded-[8px] bg-[#e0f2fe] px-4 py-3 text-[14px] text-[#0369a1] sm:text-[12px]">
         Không chia sẻ mật khẩu hoặc mã xác thực với bất kỳ ai, kể cả nhân viên phòng vé.
       </p>
     </AccountPageLayout>
