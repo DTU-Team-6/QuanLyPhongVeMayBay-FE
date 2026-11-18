@@ -91,6 +91,14 @@ export const authService = {
     }));
   },
 
+  async changePassword(passwords) {
+    await ensureCsrfToken();
+    return apiClient('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify(passwords),
+    });
+  },
+
   async createAvatarUploadSignature() {
     await ensureCsrfToken();
     const response = await apiClient('/auth/avatar/upload-signature', { method: 'POST' });

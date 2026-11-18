@@ -40,7 +40,7 @@
 - Đã chỉnh biểu tượng tài khoản, trạng thái chờ xác thực và menu tài khoản chỉ gồm thông tin cá nhân, đăng xuất; kiểm tra menu desktop/mobile với API giả lập.
 - Dropdown tài khoản và menu mobile tự đóng khi nhấn bên ngoài hoặc nhấn Escape; đã kiểm tra bằng API giả lập.
 - Chưa kiểm tra cập nhật hồ sơ với BE thật; cần chạy BE đã cập nhật API hồ sơ.
-- Đã làm giao diện đổi mật khẩu; chưa kết nối API. Kiểm tra giả lập desktop/mobile: hiện/ẩn mật khẩu, báo xác nhận không khớp, hủy xóa ô nhập, lưu báo chưa hỗ trợ và không gửi API ghi.
+- Đã kết nối trang đổi mật khẩu với `POST /api/v1/auth/change-password` qua `authService`, gồm CSRF, kiểm tra mật khẩu/xác nhận, trạng thái gửi và xử lý lỗi từ BE. Thêm nút “Quên mật khẩu?” dạng UI-only, không gọi API. `npm run build` và `git diff --check` đạt; chưa kiểm thử đổi mật khẩu với BE thật.
 - Chưa xác nhận đầy đủ luồng FE/BE thật trên giao diện với lựa chọn ghi nhớ, đóng/mở trình duyệt, đồng bộ nhiều tab hoặc chờ hết hạn thực tế 7 ngày.
 
 ## Việc tiếp theo (theo thứ tự)
@@ -48,7 +48,7 @@
 1. Kiểm tra luồng FE/BE thật trên giao diện và kiểm tra đồng bộ nhiều tab.
 2. Áp dụng migration avatar BE và cấu hình Cloudinary trên môi trường kiểm thử; xác minh luồng upload thật.
 3. Kiểm tra thêm các trường hợp OAuth bị từ chối, email trùng và phiên hết hạn với provider thật khi cần.
-4. Tích hợp khôi phục mật khẩu khi được yêu cầu.
+4. Kiểm thử đổi mật khẩu với BE thật; tích hợp API khôi phục mật khẩu khi BE hỗ trợ và được yêu cầu.
 
 ## Quyết định đã chốt và lưu ý
 
