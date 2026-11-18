@@ -10,6 +10,15 @@ async function ensureCsrfToken() {
   }
 }
 
+function requirePersonalInfo(response) {
+  const user = response?.data;
+  const fields = ['id', 'hoTen', 'email', 'soDienThoai', 'ngaySinh', 'gioiTinh', 'diaChi', 'vaiTro', 'cmndPassport', 'quocTich'];
+  if (!user || fields.some((field) => !Object.hasOwn(user, field))) {
+    throw new Error('Backend chưa trả đủ thông tin hồ sơ. Hãy cập nhật Backend và thử lại.');
+  }
+  return user;
+}
+
 /**
  * Service quản lý xác thực và phiên đăng nhập của người dùng
  */
@@ -58,7 +67,7 @@ export const authService = {
 
   /**
    * Lấy thông tin người dùng hiện tại từ cookie HttpOnly
-   * BE trả về id, hoTen, email, vaiTro (ADMIN, NHAN_VIEN, KHACH_HANG)
+   * BE trả về thông tin hồ sơ và vai trò người dùng.
    */
   async getCurrentUser() {
     try {
@@ -68,6 +77,18 @@ export const authService = {
       if (error?.status === 401) return null;
       throw error;
     }
+  },
+
+  async getPersonalInfo() {
+    return requirePersonalInfo(await apiClient('/auth/me'));
+  },
+
+  async updatePersonalInfo(profile) {
+    await ensureCsrfToken();
+    return requirePersonalInfo(await apiClient('/auth/me', {
+      method: 'PUT',
+      body: JSON.stringify(profile),
+    }));
   },
 
   /**

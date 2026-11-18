@@ -19,6 +19,8 @@
 - Giữ giao diện đăng nhập/đăng ký và kiểm tra biểu mẫu trên trình duyệt.
 - Form đăng ký gọi `POST /api/v1/auth/register`, gửi đầy đủ thông tin được BE lưu, hiển thị lỗi trường và chuyển sang đăng nhập khi thành công.
 - Form đăng nhập gọi `POST /api/v1/auth/login`, cập nhật `AuthContext` và không lưu token phía FE.
+- Màn hình thông tin cá nhân tải và lưu hồ sơ qua `GET/PUT /api/v1/auth/me`; email chỉ đọc, khách hàng có thể sửa quốc tịch và giấy tờ. FE khởi tạo CSRF khi cần và cập nhật context sau khi lưu.
+- Kiểm tra giả lập trên trình duyệt: lưu thành công, gửi CSRF và giữ địa chỉ; lỗi tải vô hiệu hóa chỉnh sửa, lỗi lưu giữ form và hiện thông báo; nút hủy đóng form. `npm run build` thành công.
 - `authService` khởi tạo cookie CSRF nếu chưa có trước POST đăng ký/đăng nhập.
 - Đăng xuất chuyển về trang đăng nhập sau khi BE xác nhận; hiển thị thông báo đăng ký, đăng xuất thành công hoặc lỗi đăng xuất.
 - Kiểm tra giao diện đăng ký và đăng xuất với API giả lập; kiểm tra đăng xuất trên desktop và mobile.
@@ -36,7 +38,7 @@
 - Đã sửa đồng bộ trạng thái đăng nhập/đăng xuất giữa các tab; kiểm tra giả lập hai tab, kể cả khi BroadcastChannel không có và quay lại tab.
 - Đã chỉnh biểu tượng tài khoản, trạng thái chờ xác thực và menu tài khoản chỉ gồm thông tin cá nhân, đăng xuất; kiểm tra menu desktop/mobile với API giả lập.
 - Dropdown tài khoản và menu mobile tự đóng khi nhấn bên ngoài hoặc nhấn Escape; đã kiểm tra bằng API giả lập.
-- Đã làm giao diện thông tin cá nhân và hộp chỉnh sửa; dữ liệu chưa có hiển thị trống, thao tác lưu báo chưa hỗ trợ. Đã kiểm tra giả lập desktop/mobile, không gửi API lưu.
+- Chưa kiểm tra cập nhật hồ sơ với BE thật; cần chạy BE đã cập nhật API hồ sơ.
 - Đã làm giao diện đổi mật khẩu; chưa kết nối API. Kiểm tra giả lập desktop/mobile: hiện/ẩn mật khẩu, báo xác nhận không khớp, hủy xóa ô nhập, lưu báo chưa hỗ trợ và không gửi API ghi.
 - Chưa xác nhận đầy đủ luồng FE/BE thật trên giao diện với lựa chọn ghi nhớ, đóng/mở trình duyệt, đồng bộ nhiều tab hoặc chờ hết hạn thực tế 7 ngày.
 

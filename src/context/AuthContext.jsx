@@ -9,10 +9,15 @@ export function AuthProvider({ children }) {
   const [sessionExpired, setSessionExpired] = useState(false);
   const channelRef = useRef(null);
   const authCheckRef = useRef(0);
+  const sessionVersionRef = useRef(0);
+  const userIdRef = useRef(null);
 
   useEffect(() => {
     const handleExpired = () => {
       if (user) {
+        sessionVersionRef.current += 1;
+        authCheckRef.current += 1;
+        userIdRef.current = null;
         setUser(null);
         setSessionExpired(true);
       }
@@ -26,6 +31,10 @@ export function AuthProvider({ children }) {
     try {
       const currentUser = await authService.getCurrentUser();
       if (check === authCheckRef.current) {
+        if (userIdRef.current !== (currentUser?.id ?? null)) {
+          sessionVersionRef.current += 1;
+          userIdRef.current = currentUser?.id ?? null;
+        }
         setUser(currentUser);
         return currentUser;
       }
@@ -46,12 +55,15 @@ export function AuthProvider({ children }) {
 
     const handleMessage = async (event) => {
       if (event.data === 'login') {
+        sessionVersionRef.current += 1;
         const currentUser = await checkAuth();
         if (currentUser) {
           window.dispatchEvent(new CustomEvent('auth-login-other-tab', { detail: currentUser }));
         }
       } else if (event.data === 'logout') {
+        sessionVersionRef.current += 1;
         authCheckRef.current += 1;
+        userIdRef.current = null;
         setUser(null);
         setLoading(false);
         setSessionExpired(false);
@@ -78,7 +90,9 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     await authService.logout();
+    sessionVersionRef.current += 1;
     authCheckRef.current += 1;
+    userIdRef.current = null;
     setUser(null);
     setLoading(false);
     channelRef.current?.postMessage('logout');
@@ -86,7 +100,9 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (credentials) => {
     const authenticatedUser = await authService.login(credentials);
+    sessionVersionRef.current += 1;
     authCheckRef.current += 1;
+    userIdRef.current = authenticatedUser.id;
     setUser(authenticatedUser);
     setLoading(false);
     setSessionExpired(false);
@@ -99,7 +115,9 @@ export function AuthProvider({ children }) {
     if (!authenticatedUser) {
       throw new Error('Không xác nhận được phiên đăng nhập. Vui lòng thử lại.');
     }
+    sessionVersionRef.current += 1;
     authCheckRef.current += 1;
+    userIdRef.current = authenticatedUser.id;
     setUser(authenticatedUser);
     setLoading(false);
     setSessionExpired(false);
@@ -108,6 +126,28 @@ export function AuthProvider({ children }) {
   }, []);
 
   const clearSessionExpired = useCallback(() => setSessionExpired(false), []);
+
+  const refreshPersonalInfo = useCallback(async () => {
+    const version = sessionVersionRef.current;
+    const profile = await authService.getPersonalInfo();
+    if (version !== sessionVersionRef.current || profile.id !== userIdRef.current) {
+      throw new Error('Phiên đăng nhập đã thay đổi. Vui lòng tải lại hồ sơ.');
+    }
+    authCheckRef.current += 1;
+    setUser(profile);
+    return profile;
+  }, []);
+
+  const updatePersonalInfo = useCallback(async (profile) => {
+    const version = sessionVersionRef.current;
+    const updated = await authService.updatePersonalInfo(profile);
+    if (version !== sessionVersionRef.current || updated.id !== userIdRef.current) {
+      throw new Error('Phiên đăng nhập đã thay đổi. Vui lòng tải lại hồ sơ.');
+    }
+    authCheckRef.current += 1;
+    setUser(updated);
+    return updated;
+  }, []);
 
   const value = {
     user,
@@ -119,6 +159,8 @@ export function AuthProvider({ children }) {
     login,
     finishOAuthLogin,
     logout,
+    refreshPersonalInfo,
+    updatePersonalInfo,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -22,6 +22,7 @@
 | Sau khi đăng nhập OAuth2               | BE chuyển hướng người dùng về trang FE **`/auth/callback`**                                                                   |
 
 - Màn hình đăng nhập và đăng ký gọi API qua `authService.js`. Đăng nhập nhận thông tin người dùng và cookie HttpOnly; đăng ký gửi email, mật khẩu, họ tên, số điện thoại, ngày sinh, giới tính, số giấy tờ và quốc tịch rồi chuyển người dùng sang trang đăng nhập.
+- Màn hình thông tin cá nhân tải `GET /api/v1/auth/me` trước khi cho sửa và lưu bằng `PUT /api/v1/auth/me` kèm CSRF. Email chỉ đọc; khách hàng có thể sửa quốc tịch và số giấy tờ. Hai trường này cần BE đã cập nhật API hồ sơ; địa chỉ được gửi cùng các trường hồ sơ cơ bản.
 - FE kiểm tra người đăng ký đủ 18 tuổi theo ngày `Asia/Ho_Chi_Minh`, số điện thoại và mật khẩu; BE tiếp tục kiểm tra dữ liệu và lưu số giấy tờ/quốc tịch vào hồ sơ khách hàng.
 - BE hỗ trợ refresh token sau khi áp dụng migration `V20261117_1331__them_phien_lam_moi.sql`. Khi access token hết hạn, FE làm mới và thử lại một lần; các lần refresh được đồng bộ giữa các tab bằng Web Locks.
 - Các tab cùng origin thông báo đăng nhập, đăng xuất qua BroadcastChannel; khi đăng nhập, tab còn lại kiểm tra lại `/auth/me`. Khi quay lại tab, FE cũng kiểm tra phiên để cập nhật giao diện.
