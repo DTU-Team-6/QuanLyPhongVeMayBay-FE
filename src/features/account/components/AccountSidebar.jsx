@@ -76,8 +76,17 @@ export default function AccountSidebar() {
       {/* Thẻ hồ sơ + menu */}
       <div className="bg-white border border-[#e2e8f0] rounded-[12px] p-4 shadow-[0px_2px_8px_rgba(15,23,42,0.03)]">
         <div className="flex flex-col items-center text-center pb-4 border-b border-[#f1f5f9]">
-          <div className="size-16 rounded-full bg-[#e0f2fe] text-[#0284c7] text-[20px] font-bold flex items-center justify-center">
+          <div className="relative size-16 overflow-hidden rounded-full bg-[#e0f2fe] text-[#0284c7] text-[20px] font-bold flex items-center justify-center">
             {initials}
+            {user?.anhDaiDien && (
+              <img
+                key={user.anhDaiDien}
+                src={user.anhDaiDien}
+                alt=""
+                onError={(imageEvent) => { imageEvent.currentTarget.hidden = true; }}
+                className="absolute inset-0 size-full object-cover"
+              />
+            )}
           </div>
           <p className="mt-3 text-[14px] font-bold text-[#0f172a] leading-snug break-words max-w-full">
             {displayName}

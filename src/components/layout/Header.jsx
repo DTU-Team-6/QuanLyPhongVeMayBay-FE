@@ -137,8 +137,17 @@ export default function Header() {
                 aria-haspopup="true"
                 className="flex items-center gap-2 rounded-lg py-1.5 hover:bg-slate-50 transition cursor-pointer focus-visible:outline-2 focus-visible:outline-[#0284c7]"
               >
-                <div className="size-9 shrink-0 rounded-full bg-[#e0f2fe] text-[#0369a1] font-bold text-sm flex items-center justify-center">
+                <div className="relative size-9 shrink-0 overflow-hidden rounded-full bg-[#e0f2fe] text-[#0369a1] font-bold text-sm flex items-center justify-center">
                   {getInitials(user.hoTen, user.email)}
+                  {user.anhDaiDien && (
+                    <img
+                      key={user.anhDaiDien}
+                      src={user.anhDaiDien}
+                      alt=""
+                      onError={(imageEvent) => { imageEvent.currentTarget.hidden = true; }}
+                      className="absolute inset-0 size-full object-cover"
+                    />
+                  )}
                 </div>
                 <div className="flex flex-col text-left">
                   <span className="text-[13px] font-semibold text-[#0f172a] max-w-[120px] truncate">

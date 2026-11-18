@@ -149,6 +149,17 @@ export function AuthProvider({ children }) {
     return updated;
   }, []);
 
+  const updateAvatar = useCallback(async (publicId) => {
+    const version = sessionVersionRef.current;
+    const result = await authService.updateAvatar(publicId);
+    if (version !== sessionVersionRef.current || result.profile.id !== userIdRef.current) {
+      throw new Error('Phiên đăng nhập đã thay đổi. Vui lòng tải lại hồ sơ.');
+    }
+    authCheckRef.current += 1;
+    setUser(result.profile);
+    return result;
+  }, []);
+
   const value = {
     user,
     loading,
@@ -161,6 +172,7 @@ export function AuthProvider({ children }) {
     logout,
     refreshPersonalInfo,
     updatePersonalInfo,
+    updateAvatar,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

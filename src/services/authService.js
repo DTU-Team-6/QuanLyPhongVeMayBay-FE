@@ -12,7 +12,7 @@ async function ensureCsrfToken() {
 
 function requirePersonalInfo(response) {
   const user = response?.data;
-  const fields = ['id', 'hoTen', 'email', 'soDienThoai', 'ngaySinh', 'gioiTinh', 'diaChi', 'vaiTro', 'cmndPassport', 'quocTich'];
+  const fields = ['id', 'hoTen', 'email', 'soDienThoai', 'ngaySinh', 'gioiTinh', 'diaChi', 'anhDaiDien', 'vaiTro', 'cmndPassport', 'quocTich'];
   if (!user || fields.some((field) => !Object.hasOwn(user, field))) {
     throw new Error('Backend chưa trả đủ thông tin hồ sơ. Hãy cập nhật Backend và thử lại.');
   }
@@ -89,6 +89,34 @@ export const authService = {
       method: 'PUT',
       body: JSON.stringify(profile),
     }));
+  },
+
+  async createAvatarUploadSignature() {
+    await ensureCsrfToken();
+    const response = await apiClient('/auth/avatar/upload-signature', { method: 'POST' });
+    const signature = response?.data;
+    const fields = ['cloudName', 'apiKey', 'uploadUrl', 'timestamp', 'publicId', 'signature', 'uploadPreset', 'allowedFormats', 'maxFileSize'];
+    if (!signature || fields.some((field) => !Object.hasOwn(signature, field))) {
+      throw new Error('Backend trả về thông tin tải ảnh không hợp lệ.');
+    }
+    return signature;
+  },
+
+  async updateAvatar(publicId) {
+    await ensureCsrfToken();
+    const response = await apiClient('/auth/avatar', {
+      method: 'POST',
+      body: JSON.stringify({ publicId }),
+    });
+    const result = response?.data;
+    const cleanupStatuses = ['NOT_REQUIRED', 'DELETED', 'LEGACY_NOT_TRACKED', 'FAILED'];
+    if (!result?.profile || !cleanupStatuses.includes(result.oldAvatarCleanupStatus)) {
+      throw new Error('Backend trả về kết quả cập nhật ảnh không hợp lệ.');
+    }
+    return {
+      profile: requirePersonalInfo({ data: result.profile }),
+      oldAvatarCleanupStatus: result.oldAvatarCleanupStatus,
+    };
   },
 
   /**

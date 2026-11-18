@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { getInitials } from '../../../utils/formatters';
 import AccountPageLayout from '../components/AccountPageLayout';
+import { uploadAvatarImage } from '../services/imageUploadService';
 
 const fieldClass = 'w-full h-10 px-3 bg-white border border-[#cbd5e1] rounded-[8px] text-[13px] text-[#0f172a] focus:outline-none focus:border-[#0284c7]';
 
@@ -136,13 +137,24 @@ function EditPersonalInfo({ user, onClose, onSave }) {
 }
 
 export default function PersonalInfoPage() {
-  const { user, loading, refreshPersonalInfo, updatePersonalInfo } = useAuth();
+  const { user, loading, refreshPersonalInfo, updatePersonalInfo, updateAvatar } = useAuth();
   const [editingUserId, setEditingUserId] = useState(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [profileError, setProfileError] = useState('');
   const [notice, setNotice] = useState('');
+  const [avatarError, setAvatarError] = useState('');
+  const [avatarNotice, setAvatarNotice] = useState('');
+  const [avatarPreview, setAvatarPreview] = useState('');
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [retry, setRetry] = useState(0);
+  const avatarInputRef = useRef(null);
+  const avatarUploadingRef = useRef(false);
+  const previewUrlRef = useRef('');
   const closeEditor = useCallback(() => setEditingUserId(null), []);
+
+  useEffect(() => () => {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+  }, []);
 
   useEffect(() => {
     setEditingUserId(null);
@@ -166,6 +178,41 @@ export default function PersonalInfoPage() {
     setEditingUserId(null);
     setNotice('Cập nhật thông tin cá nhân thành công.');
   };
+  const handleAvatarChange = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file || avatarUploadingRef.current) return;
+
+    setAvatarError('');
+    setAvatarNotice('');
+    avatarUploadingRef.current = true;
+    let previewUrl = '';
+    try {
+      previewUrl = URL.createObjectURL(file);
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = previewUrl;
+      setAvatarPreview(previewUrl);
+      setAvatarUploading(true);
+      const publicId = await uploadAvatarImage(file);
+      const result = await updateAvatar(publicId);
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = '';
+      setAvatarPreview('');
+      setAvatarNotice(
+        result.oldAvatarCleanupStatus === 'FAILED' || result.oldAvatarCleanupStatus === 'LEGACY_NOT_TRACKED'
+          ? 'Đã cập nhật ảnh đại diện. Ảnh cũ không được xóa tự động.'
+          : 'Cập nhật ảnh đại diện thành công.'
+      );
+    } catch (error) {
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = '';
+      setAvatarPreview('');
+      setAvatarError(error?.message || 'Không thể cập nhật ảnh đại diện. Vui lòng thử lại.');
+    } finally {
+      avatarUploadingRef.current = false;
+      setAvatarUploading(false);
+    }
+  };
   const gender = { Nam: 'Nam', Nu: 'Nữ', Khac: 'Khác' }[user?.gioiTinh] || user?.gioiTinh;
   const dateOfBirth = user?.ngaySinh
     ? user.ngaySinh.split('-').reverse().join('/')
@@ -185,14 +232,49 @@ export default function PersonalInfoPage() {
     <AccountPageLayout title="Thông tin cá nhân" description="Quản lý thông tin để đặt vé nhanh hơn trong những lần tiếp theo.">
       <section className="rounded-[12px] border border-[#e2e8f0] bg-white p-5 shadow-[0px_2px_8px_rgba(15,23,42,0.03)] sm:p-6">
         <div className="flex items-center gap-4 border-b border-[#e2e8f0] pb-5">
-          <div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-[#e0f2fe] text-[20px] font-bold text-[#0284c7]">
+          <div className="relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#e0f2fe] text-[20px] font-bold text-[#0284c7]">
             {getInitials(user?.hoTen, user?.email)}
+            {(avatarPreview || user?.anhDaiDien) && (
+              <img
+                key={avatarPreview || user.anhDaiDien}
+                src={avatarPreview || user.anhDaiDien}
+                alt=""
+                onError={(imageEvent) => { imageEvent.currentTarget.hidden = true; }}
+                className="absolute inset-0 size-full object-cover"
+              />
+            )}
+            <button
+              type="button"
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={loading || profileLoading || avatarUploading || !user}
+              aria-label="Thay đổi ảnh đại diện"
+              className="absolute inset-0 flex items-end justify-end p-0.5 text-white disabled:cursor-not-allowed"
+            >
+              <span className="flex size-6 items-center justify-center rounded-full bg-[#0284c7] shadow-sm" aria-hidden="true">
+                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v14m-7-7h14" />
+                </svg>
+              </span>
+            </button>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleAvatarChange}
+              disabled={loading || profileLoading || avatarUploading || !user}
+              className="sr-only"
+              aria-label="Chọn ảnh đại diện"
+            />
           </div>
           <div className="min-w-0">
             <h2 className="break-words text-[18px] font-bold">{user?.hoTen || user?.email || 'Thông tin tài khoản'}</h2>
             <p className="mt-1 text-[12px] text-[#64748b]">Thông tin hồ sơ của bạn.</p>
+            <p className="mt-1 text-[11px] text-[#64748b]">JPEG, PNG hoặc WebP, tối đa 5 MB.</p>
           </div>
         </div>
+        {avatarUploading && <p role="status" className="pt-4 text-[13px] text-[#64748b]">Đang tải ảnh đại diện...</p>}
+        {avatarError && <p role="alert" className="pt-4 text-[13px] text-red-600">{avatarError}</p>}
+        {avatarNotice && <p role="status" className="pt-4 text-[13px] text-green-700">{avatarNotice}</p>}
         {(loading || (user && profileLoading)) && <p role="status" className="pt-4 text-[13px] text-[#64748b]">Đang tải hồ sơ...</p>}
         {!loading && !user && <p role="status" className="pt-4 text-[13px] text-[#64748b]">Vui lòng đăng nhập để xem và chỉnh sửa hồ sơ.</p>}
         {profileError && <p role="alert" className="pt-4 text-[13px] text-red-600">{profileError} <button type="button" onClick={() => setRetry((value) => value + 1)} className="underline">Thử lại</button></p>}

@@ -48,10 +48,10 @@
 
 ## Upload ảnh Cloudinary (đã chốt luồng)
 
-- FE xin thông tin/chữ ký upload từ endpoint BE; BE tạo chữ ký bằng Cloudinary API secret và chỉ trả các tham số cần thiết để upload. Hợp đồng request/response và đường dẫn endpoint do BE công bố, FE không tự đặt.
-- Sau khi nhận chữ ký, FE upload file trực tiếp từ trình duyệt lên Cloudinary. Request upload này không đi qua `apiClient.js` và không dùng tiền tố `/api/v1`.
+- Avatar: FE gọi `POST /api/v1/auth/avatar/upload-signature` có CSRF để xin chữ ký; BE trả `cloudName`, `apiKey`, `uploadUrl`, `timestamp`, `publicId`, `signature`, `uploadPreset`, `allowedFormats`, `maxFileSize`. FE upload trực tiếp file lên Cloudinary bằng các tham số đã ký, sau đó gọi `POST /api/v1/auth/avatar` với `publicId` để BE xác minh asset và lưu hồ sơ.
+- Request upload file trực tiếp không đi qua `apiClient.js` và không dùng tiền tố `/api/v1`; hai request tới BE vẫn phải qua `apiClient.js`, gửi cookie và CSRF.
 - FE không chứa hoặc gửi `CLOUDINARY_API_SECRET`; `cloud_name`, `api_key`, chữ ký và timestamp không thay thế API secret. Không cho phép client tự chọn các tham số nhạy cảm như quyền truy cập hoặc public ID nếu BE chưa giới hạn chúng trong chữ ký.
-- Chỉ cho chọn JPEG, PNG hoặc WebP, tối đa 5 MB mỗi ảnh; FE kiểm tra để báo lỗi sớm nhưng BE/Cloudinary vẫn phải áp dụng và xác minh giới hạn này.
+- Chỉ cho chọn JPEG, PNG hoặc WebP, tối đa 5 MB mỗi ảnh; FE kiểm tra để báo lỗi sớm nhưng BE/Cloudinary vẫn phải áp dụng và xác minh giới hạn này. Avatar áp dụng cho mọi vai trò đã đăng nhập.
 - Sau upload, FE dùng thông tin asset Cloudinary trả về theo hợp đồng BE để lưu ảnh gắn với bản ghi nghiệp vụ. Không coi việc upload thành công là hoàn tất lưu dữ liệu nghiệp vụ nếu BE chưa xác nhận bản ghi.
 
 ## CORS
