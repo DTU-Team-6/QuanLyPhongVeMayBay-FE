@@ -53,8 +53,19 @@ export default function ChangePasswordPage() {
   const [notice, setNotice] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const isStrong = newPassword.length >= 8 && new TextEncoder().encode(newPassword).length <= 72
-    && /[A-Z]/.test(newPassword) && /[a-z]/.test(newPassword) && /[0-9]/.test(newPassword);
+  const passwordConditions = [
+    newPassword.length >= 8,
+    /[A-Z]/.test(newPassword),
+    /[a-z]/.test(newPassword),
+    /[0-9]/.test(newPassword),
+  ];
+  const passwordConditionCount = passwordConditions.filter(Boolean).length;
+  const isWithinByteLimit = new TextEncoder().encode(newPassword).length <= 72;
+  const isStrong = passwordConditionCount === passwordConditions.length && isWithinByteLimit;
+  const meterProgress = newPassword && !isWithinByteLimit ? 1 : passwordConditionCount;
+  const meterColor = !isWithinByteLimit && newPassword
+    ? 'bg-[#ef4444]'
+    : ['', 'bg-[#ef4444]', 'bg-[#f97316]', 'bg-[#eab308]', 'bg-[#10b981]'][meterProgress];
   const confirmationError = confirmation && confirmation !== newPassword ? 'Mật khẩu xác nhận chưa khớp. Vui lòng kiểm tra lại.' : '';
 
   const reset = () => {
@@ -153,7 +164,12 @@ export default function ChangePasswordPage() {
               disabled={isSubmitting}
             />
             <div className="mt-2 flex gap-1" aria-hidden="true">
-              {[0, 1, 2, 3].map((index) => <span key={index} className={`h-1 flex-1 rounded ${isStrong ? 'bg-[#10b981]' : 'bg-[#e2e8f0]'}`} />)}
+              {[0, 1, 2, 3].map((index) => (
+                <span
+                  key={index}
+                  className={`h-1 flex-1 rounded ${index < meterProgress ? meterColor : 'bg-[#e2e8f0]'}`}
+                />
+              ))}
             </div>
             <p className={`mt-1 text-[12px] ${isStrong ? 'text-[#059669]' : 'text-[#64748b]'}`}>
               {isStrong ? 'Đã đáp ứng yêu cầu. ' : ''}Tối thiểu 8 ký tự, có chữ hoa, chữ thường và số; tối đa 72 byte khi mã hóa.
