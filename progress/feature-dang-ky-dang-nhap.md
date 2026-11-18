@@ -29,7 +29,7 @@
 
 ## Đang dở
 
-- Đã nối đổi ảnh đại diện với BE/Cloudinary: kiểm tra loại và kích thước, preview, tải trực tiếp lên Cloudinary bằng chữ ký BE, xác minh/lưu ảnh ở BE và đồng bộ AuthContext; hiển thị avatar trong hồ sơ, Header và sidebar. `npm run build` thành công; chưa kiểm thử upload Cloudinary thật.
+- Đã nối đổi ảnh đại diện với BE/Cloudinary: kiểm tra loại và kích thước, preview, tải trực tiếp lên Cloudinary bằng chữ ký BE, xác minh/lưu ảnh ở BE và đồng bộ AuthContext; hiển thị avatar trong hồ sơ, Header và sidebar; nút “Thay ảnh” đặt bên phải ảnh. `npm run build` thành công; chưa kiểm thử upload Cloudinary thật.
 - Đã kết nối ghi nhớ đăng nhập và refresh token; người dùng đã áp dụng migration BE vào database kiểm thử. Khôi phục mật khẩu chưa triển khai.
 - Đã nối nút đăng nhập Google/Facebook và callback FE; bảng OAuth trên database kiểm thử đã được người dùng xác nhận khớp migration. Người dùng xác nhận đăng nhập Google và Facebook thật thành công.
 - Kiểm tra giả lập callback OAuth thành công, email trùng và phiên không hợp lệ; các nút chuyển tới đúng đường dẫn BE. OAuth dùng cookie phiên, không áp dụng lựa chọn ghi nhớ.

@@ -243,34 +243,32 @@ export default function PersonalInfoPage() {
                 className="absolute inset-0 size-full object-cover"
               />
             )}
-            <button
-              type="button"
-              onClick={() => avatarInputRef.current?.click()}
-              disabled={loading || profileLoading || avatarUploading || !user}
-              aria-label="Thay đổi ảnh đại diện"
-              className="absolute inset-0 flex items-end justify-end p-0.5 text-white disabled:cursor-not-allowed"
-            >
-              <span className="flex size-6 items-center justify-center rounded-full bg-[#0284c7] shadow-sm" aria-hidden="true">
-                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v14m-7-7h14" />
-                </svg>
-              </span>
-            </button>
-            <input
-              ref={avatarInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={handleAvatarChange}
-              disabled={loading || profileLoading || avatarUploading || !user}
-              className="sr-only"
-              aria-label="Chọn ảnh đại diện"
-            />
           </div>
           <div className="min-w-0">
             <h2 className="break-words text-[18px] font-bold">{user?.hoTen || user?.email || 'Thông tin tài khoản'}</h2>
             <p className="mt-1 text-[12px] text-[#64748b]">Thông tin hồ sơ của bạn.</p>
             <p className="mt-1 text-[11px] text-[#64748b]">JPEG, PNG hoặc WebP, tối đa 5 MB.</p>
           </div>
+          <button
+            type="button"
+            onClick={() => avatarInputRef.current?.click()}
+            disabled={loading || profileLoading || avatarUploading || !user}
+            className="ml-auto inline-flex shrink-0 items-center gap-2 rounded-[8px] border border-[#cbd5e1] px-3 py-2 text-[12px] font-semibold text-[#475569] hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:text-[13px]"
+          >
+            <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="m16.862 4.487 2.651 2.651M8 16l8.4-8.4a1.875 1.875 0 0 1 2.652 2.652L10.65 18.65 7 19l.35-3.65Z" />
+            </svg>
+            {avatarUploading ? 'Đang tải...' : 'Thay ảnh'}
+          </button>
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleAvatarChange}
+            disabled={loading || profileLoading || avatarUploading || !user}
+            className="sr-only"
+            aria-label="Chọn ảnh đại diện"
+          />
         </div>
         {avatarUploading && <p role="status" className="pt-4 text-[13px] text-[#64748b]">Đang tải ảnh đại diện...</p>}
         {avatarError && <p role="alert" className="pt-4 text-[13px] text-red-600">{avatarError}</p>}
