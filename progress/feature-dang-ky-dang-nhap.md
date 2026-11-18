@@ -41,6 +41,7 @@
 - Dropdown tài khoản và menu mobile tự đóng khi nhấn bên ngoài hoặc nhấn Escape; đã kiểm tra bằng API giả lập.
 - Chưa kiểm tra cập nhật hồ sơ với BE thật; cần chạy BE đã cập nhật API hồ sơ.
 - Đã kết nối trang đổi mật khẩu với `POST /api/v1/auth/change-password` qua `authService`, gồm CSRF, kiểm tra mật khẩu/xác nhận, trạng thái gửi và xử lý lỗi từ BE. Thêm nút “Quên mật khẩu?” dạng UI-only, không gọi API; thanh độ mạnh đổi đỏ/cam/vàng/xanh theo số điều kiện đạt. `npm run build` và `git diff --check` đạt; chưa kiểm thử đổi mật khẩu với BE thật.
+- Đã bổ sung hướng dẫn cho agent FE thiết lập và kiểm thử đăng ký, đăng nhập, hồ sơ và đổi mật khẩu; hướng dẫn BE nằm trong repo BE.
 - Chưa xác nhận đầy đủ luồng FE/BE thật trên giao diện với lựa chọn ghi nhớ, đóng/mở trình duyệt, đồng bộ nhiều tab hoặc chờ hết hạn thực tế 7 ngày.
 
 ## Việc tiếp theo (theo thứ tự)
