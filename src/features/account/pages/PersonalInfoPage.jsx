@@ -176,6 +176,7 @@ export default function PersonalInfoPage() {
   const handleSave = async (profile) => {
     await updatePersonalInfo(profile);
     setEditingUserId(null);
+    setAvatarNotice('');
     setNotice('Cập nhật thông tin cá nhân thành công.');
   };
   const handleAvatarChange = async (event) => {
@@ -183,6 +184,7 @@ export default function PersonalInfoPage() {
     event.target.value = '';
     if (!file || avatarUploadingRef.current) return;
 
+    setNotice('');
     setAvatarError('');
     setAvatarNotice('');
     avatarUploadingRef.current = true;
@@ -198,6 +200,7 @@ export default function PersonalInfoPage() {
       if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
       previewUrlRef.current = '';
       setAvatarPreview('');
+      setNotice('');
       setAvatarNotice(
         result.oldAvatarCleanupStatus === 'FAILED' || result.oldAvatarCleanupStatus === 'LEGACY_NOT_TRACKED'
           ? 'Đã cập nhật ảnh đại diện. Ảnh cũ không được xóa tự động.'
@@ -251,7 +254,11 @@ export default function PersonalInfoPage() {
           </div>
           <button
             type="button"
-            onClick={() => avatarInputRef.current?.click()}
+            onClick={() => {
+              setNotice('');
+              setAvatarNotice('');
+              avatarInputRef.current?.click();
+            }}
             disabled={loading || profileLoading || avatarUploading || !user}
             className="order-2 ml-auto inline-flex shrink-0 items-center gap-2 rounded-[8px] border border-[#cbd5e1] px-3 py-2 text-[12px] font-semibold text-[#475569] hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-3 sm:px-4 sm:text-[13px]"
           >
@@ -286,7 +293,7 @@ export default function PersonalInfoPage() {
           ))}
         </dl>
         <div className="flex justify-end border-t border-[#e2e8f0] pt-4">
-          <button type="button" onClick={() => { setNotice(''); setEditingUserId(user.id); }} disabled={loading || profileLoading || Boolean(profileError) || !user} className="w-full rounded-[8px] border border-[#cbd5e1] px-4 py-2 text-[13px] font-semibold text-[#475569] hover:bg-slate-50 disabled:opacity-50 sm:w-auto">
+          <button type="button" onClick={() => { setNotice(''); setAvatarNotice(''); setEditingUserId(user.id); }} disabled={loading || profileLoading || Boolean(profileError) || !user} className="w-full rounded-[8px] border border-[#cbd5e1] px-4 py-2 text-[13px] font-semibold text-[#475569] hover:bg-slate-50 disabled:opacity-50 sm:w-auto">
             Chỉnh sửa
           </button>
         </div>
