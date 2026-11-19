@@ -75,11 +75,20 @@ export default function AccountSidebar() {
     <aside className="w-full lg:w-[230px] shrink-0 flex flex-col gap-3">
       {/* Thẻ hồ sơ + menu */}
       <div className="bg-white border border-[#e2e8f0] rounded-[12px] p-4 shadow-[0px_2px_8px_rgba(15,23,42,0.03)]">
-        <div className="flex flex-col items-center text-center pb-4 border-b border-[#f1f5f9]">
-          <div className="size-16 rounded-full bg-[#e0f2fe] text-[#0284c7] text-[20px] font-bold flex items-center justify-center">
+        <div className="flex flex-col items-start text-left pb-4 border-b border-[#f1f5f9] lg:items-center lg:text-center">
+          <div className="relative size-9 overflow-hidden rounded-full bg-[#e0f2fe] text-[#0284c7] text-[16px] font-bold flex items-center justify-center lg:size-16 lg:text-[20px]">
             {initials}
+            {user?.anhDaiDien && (
+              <img
+                key={user.anhDaiDien}
+                src={user.anhDaiDien}
+                alt=""
+                onError={(imageEvent) => { imageEvent.currentTarget.hidden = true; }}
+                className="absolute inset-0 size-full object-cover"
+              />
+            )}
           </div>
-          <p className="mt-3 text-[14px] font-bold text-[#0f172a] leading-snug break-words max-w-full">
+          <p className="mt-2 text-[14px] font-bold text-[#0f172a] leading-snug break-words max-w-full lg:mt-3">
             {displayName}
           </p>
           <span className="mt-1.5 inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#fef3c7] text-[#d97706]">
@@ -87,14 +96,14 @@ export default function AccountSidebar() {
           </span>
         </div>
 
-        <nav className="mt-3 flex flex-col gap-1">
+        <nav className="mt-3 grid grid-cols-2 gap-1 lg:flex lg:flex-col">
           {MENU_ITEMS.map((item) => {
             const active = isMenuActive(item);
             return (
               <Link
                 key={item.to}
                 to={item.to}
-                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-[13px] transition-colors ${
+                className={`flex min-w-0 items-center gap-2.5 px-3 py-2.5 rounded-[8px] text-[13px] transition-colors [&>svg]:shrink-0 ${
                   active
                     ? 'bg-[#e0f2fe] text-[#0284c7] font-semibold'
                     : 'text-[#475569] hover:bg-[#f8fafc] hover:text-[#0f172a]'
@@ -114,8 +123,7 @@ export default function AccountSidebar() {
           i
         </div>
         <div className="text-[12px] leading-relaxed">
-          <p className="text-[#0369a1]">Hỗ trợ đặt vé và thanh toán:</p>
-          <p className="font-bold text-[#0284c7] text-[13px]">1900 6868</p>
+          <p className="text-[#0369a1]">Hỗ trợ đặt vé và thanh toán: <span className="font-bold text-[#0284c7] lg:block">1900 6868</span></p>
         </div>
       </div>
     </aside>

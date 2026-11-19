@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import AccountPageLayout from '../components/AccountPageLayout';
+import authService from '../../../services/authService';
 
-function PasswordField({ label, name, value, onChange, error }) {
+function PasswordField({ label, name, value, onChange, error, disabled }) {
   const [visible, setVisible] = useState(false);
   const errorId = `${name}-error`;
 
@@ -14,16 +15,19 @@ function PasswordField({ label, name, value, onChange, error }) {
           type={visible ? 'text' : 'password'}
           value={value}
           onChange={onChange}
+          required
+          disabled={disabled}
           autoComplete={name === 'currentPassword' ? 'current-password' : 'new-password'}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? errorId : undefined}
-          className={`h-10 w-full rounded-[8px] border bg-white px-3 pr-10 text-[13px] text-[#0f172a] outline-none focus:border-[#0284c7] ${error ? 'border-red-500' : 'border-[#cbd5e1]'}`}
+          className={`h-12 w-full rounded-[8px] border bg-white px-3 pr-10 text-[16px] text-[#0f172a] outline-none focus:border-[#0284c7] sm:h-10 sm:text-[13px] ${error ? 'border-red-500' : 'border-[#cbd5e1]'}`}
         />
         <button
           type="button"
           onClick={() => setVisible((current) => !current)}
+          disabled={disabled}
           aria-label={`${visible ? 'Ẩn' : 'Hiện'} ${label.toLowerCase()}`}
-          className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-[#64748b]"
+          className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-[#64748b] disabled:cursor-wait"
         >
           <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             {visible ? (
@@ -37,7 +41,7 @@ function PasswordField({ label, name, value, onChange, error }) {
           </svg>
         </button>
       </span>
-      {error && <span id={errorId} className="mt-1 block text-[12px] text-red-600">{error}</span>}
+      {error && <span id={errorId} className="mt-1 block text-[14px] text-red-600 sm:text-[12px]">{error}</span>}
     </label>
   );
 }
@@ -47,8 +51,21 @@ export default function ChangePasswordPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
   const [notice, setNotice] = useState('');
-  const isStrong = newPassword.length >= 8 && new TextEncoder().encode(newPassword).length <= 72
-    && /[A-Z]/.test(newPassword) && /[a-z]/.test(newPassword) && /[0-9]/.test(newPassword);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const passwordConditions = [
+    newPassword.length >= 8,
+    /[A-Z]/.test(newPassword),
+    /[a-z]/.test(newPassword),
+    /[0-9]/.test(newPassword),
+  ];
+  const passwordConditionCount = passwordConditions.filter(Boolean).length;
+  const isWithinByteLimit = new TextEncoder().encode(newPassword).length <= 72;
+  const isStrong = passwordConditionCount === passwordConditions.length && isWithinByteLimit;
+  const meterProgress = newPassword && !isWithinByteLimit ? 1 : passwordConditionCount;
+  const meterColor = !isWithinByteLimit && newPassword
+    ? 'bg-[#ef4444]'
+    : ['', 'bg-[#ef4444]', 'bg-[#f97316]', 'bg-[#eab308]', 'bg-[#10b981]'][meterProgress];
   const confirmationError = confirmation && confirmation !== newPassword ? 'Mật khẩu xác nhận chưa khớp. Vui lòng kiểm tra lại.' : '';
 
   const reset = () => {
@@ -56,41 +73,131 @@ export default function ChangePasswordPage() {
     setNewPassword('');
     setConfirmation('');
     setNotice('');
+    setErrorMessage('');
   };
 
-  const handleSubmit = (event) => {
+  const handleForgotPassword = () => {
+    setErrorMessage('');
+    setNotice('Chức năng quên mật khẩu chưa được kết nối API. Hiện bạn chưa thể đặt lại mật khẩu tại đây.');
+  };
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    setNotice('Chưa hỗ trợ đổi mật khẩu. Không có thay đổi nào được lưu.');
+    if (isSubmitting) return;
+
+    setNotice('');
+    setErrorMessage('');
+
+    if (!isStrong) {
+      setErrorMessage('Mật khẩu mới cần tối thiểu 8 ký tự, có chữ hoa, chữ thường và số; tối đa 72 byte khi mã hóa.');
+      return;
+    }
+
+    if (confirmation !== newPassword) {
+      setErrorMessage('Mật khẩu xác nhận chưa khớp. Vui lòng kiểm tra lại.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await authService.changePassword({ currentPassword, newPassword });
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmation('');
+      setNotice('Đổi mật khẩu thành công. Phiên hiện tại có thể còn hiệu lực tối đa 15 phút; sau đó bạn cần đăng nhập lại.');
+    } catch (error) {
+      if (error?.code === 'CURRENT_PASSWORD_INVALID') {
+        setErrorMessage('Mật khẩu hiện tại không đúng.');
+      } else if (error?.code === 'PASSWORD_UNCHANGED') {
+        setErrorMessage('Mật khẩu mới phải khác mật khẩu hiện tại.');
+      } else if (error?.code === 'VALIDATION_ERROR') {
+        setErrorMessage(error.details?.find((detail) => detail.field === 'newPassword')?.message
+          || 'Mật khẩu mới chưa đáp ứng yêu cầu của Backend.');
+      } else if (error?.code === 'NETWORK_ERROR') {
+        setErrorMessage('Không thể kết nối Backend. Vui lòng kiểm tra mạng và thử lại.');
+      } else if (error?.status === 401 || error?.code === 'UNAUTHORIZED') {
+        setErrorMessage('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+      } else {
+        setErrorMessage(error?.message || 'Đổi mật khẩu thất bại. Vui lòng thử lại.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <AccountPageLayout title="Đổi mật khẩu" description="Cập nhật mật khẩu thường xuyên để bảo vệ tài khoản của bạn.">
-      <section className="rounded-[12px] border border-[#e2e8f0] bg-white p-5 shadow-[0px_2px_8px_rgba(15,23,42,0.03)] sm:p-6">
-        <h2 className="text-[16px] font-bold text-[#0f172a]">Bảo mật tài khoản</h2>
+      <section className="rounded-[12px] border border-[#e2e8f0] bg-white p-4 shadow-[0px_2px_8px_rgba(15,23,42,0.03)] sm:p-6">
+        <h2 className="text-[18px] font-bold text-[#0f172a] sm:text-[16px]">Bảo mật tài khoản</h2>
         <form onSubmit={handleSubmit} className="mt-5 max-w-[500px] space-y-4">
-          <PasswordField label="Mật khẩu hiện tại" name="currentPassword" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} />
           <div>
-            <PasswordField label="Mật khẩu mới" name="newPassword" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} />
+            <PasswordField
+              label="Mật khẩu hiện tại"
+              name="currentPassword"
+              value={currentPassword}
+              onChange={(event) => {
+                setCurrentPassword(event.target.value);
+                setNotice('');
+                setErrorMessage('');
+              }}
+              disabled={isSubmitting}
+            />
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              disabled={isSubmitting}
+              className="mt-2 text-[12px] font-semibold text-[#0284c7] hover:text-[#0369a1] disabled:cursor-wait disabled:opacity-70"
+            >
+              Quên mật khẩu?
+            </button>
+          </div>
+          <div>
+            <PasswordField
+              label="Mật khẩu mới"
+              name="newPassword"
+              value={newPassword}
+              onChange={(event) => {
+                setNewPassword(event.target.value);
+                setNotice('');
+                setErrorMessage('');
+              }}
+              disabled={isSubmitting}
+            />
             <div className="mt-2 flex gap-1" aria-hidden="true">
-              {[0, 1, 2, 3].map((index) => <span key={index} className={`h-1 flex-1 rounded ${isStrong ? 'bg-[#10b981]' : 'bg-[#e2e8f0]'}`} />)}
+              {[0, 1, 2, 3].map((index) => (
+                <span
+                  key={index}
+                  className={`h-1 flex-1 rounded ${index < meterProgress ? meterColor : 'bg-[#e2e8f0]'}`}
+                />
+              ))}
             </div>
-            <p className={`mt-1 text-[12px] ${isStrong ? 'text-[#059669]' : 'text-[#64748b]'}`}>
+            <p className={`mt-1 text-[14px] sm:text-[12px] ${isStrong ? 'text-[#059669]' : 'text-[#64748b]'}`}>
               {isStrong ? 'Đã đáp ứng yêu cầu. ' : ''}Tối thiểu 8 ký tự, có chữ hoa, chữ thường và số; tối đa 72 byte khi mã hóa.
             </p>
           </div>
-          <PasswordField label="Xác nhận mật khẩu mới" name="confirmation" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} error={confirmationError} />
-          <label className="flex items-center gap-2 text-[12px] text-[#64748b]">
-            <input type="checkbox" disabled className="size-4 accent-[#0284c7]" />
-            Đăng xuất khỏi các thiết bị khác (chưa hỗ trợ)
-          </label>
-          {notice && <p role="status" className="text-[13px] text-[#b45309]">{notice}</p>}
-          <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={reset} className="rounded-[8px] border border-[#cbd5e1] px-4 py-2 text-[13px] font-semibold text-[#475569] hover:bg-slate-50">Hủy</button>
-            <button type="submit" className="rounded-[8px] bg-[#0284c7] px-4 py-2 text-[13px] font-semibold text-white hover:bg-[#0369a1]">Cập nhật mật khẩu</button>
+          <PasswordField
+            label="Xác nhận mật khẩu mới"
+            name="confirmation"
+            value={confirmation}
+            onChange={(event) => {
+              setConfirmation(event.target.value);
+              setNotice('');
+              setErrorMessage('');
+            }}
+            error={confirmationError}
+            disabled={isSubmitting}
+          />
+          {notice && <p role="status" className="text-[13px] text-[#0369a1]">{notice}</p>}
+          {errorMessage && <p role="alert" className="text-[13px] text-red-600">{errorMessage}</p>}
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <button type="button" onClick={reset} disabled={isSubmitting} className="min-h-12 rounded-[8px] border border-[#cbd5e1] px-4 py-2 text-[14px] font-semibold text-[#475569] hover:bg-slate-50 disabled:cursor-wait disabled:opacity-70 sm:min-h-0 sm:text-[13px]">Hủy</button>
+            <button type="submit" disabled={isSubmitting} className="min-h-12 rounded-[8px] bg-[#0284c7] px-4 py-2 text-[14px] font-semibold text-white hover:bg-[#0369a1] disabled:cursor-wait disabled:opacity-70 sm:min-h-0 sm:text-[13px]">
+              {isSubmitting ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}
+            </button>
           </div>
         </form>
       </section>
-      <p className="mt-5 rounded-[8px] bg-[#e0f2fe] px-4 py-3 text-[12px] text-[#0369a1]">
+      <p className="mt-5 rounded-[8px] bg-[#e0f2fe] px-4 py-3 text-[14px] text-[#0369a1] sm:text-[12px]">
         Không chia sẻ mật khẩu hoặc mã xác thực với bất kỳ ai, kể cả nhân viên phòng vé.
       </p>
     </AccountPageLayout>

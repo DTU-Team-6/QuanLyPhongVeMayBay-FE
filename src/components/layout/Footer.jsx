@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import planeIcon from '../../assets/plane.svg';
 
 /**
@@ -6,13 +6,15 @@ import planeIcon from '../../assets/plane.svg';
  * Hiển thị thông tin phòng vé, hotline liên hệ, chính sách và bản quyền
  */
 export default function Footer() {
+  const isAccountProfilePage = ['/tai-khoan', '/tai-khoan/doi-mat-khau'].includes(useLocation().pathname);
+
   return (
     <footer className="bg-[#0f172a] text-white w-full">
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-[120px] py-[32px] flex flex-col gap-[24px]">
+      <div className={`max-w-[1440px] mx-auto lg:px-[120px] py-[32px] flex flex-col gap-[24px] ${isAccountProfilePage ? 'px-4 sm:px-6' : 'px-6'}`}>
         {/* Hàng thông tin chính 4 cột */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-[64px] items-start">
+        <div className={`grid md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-[64px] items-start ${isAccountProfilePage ? 'grid-cols-2' : 'grid-cols-1'}`}>
           {/* Cột 1: Thông tin phòng vé */}
-          <div className="flex flex-col gap-[12px] max-w-[360px]">
+          <div className={`flex flex-col gap-[12px] max-w-[360px] ${isAccountProfilePage ? 'col-span-2 md:col-span-1' : ''}`}>
             <div className="flex items-center gap-[10px]">
               <div className="bg-[#0284c7] flex items-center justify-center rounded-[10px] size-[36px] shrink-0">
                 <img src={planeIcon} alt="Vân Việt Logo" className="size-[23px]" />
@@ -35,7 +37,7 @@ export default function Footer() {
           </div>
 
           {/* Cột 2: Hotline và Hỗ trợ */}
-          <div className="flex flex-col gap-[8px]">
+          <div className={`flex flex-col gap-[8px] ${isAccountProfilePage ? 'col-span-2 md:col-span-1' : ''}`}>
             <p className="font-semibold text-white text-[14px]">
               Luôn sẵn sàng hỗ trợ
             </p>

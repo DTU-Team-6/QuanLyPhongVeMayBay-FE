@@ -18,6 +18,7 @@ import PublicNewsListPage from '../features/news/pages/PublicNewsListPage';
 import PublicNewsDetailPage from '../features/news/pages/PublicNewsDetailPage';
 import LoginPage from '../features/auth/pages/LoginPage';
 import RegisterPage from '../features/auth/pages/RegisterPage';
+import OAuthCallbackPage from '../features/auth/pages/OAuthCallbackPage';
 import PersonalInfoPage from '../features/account/pages/PersonalInfoPage';
 import ChangePasswordPage from '../features/account/pages/ChangePasswordPage';
 
@@ -132,6 +133,10 @@ export const router = createBrowserRouter([
       {
         path: 'dang-ky',
         element: <RegisterPage />,
+      },
+      {
+        path: 'auth/callback',
+        element: <OAuthCallbackPage />,
       },
       {
         path: '*',

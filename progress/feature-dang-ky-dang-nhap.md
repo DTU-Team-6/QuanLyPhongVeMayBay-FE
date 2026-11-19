@@ -13,12 +13,16 @@
 - Tăng cỡ chữ desktop và chiều cao ô nhập sau khi kiểm tra trên màn hình thực tế.
 - Căn card đăng nhập theo thiết kế 480px rộng, cao tự ôm nội dung (xấp xỉ 575px); không khóa chiều cao.
 - Căn card đăng ký theo thiết kế 800px rộng với chiều cao tự ôm nội dung; thay icon đầu trang đăng nhập theo biểu tượng cổng và mũi tên được cung cấp.
+- Đã chỉnh giao diện mobile trang thông tin cá nhân và form chỉnh sửa. Kiểm tra trình duyệt với API giả lập: không tràn ngang ở 320px và 375px, lưu/hủy và Escape hoạt động, email chỉ đọc, payload giữ địa chỉ/quốc tịch/giấy tờ; dialog desktop căn giữa ở 1440px. `npm run build` và `git diff --check` thành công; chưa kiểm tra thay đổi này với BE thật.
+- Đã chỉnh giao diện mobile trang đổi mật khẩu. Kiểm tra trình duyệt với API giả lập: không tràn ngang ở 320px và 375px; quên mật khẩu, hiện mật khẩu, kiểm tra xác nhận, hủy và gửi thành công hoạt động; request có CSRF và cookie. Ô nhập và nút desktop giữ kích thước/bố cục cũ ở 1440px. `npm run build` và `git diff --check` thành công; chưa kiểm tra đổi mật khẩu với BE thật.
 
 ## Đã xong
 
 - Giữ giao diện đăng nhập/đăng ký và kiểm tra biểu mẫu trên trình duyệt.
 - Form đăng ký gọi `POST /api/v1/auth/register`, gửi đầy đủ thông tin được BE lưu, hiển thị lỗi trường và chuyển sang đăng nhập khi thành công.
 - Form đăng nhập gọi `POST /api/v1/auth/login`, cập nhật `AuthContext` và không lưu token phía FE.
+- Màn hình thông tin cá nhân tải và lưu hồ sơ qua `GET/PUT /api/v1/auth/me`; email chỉ đọc, khách hàng có thể sửa quốc tịch và giấy tờ. FE khởi tạo CSRF khi cần và cập nhật context sau khi lưu.
+- Kiểm tra giả lập trên trình duyệt: lưu thành công, gửi CSRF và giữ địa chỉ; lỗi tải vô hiệu hóa chỉnh sửa, lỗi lưu giữ form và hiện thông báo; nút hủy đóng form. `npm run build` thành công.
 - `authService` khởi tạo cookie CSRF nếu chưa có trước POST đăng ký/đăng nhập.
 - Đăng xuất chuyển về trang đăng nhập sau khi BE xác nhận; hiển thị thông báo đăng ký, đăng xuất thành công hoặc lỗi đăng xuất.
 - Kiểm tra giao diện đăng ký và đăng xuất với API giả lập; kiểm tra đăng xuất trên desktop và mobile.
@@ -27,21 +31,27 @@
 
 ## Đang dở
 
-- Đã kết nối ghi nhớ đăng nhập và refresh token; người dùng đã áp dụng migration BE vào database kiểm thử. Đăng nhập Google/Facebook và khôi phục mật khẩu chưa triển khai.
+- Đã nối đổi ảnh đại diện với BE/Cloudinary: kiểm tra loại và kích thước, preview, tải trực tiếp lên Cloudinary bằng chữ ký BE, xác minh/lưu ảnh ở BE và đồng bộ AuthContext; hiển thị avatar trong hồ sơ, Header và sidebar; nút “Thay ảnh” đặt bên phải ảnh. `npm run build` thành công; chưa kiểm thử upload Cloudinary thật.
+- Đã kết nối ghi nhớ đăng nhập và refresh token; người dùng đã áp dụng migration BE vào database kiểm thử. Khôi phục mật khẩu chưa triển khai.
+- Đã nối nút đăng nhập Google/Facebook và callback FE; bảng OAuth trên database kiểm thử đã được người dùng xác nhận khớp migration. Người dùng xác nhận đăng nhập Google và Facebook thật thành công.
+- Kiểm tra giả lập callback OAuth thành công, email trùng và phiên không hợp lệ; các nút chuyển tới đúng đường dẫn BE. OAuth dùng cookie phiên, không áp dụng lựa chọn ghi nhớ.
 - Kiểm tra giả lập: checkbox gửi đúng cả hai giá trị; hai request 401 đồng thời dùng một refresh trong cùng tab; refresh thất bại hoặc request thử lại vẫn 401 chuyển phiên đã đăng nhập về trang đăng nhập.
 - Kiểm tra API BE với database thật: cookie phiên/có thời hạn, rotation, đăng xuất, dùng lại token và hai refresh đồng thời đều đạt. Đã tạo tài khoản giả trong database kiểm thử; không xoá dữ liệu.
 - Người dùng báo đăng nhập không chọn ghi nhớ, sau 15 phút tải lại vẫn đăng nhập.
 - Đã sửa đồng bộ trạng thái đăng nhập/đăng xuất giữa các tab; kiểm tra giả lập hai tab, kể cả khi BroadcastChannel không có và quay lại tab.
 - Đã chỉnh biểu tượng tài khoản, trạng thái chờ xác thực và menu tài khoản chỉ gồm thông tin cá nhân, đăng xuất; kiểm tra menu desktop/mobile với API giả lập.
 - Dropdown tài khoản và menu mobile tự đóng khi nhấn bên ngoài hoặc nhấn Escape; đã kiểm tra bằng API giả lập.
-- Đã làm giao diện thông tin cá nhân và hộp chỉnh sửa; dữ liệu chưa có hiển thị trống, thao tác lưu báo chưa hỗ trợ. Đã kiểm tra giả lập desktop/mobile, không gửi API lưu.
-- Đã làm giao diện đổi mật khẩu; chưa kết nối API. Kiểm tra giả lập desktop/mobile: hiện/ẩn mật khẩu, báo xác nhận không khớp, hủy xóa ô nhập, lưu báo chưa hỗ trợ và không gửi API ghi.
+- Chưa kiểm tra cập nhật hồ sơ với BE thật; cần chạy BE đã cập nhật API hồ sơ.
+- Đã kết nối trang đổi mật khẩu với `POST /api/v1/auth/change-password` qua `authService`, gồm CSRF, kiểm tra mật khẩu/xác nhận, trạng thái gửi và xử lý lỗi từ BE. Thêm nút “Quên mật khẩu?” dạng UI-only, không gọi API; thanh độ mạnh đổi đỏ/cam/vàng/xanh theo số điều kiện đạt. `npm run build` và `git diff --check` đạt; chưa kiểm thử đổi mật khẩu với BE thật.
+- Đã bổ sung hướng dẫn cho agent FE thiết lập và kiểm thử đăng ký, đăng nhập, hồ sơ và đổi mật khẩu; hướng dẫn BE nằm trong repo BE.
 - Chưa xác nhận đầy đủ luồng FE/BE thật trên giao diện với lựa chọn ghi nhớ, đóng/mở trình duyệt, đồng bộ nhiều tab hoặc chờ hết hạn thực tế 7 ngày.
 
 ## Việc tiếp theo (theo thứ tự)
 
 1. Kiểm tra luồng FE/BE thật trên giao diện và kiểm tra đồng bộ nhiều tab.
-2. Tích hợp OAuth Google/Facebook và khôi phục mật khẩu khi được yêu cầu.
+2. Áp dụng migration avatar BE và cấu hình Cloudinary trên môi trường kiểm thử; xác minh luồng upload thật.
+3. Kiểm tra thêm các trường hợp OAuth bị từ chối, email trùng và phiên hết hạn với provider thật khi cần.
+4. Kiểm thử đổi mật khẩu với BE thật; tích hợp API khôi phục mật khẩu khi BE hỗ trợ và được yêu cầu.
 
 ## Quyết định đã chốt và lưu ý
 
@@ -54,5 +64,5 @@
 ## Lỗi đang gặp (nếu có)
 
 - `npm test`: đạt 20/20 test.
-- `npm run build`: thành công; Vite cảnh báo chunk JavaScript 665.85 kB lớn hơn 500 kB.
+- `npm run build`: thành công; Vite cảnh báo chunk JavaScript 668.22 kB lớn hơn 500 kB.
 - BE: `./gradlew test --tests 'com.team6.quanlyvemaybay.service.AuthServiceTest' --tests 'com.team6.quanlyvemaybay.controller.AuthControllerTest'` thành công.

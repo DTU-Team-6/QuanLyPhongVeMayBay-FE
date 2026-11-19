@@ -19,6 +19,7 @@ export default function Header() {
   const headerRef = useRef(null);
   const userDropdownRef = useRef(null);
   const isAuthPage = ['/dang-ky', '/dang-nhap'].includes(location.pathname);
+  const isAccountProfilePage = ['/tai-khoan', '/tai-khoan/doi-mat-khau'].includes(location.pathname);
 
   useEffect(() => {
     if (!userDropdownOpen && !mobileMenuOpen) return;
@@ -84,7 +85,7 @@ export default function Header() {
 
   return (
     <header ref={headerRef} className="bg-white border-[#e2e8f0] border-b sticky top-0 z-50 w-full shadow-xs">
-      <div className="max-w-[1440px] mx-auto h-[72px] px-6 lg:px-[120px] flex items-center justify-between">
+      <div className={`max-w-[1440px] mx-auto flex items-center justify-between lg:px-[120px] ${isAccountProfilePage ? 'h-[60px] px-4 sm:h-[72px] sm:px-6' : 'h-[72px] px-6'}`}>
         {/* Thương hiệu Vân Việt */}
         <Link to="/" className="flex items-center gap-[10px] group focus:outline-hidden">
           <div className="bg-[#0284c7] flex items-center justify-center rounded-[10px] size-[36px] shrink-0 transition-transform group-hover:scale-105">
@@ -137,8 +138,17 @@ export default function Header() {
                 aria-haspopup="true"
                 className="flex items-center gap-2 rounded-lg py-1.5 hover:bg-slate-50 transition cursor-pointer focus-visible:outline-2 focus-visible:outline-[#0284c7]"
               >
-                <div className="size-9 shrink-0 rounded-full bg-[#e0f2fe] text-[#0369a1] font-bold text-sm flex items-center justify-center">
+                <div className="relative size-9 shrink-0 overflow-hidden rounded-full bg-[#e0f2fe] text-[#0369a1] font-bold text-sm flex items-center justify-center">
                   {getInitials(user.hoTen, user.email)}
+                  {user.anhDaiDien && (
+                    <img
+                      key={user.anhDaiDien}
+                      src={user.anhDaiDien}
+                      alt=""
+                      onError={(imageEvent) => { imageEvent.currentTarget.hidden = true; }}
+                      className="absolute inset-0 size-full object-cover"
+                    />
+                  )}
                 </div>
                 <div className="flex flex-col text-left">
                   <span className="text-[13px] font-semibold text-[#0f172a] max-w-[120px] truncate">
@@ -201,19 +211,34 @@ export default function Header() {
               Đăng nhập
             </Link>
           )}
+          {isAccountProfilePage && isAuthenticated && user && (
+            <div className="relative mr-1 flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#e0f2fe] text-xs font-bold text-[#0369a1]">
+              {getInitials(user.hoTen, user.email)}
+              {user.anhDaiDien && (
+                <img
+                  key={user.anhDaiDien}
+                  src={user.anhDaiDien}
+                  alt=""
+                  onError={(imageEvent) => { imageEvent.currentTarget.hidden = true; }}
+                  className="absolute inset-0 size-full object-cover"
+                />
+              )}
+            </div>
+          )}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 text-[#334155] hover:text-[#0284c7] focus:outline-hidden"
-            aria-label="Toggle menu"
+            aria-label={mobileMenuOpen ? 'Đóng menu' : 'Mở menu'}
+            aria-expanded={mobileMenuOpen}
           >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            {isAccountProfilePage && !mobileMenuOpen ? <span className="text-[13px] font-semibold">Menu</span> : <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               {mobileMenuOpen ? (
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               ) : (
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               )}
-            </svg>
+            </svg>}
           </button>
         </div>
       </div>

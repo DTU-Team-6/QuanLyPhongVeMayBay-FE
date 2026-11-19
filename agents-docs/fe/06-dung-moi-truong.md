@@ -12,6 +12,17 @@ Dùng được trên cả macOS và Windows (lệnh `npm` giống nhau).
 4. **Chạy dev:** `npm run dev`, mở địa chỉ Vite in ra (mặc định `http://localhost:5173`).
 5. **Kết nối backend:** cần backend đang chạy ở `http://localhost:8080`. Tạo file `.env` với `VITE_API_BASE_URL=http://localhost:8080` (xem `02-ket-noi-backend.md`).
 
+## Kiểm thử đăng ký, đăng nhập và tài khoản
+
+- Dùng phiên bản FE và BE đều đã chứa chức năng xác thực, hồ sơ và đổi mật khẩu; nếu các commit còn ở nhánh làm việc cục bộ thì thành viên khác chưa thể lấy qua GitHub. Kiểm tra nhánh/commit với người phụ trách hoặc dùng `develop` sau khi thay đổi được merge.
+- Chạy BE và MySQL theo hướng dẫn `agents-docs/be/02-dung-moi-truong.md` trong repo BE. BE cần Java 21, JWT secret riêng và database kiểm thử có schema tương thích; không tự chạy `schema.sql` có lệnh xoá bảng. Kiểm tra JDBC URL lúc khởi động trỏ đúng database đã chuẩn bị.
+- Chạy FE với `VITE_API_BASE_URL` trỏ tới BE và truy cập đúng origin đã cấu hình trong `APP_FRONTEND_URL` phía BE. Khi FE đổi cổng hoặc hostname, cập nhật origin BE rồi khởi động lại BE; dùng cùng hostname, ví dụ đều là `localhost`, để cookie hoạt động đúng.
+- Tại `/dang-ky`, tạo tài khoản kiểm thử mới, sau đó đăng nhập ở `/dang-nhap`. Vào `/tai-khoan` để sửa và lưu hồ sơ; email chỉ đọc. Vào `/tai-khoan/doi-mat-khau`, nhập mật khẩu hiện tại và mật khẩu mới rồi kiểm tra đăng nhập lại bằng mật khẩu mới.
+- BE thu hồi refresh token khi đổi mật khẩu; access token đã cấp có thể còn hiệu lực tối đa 15 phút. Nút “Quên mật khẩu?” chỉ hiển thị thông báo, chưa kết nối API khôi phục.
+- Đăng nhập bằng mật khẩu và sửa hồ sơ không yêu cầu cấu hình OAuth/Cloudinary. Nếu thử đăng nhập Google/Facebook hoặc thay avatar, cần cấu hình và kiểm tra điều kiện riêng theo tài liệu BE `docs/auth-api.md`.
+- FE gửi cookie và CSRF qua `apiClient.js`; không lưu mật khẩu/token, không tắt CSRF, không đưa secret vào `.env` FE. Chỉ kiểm thử trên tài khoản và database được phép; không ghi/xoá dữ liệu database dev của người khác.
+- Nếu lỗi: kiểm tra BE đã khởi động thành công, `VITE_API_BASE_URL`, origin CORS và database trước; `401` có thể là phiên chưa đăng nhập/hết hạn, còn lỗi thiếu bảng/cột cần kiểm tra schema/migration trên đúng database. Không khẳng định thành công với BE thật nếu chưa kiểm thử.
+
 ## Tailwind CSS
 
 Tailwind CSS đã được nhóm chọn. Với Vite, dùng plugin Vite chính thức của Tailwind CSS:
