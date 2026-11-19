@@ -7,7 +7,7 @@ import SortTabBar from '../components/SortTabBar';
 import FlightCard from '../components/FlightCard';
 import SelectedFlightBar from '../components/SelectedFlightBar';
 import FlightDetailModal from '../components/FlightDetailModal';
-import flightSearchService from '../services/flightSearchService';
+import flightSearchService, { buildMinPriceDateRange } from '../services/flightSearchService';
 
 /**
  * Trang danh sách chuyến bay – 6.4.6
@@ -117,17 +117,15 @@ export default function FlightSearchPage() {
 
   const fetchMinPriceDi = useCallback(async () => {
     if (!maDi || !maDen || !ngayDi) return;
-    const base = new Date(ngayDi + 'T00:00:00');
-    const start = new Date(base);
-    start.setDate(base.getDate() - 2);
-    const end = new Date(base);
-    end.setDate(base.getDate() + 2);
-    const fmt = (d) => d.toISOString().split('T')[0];
+    const range = buildMinPriceDateRange(ngayDi);
+    if (!range) {
+      setMinPriceMapDi(null);
+      return;
+    }
     const map = await flightSearchService.getMinPriceByDateRange({
       maDi,
       maDen,
-      ngayBatDau: fmt(start),
-      ngayKetThuc: fmt(end),
+      ...range,
       soNguoiLon,
       soTreEm,
     });

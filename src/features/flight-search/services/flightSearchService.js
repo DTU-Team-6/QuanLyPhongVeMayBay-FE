@@ -1,5 +1,8 @@
 import flightService from '../../../services/flightService';
 import apiClient from '../../../services/apiClient';
+import { buildMinPriceDateRange } from '../utils/flightDateHelpers.js';
+
+export { buildMinPriceDateRange } from '../utils/flightDateHelpers.js';
 
 /**
  * Service tìm kiếm chuyến bay cho màn hình danh sách chuyến bay (6.4.6)
@@ -23,15 +26,14 @@ export const flightSearchService = {
 
   /**
    * Lấy giá thấp nhất theo từng ngày trong dải ngày
-   * Gọi BE qua endpoint /flights/min-price-by-date nếu BE hỗ trợ.
-   * Nếu BE không có endpoint này, trả về null để giao diện hiển thị "--".
+   * Gọi BE qua endpoint /flights/min-price-by-date.
    * @param {string} maDi - Mã sân bay đi
    * @param {string} maDen - Mã sân bay đến
    * @param {string} ngayBatDau - Ngày bắt đầu dải (YYYY-MM-DD)
    * @param {string} ngayKetThuc - Ngày kết thúc dải (YYYY-MM-DD)
    * @param {number} soNguoiLon - Số người lớn
    * @param {number} soTreEm - Số trẻ em
-   * @returns {Promise<Object|null>} Map { 'YYYY-MM-DD': giaThapNhat } hoặc null nếu BE chưa hỗ trợ
+   * @returns {Promise<Object|null>} Map { 'YYYY-MM-DD': giaThapNhat } hoặc null khi request lỗi
    */
   async getMinPriceByDateRange({ maDi, maDen, ngayBatDau, ngayKetThuc, soNguoiLon = 1, soTreEm = 0 }) {
     try {
@@ -47,7 +49,7 @@ export const flightSearchService = {
       // BE trả về dạng { data: { '2026-11-12': 500000, '2026-11-13': 450000, ... } }
       return res?.data || null;
     } catch {
-      // Endpoint chưa tồn tại hoặc lỗi → trả null, UI sẽ hiển thị "--"
+      // Khi request lỗi, UI vẫn hiển thị kết quả tìm chuyến và để giá gợi ý là "--"
       return null;
     }
   },
