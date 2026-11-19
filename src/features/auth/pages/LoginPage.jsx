@@ -189,13 +189,12 @@ export default function LoginPage() {
                 />
                 <span>Ghi nhớ đăng nhập</span>
               </label>
-              <button
-                type="button"
-                onClick={() => setNotice('Khôi phục mật khẩu sẽ được bổ sung khi kết nối API.')}
+              <Link
+                to="/quen-mat-khau"
                 className="text-xs font-semibold text-[#0284c7] hover:text-[#0369a1]"
               >
                 Quên mật khẩu?
-              </button>
+              </Link>
             </div>
 
             <button

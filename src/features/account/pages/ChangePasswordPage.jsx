@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import AccountPageLayout from '../components/AccountPageLayout';
 import authService from '../../../services/authService';
 
@@ -76,11 +77,6 @@ export default function ChangePasswordPage() {
     setErrorMessage('');
   };
 
-  const handleForgotPassword = () => {
-    setErrorMessage('');
-    setNotice('Chức năng quên mật khẩu chưa được kết nối API. Hiện bạn chưa thể đặt lại mật khẩu tại đây.');
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (isSubmitting) return;
@@ -142,14 +138,14 @@ export default function ChangePasswordPage() {
               }}
               disabled={isSubmitting}
             />
-            <button
-              type="button"
-              onClick={handleForgotPassword}
-              disabled={isSubmitting}
-              className="mt-2 text-[12px] font-semibold text-[#0284c7] hover:text-[#0369a1] disabled:cursor-wait disabled:opacity-70"
+            <Link
+              to="/quen-mat-khau"
+              aria-disabled={isSubmitting}
+              onClick={(event) => { if (isSubmitting) event.preventDefault(); }}
+              className={`mt-2 text-[12px] font-semibold text-[#0284c7] hover:text-[#0369a1] ${isSubmitting ? 'cursor-wait opacity-70' : ''}`}
             >
               Quên mật khẩu?
-            </button>
+            </Link>
           </div>
           <div>
             <PasswordField

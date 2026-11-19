@@ -18,6 +18,8 @@ import PublicNewsListPage from '../features/news/pages/PublicNewsListPage';
 import PublicNewsDetailPage from '../features/news/pages/PublicNewsDetailPage';
 import LoginPage from '../features/auth/pages/LoginPage';
 import RegisterPage from '../features/auth/pages/RegisterPage';
+import ForgotPasswordPage from '../features/auth/pages/ForgotPasswordPage';
+import ResetPasswordPage from '../features/auth/pages/ResetPasswordPage';
 import OAuthCallbackPage from '../features/auth/pages/OAuthCallbackPage';
 import PersonalInfoPage from '../features/account/pages/PersonalInfoPage';
 import ChangePasswordPage from '../features/account/pages/ChangePasswordPage';
@@ -133,6 +135,14 @@ export const router = createBrowserRouter([
       {
         path: 'dang-ky',
         element: <RegisterPage />,
+      },
+      {
+        path: 'quen-mat-khau',
+        element: <ForgotPasswordPage />,
+      },
+      {
+        path: 'dat-lai-mat-khau',
+        element: <ResetPasswordPage />,
       },
       {
         path: 'auth/callback',

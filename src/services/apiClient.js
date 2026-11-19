@@ -6,7 +6,7 @@ import { getCookie } from '../utils/csrf';
  */
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/+$/, '');
 const API_PREFIX = '/api/v1';
-const AUTH_ENDPOINTS = new Set(['/auth/csrf', '/auth/login', '/auth/register', '/auth/logout', '/auth/refresh']);
+const AUTH_ENDPOINTS = new Set(['/auth/csrf', '/auth/login', '/auth/register', '/auth/logout', '/auth/refresh', '/auth/forgot-password', '/auth/reset-password']);
 let refreshInFlight = null;
 
 /**

@@ -24,14 +24,20 @@ export function adultDateLimit(today = new Date()) {
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
+export function validatePassword(password) {
+  if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password || '')) {
+    return 'Mật khẩu cần ít nhất 8 ký tự, gồm chữ hoa, chữ thường và số.';
+  }
+  if (new TextEncoder().encode(password).length > 72) {
+    return 'Mật khẩu không được vượt quá 72 byte khi mã hóa.';
+  }
+  return '';
+}
+
 export function validateRegistration(values, today = new Date()) {
   const errors = {};
-
-  if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(values.password || '')) {
-    errors.password = 'Mật khẩu cần ít nhất 8 ký tự, gồm chữ hoa, chữ thường và số.';
-  } else if (new TextEncoder().encode(values.password).length > 72) {
-    errors.password = 'Mật khẩu không được vượt quá 72 byte khi mã hóa.';
-  }
+  const passwordError = validatePassword(values.password);
+  if (passwordError) errors.password = passwordError;
   if (values.confirmPassword !== values.password) {
     errors.confirmPassword = 'Mật khẩu xác nhận chưa khớp.';
   }

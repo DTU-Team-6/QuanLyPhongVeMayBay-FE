@@ -99,6 +99,22 @@ export const authService = {
     });
   },
 
+  async forgotPassword(email) {
+    await ensureCsrfToken();
+    return apiClient('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  async resetPassword(token, newPassword) {
+    await ensureCsrfToken();
+    return apiClient('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, newPassword }),
+    });
+  },
+
   async createAvatarUploadSignature() {
     await ensureCsrfToken();
     const response = await apiClient('/auth/avatar/upload-signature', { method: 'POST' });
