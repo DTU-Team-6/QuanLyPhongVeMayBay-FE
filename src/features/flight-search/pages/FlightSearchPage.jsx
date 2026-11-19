@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Loading from '../../../components/common/Loading';
 import FlightSearchSidebar from '../components/FlightSearchSidebar';
@@ -27,27 +27,24 @@ export default function FlightSearchPage() {
   const soNguoiLon = Number(searchParams.get('soNguoiLon')) || 1;
   const soTreEm = Number(searchParams.get('soTreEm')) || 0;
   const soEmBe = Number(searchParams.get('soEmBe')) || 0;
-  const ngayDiParam = searchParams.get('ngayDi') || new Date().toISOString().split('T')[0];
-  const ngayVeParam = searchParams.get('ngayVe') || '';
-
-  const [ngayDi, setNgayDi] = useState(ngayDiParam);
-  const [ngayVe, setNgayVe] = useState(ngayVeParam);
-
-  // Đồng bộ state khi URL thay đổi từ bên ngoài (Sidebar hoặc HomePage)
-  useEffect(() => {
-    setNgayDi(ngayDiParam);
-  }, [ngayDiParam]);
-
-  useEffect(() => {
-    setNgayVe(ngayVeParam);
-  }, [ngayVeParam]);
+  const ngayDi = searchParams.get('ngayDi') || new Date().toISOString().split('T')[0];
+  const ngayVe = searchParams.get('ngayVe') || '';
+  const hangVeDi = searchParams.get('hangVeDi');
+  const hangVeVe = loaiVe === 'roundTrip' ? searchParams.get('hangVeVe') : null;
+  const searchKeyDi = JSON.stringify([maDi, maDen, ngayDi, soNguoiLon, soTreEm]);
+  const searchKeyVe = JSON.stringify([maDen, maDi, ngayVe, soNguoiLon, soTreEm]);
 
   // ---- Trạng thái tải dữ liệu ----
-  const [danhSachDi, setDanhSachDi] = useState([]);
-  const [danhSachVe, setDanhSachVe] = useState([]);
+  const [ketQuaDi, setKetQuaDi] = useState({ key: null, flights: [] });
+  const [ketQuaVe, setKetQuaVe] = useState({ key: null, flights: [] });
   const [loading, setLoading] = useState(false);
   const [loadingVe, setLoadingVe] = useState(false);
   const [error, setError] = useState(null);
+  const [errorVe, setErrorVe] = useState(null);
+  const requestDi = useRef(0);
+  const requestVe = useRef(0);
+  const danhSachDi = ketQuaDi.key === searchKeyDi ? ketQuaDi.flights : [];
+  const danhSachVe = ketQuaVe.key === searchKeyVe ? ketQuaVe.flights : [];
 
   // ---- Giá theo ngày (DateTabBar) ----
   const [minPriceMapDi, setMinPriceMapDi] = useState(null);
@@ -56,8 +53,15 @@ export default function FlightSearchPage() {
   const [selectedAirlines, setSelectedAirlines] = useState([]);
   const [sortKey, setSortKey] = useState('deXuat');
 
-  // ---- Chuyến đã chọn ----
-  const [chuyenDaChon, setChuyenDaChon] = useState({ di: null, ve: null });
+  // Chỉ khôi phục hạng vé còn trong kết quả tìm kiếm hiện tại của BE.
+  const chuyenDaChon = {
+    di: danhSachDi.find((flight) => String(flight.hangVeId) === hangVeDi) || null,
+    ve: danhSachVe.find((flight) => String(flight.hangVeId) === hangVeVe) || null,
+  };
+  const khongTimThayDi = hangVeDi && !loading && !error &&
+    ketQuaDi.key === searchKeyDi && !chuyenDaChon.di;
+  const khongTimThayVe = hangVeVe && !loadingVe && !errorVe &&
+    ketQuaVe.key === searchKeyVe && !chuyenDaChon.ve;
 
   // ---- Modal chi tiết ----
   const [modalFlight, setModalFlight] = useState(null);
@@ -74,6 +78,7 @@ export default function FlightSearchPage() {
   // ---- Hàm gọi API tìm chuyến ----
   const fetchChuyenDi = useCallback(async () => {
     if (!maDi || !maDen || !ngayDi) return;
+    const requestId = ++requestDi.current;
     setLoading(true);
     setError(null);
     try {
@@ -84,21 +89,29 @@ export default function FlightSearchPage() {
         soNguoiLon,
         soTreEm,
       });
-      setDanhSachDi(Array.isArray(data) ? data : []);
+      if (requestId === requestDi.current) {
+        setKetQuaDi({ key: searchKeyDi, flights: Array.isArray(data) ? data : [] });
+      }
     } catch (err) {
-      setError(err);
-      setDanhSachDi([]);
+      if (requestId === requestDi.current) {
+        setError(err);
+        setKetQuaDi({ key: searchKeyDi, flights: [] });
+      }
     } finally {
-      setLoading(false);
+      if (requestId === requestDi.current) setLoading(false);
     }
-  }, [maDi, maDen, ngayDi, soNguoiLon, soTreEm]);
+  }, [maDi, maDen, ngayDi, soNguoiLon, soTreEm, searchKeyDi]);
 
   const fetchChuyenVe = useCallback(async () => {
+    const requestId = ++requestVe.current;
     if (loaiVe !== 'roundTrip' || !ngayVe || !maDi || !maDen) {
-      setDanhSachVe([]);
+      setKetQuaVe({ key: null, flights: [] });
+      setLoadingVe(false);
+      setErrorVe(null);
       return;
     }
     setLoadingVe(true);
+    setErrorVe(null);
     try {
       const data = await flightSearchService.searchFlights({
         maDi: maDen,
@@ -107,13 +120,18 @@ export default function FlightSearchPage() {
         soNguoiLon,
         soTreEm,
       });
-      setDanhSachVe(Array.isArray(data) ? data : []);
-    } catch {
-      setDanhSachVe([]);
+      if (requestId === requestVe.current) {
+        setKetQuaVe({ key: searchKeyVe, flights: Array.isArray(data) ? data : [] });
+      }
+    } catch (err) {
+      if (requestId === requestVe.current) {
+        setErrorVe(err);
+        setKetQuaVe({ key: searchKeyVe, flights: [] });
+      }
     } finally {
-      setLoadingVe(false);
+      if (requestId === requestVe.current) setLoadingVe(false);
     }
-  }, [loaiVe, maDi, maDen, ngayVe, soNguoiLon, soTreEm]);
+  }, [loaiVe, maDi, maDen, ngayVe, soNguoiLon, soTreEm, searchKeyVe]);
 
   const fetchMinPriceDi = useCallback(async () => {
     if (!maDi || !maDen || !ngayDi) return;
@@ -140,13 +158,8 @@ export default function FlightSearchPage() {
   }, [fetchChuyenDi, fetchMinPriceDi]);
 
   useEffect(() => {
-    if (loaiVe === 'roundTrip') {
-      fetchChuyenVe();
-    } else {
-      setDanhSachVe([]);
-      setChuyenDaChon((prev) => ({ ...prev, ve: null }));
-    }
-  }, [fetchChuyenVe, loaiVe]);
+    fetchChuyenVe();
+  }, [fetchChuyenVe]);
 
   // ---- Lọc + sắp xếp danh sách ----
   const sortFlights = useCallback(
@@ -212,9 +225,9 @@ export default function FlightSearchPage() {
 
   // ---- Xử lý thay đổi ngày (DateTabBar) ----
   const handleDateDiChange = (dateStr) => {
-    setNgayDi(dateStr);
     const next = new URLSearchParams(searchParams);
     next.set('ngayDi', dateStr);
+    if (dateStr !== ngayDi) next.delete('hangVeDi');
     setSearchParams(next, { replace: true });
   };
 
@@ -227,7 +240,6 @@ export default function FlightSearchPage() {
 
   // ---- Xử lý tìm kiếm lại từ Sidebar ----
   const handleSidebarSearch = (params) => {
-    setChuyenDaChon({ di: null, ve: null });
     const next = new URLSearchParams({
       maDi: params.maDi,
       maDen: params.maDen,
@@ -243,16 +255,17 @@ export default function FlightSearchPage() {
     navigate(`/chuyen-bay?${next.toString()}`);
   };
 
-  // ---- Xử lý chọn chuyến (so sánh theo hangVeId) ----
-  const handleSelectFlight = (flight, context) => {
-    setChuyenDaChon((prev) => {
-      const currentId = prev[context]?.hangVeId ?? prev[context]?.chuyenBayId;
-      const nextId = flight.hangVeId ?? flight.chuyenBayId;
-      return {
-        ...prev,
-        [context]: currentId === nextId ? null : flight,
-      };
-    });
+  // ---- Xử lý chọn chuyến ----
+  const handleSelectFlight = (flight, context, toggle = true) => {
+    const key = context === 'di' ? 'hangVeDi' : 'hangVeVe';
+    const next = new URLSearchParams(searchParams);
+    const id = String(flight.hangVeId);
+    if (toggle && next.get(key) === id) {
+      next.delete(key);
+    } else {
+      next.set(key, id);
+    }
+    setSearchParams(next, { replace: true });
   };
 
   // ---- Xử lý modal ----
@@ -262,7 +275,7 @@ export default function FlightSearchPage() {
   };
 
   const handleModalConfirm = (flight) => {
-    setChuyenDaChon((prev) => ({ ...prev, [modalContext]: flight }));
+    handleSelectFlight(flight, modalContext, false);
     setModalFlight(null);
   };
 
@@ -300,6 +313,11 @@ export default function FlightSearchPage() {
         </div>
 
         <div className="flex-1 min-w-0 flex flex-col gap-5">
+          {(khongTimThayDi || khongTimThayVe) && (
+            <div role="alert" className="bg-amber-50 border border-amber-300 rounded-[10px] p-4 text-amber-800 text-[13px]">
+              Hạng vé {khongTimThayDi && khongTimThayVe ? 'chiều đi hoặc chiều về' : khongTimThayDi ? 'chiều đi' : 'chiều về'} đã chọn không còn phù hợp. Vui lòng chọn lại.
+            </div>
+          )}
           {/* ===== CHIỀU ĐI ===== */}
           <div className="flex flex-col gap-3">
             <h2 className="text-[14px] font-bold text-[#334155] flex items-center gap-2">
@@ -317,7 +335,7 @@ export default function FlightSearchPage() {
 
             <SortTabBar activeSort={sortKey} onSortChange={setSortKey} />
 
-            {loading ? (
+            {loading || (ketQuaDi.key !== searchKeyDi && !error) ? (
               <Loading message="Đang tìm chuyến bay..." />
             ) : error ? (
               <div className="bg-red-50 border border-red-200 rounded-[10px] p-6 text-center">
@@ -370,8 +388,20 @@ export default function FlightSearchPage() {
                 {maDen} → {maDi} · {ngayVe || '—'}
               </h2>
 
-              {loadingVe ? (
+              {loadingVe || (ngayVe && ketQuaVe.key !== searchKeyVe && !errorVe) ? (
                 <Loading message="Đang tìm chuyến về..." />
+              ) : errorVe ? (
+                <div className="bg-red-50 border border-red-200 rounded-[10px] p-6 text-center">
+                  <p className="text-red-600 font-semibold mb-2">Không thể tải danh sách chuyến về</p>
+                  <p className="text-red-500 text-[12px]">{errorVe.message}</p>
+                  <button
+                    type="button"
+                    onClick={fetchChuyenVe}
+                    className="mt-3 px-4 py-1.5 bg-red-600 text-white text-[12px] font-semibold rounded-[6px] hover:bg-red-700 transition cursor-pointer"
+                  >
+                    Thử lại
+                  </button>
+                </div>
               ) : danhSachVeFiltered.length === 0 ? (
                 <div className="bg-white border border-[#e2e8f0] rounded-[12px] p-8 text-center">
                   <p className="text-[13px] text-[#64748b]">
