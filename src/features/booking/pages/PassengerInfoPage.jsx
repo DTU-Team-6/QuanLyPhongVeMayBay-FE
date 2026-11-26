@@ -4,6 +4,7 @@ import PassengerForm from '../components/PassengerForm';
 import TripSummaryCard from '../components/TripSummaryCard';
 import PaymentSummaryCard from '../components/PaymentSummaryCard';
 import bookingService from '../services/bookingService';
+import paymentService from '../../payment/services/paymentService';
 import { ApiError } from '../../../services/apiClient';
 
 /**
@@ -95,6 +96,35 @@ export default function PassengerInfoPage() {
   const validate = (danhSach) => {
     const newErrors = {};
     let isValid = true;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const resolveFlightDate = (raw) => {
+      if (!raw) return today;
+      if (typeof raw === 'string') {
+        const parsed = new Date(`${raw.slice(0, 10)}T00:00:00`);
+        return Number.isNaN(parsed.getTime()) ? today : parsed;
+      }
+      if (Array.isArray(raw) && raw.length >= 3) {
+        return new Date(raw[0], raw[1] - 1, raw[2]);
+      }
+      if (typeof raw === 'object') {
+        const iso = raw.thoiGianDiaPhuong || raw.gioDiaPhuong || raw.iso || raw.value;
+        if (typeof iso === 'string') {
+          const parsed = new Date(`${iso.slice(0, 10)}T00:00:00`);
+          return Number.isNaN(parsed.getTime()) ? today : parsed;
+        }
+      }
+      return today;
+    };
+    const flightDate = resolveFlightDate(chuyenDi?.thoiGianKhoiHanh);
+
+    const calcAge = (birthStr, refDate) => {
+      const b = new Date(`${birthStr}T00:00:00`);
+      let age = refDate.getFullYear() - b.getFullYear();
+      const m = refDate.getMonth() - b.getMonth();
+      if (m < 0 || (m === 0 && refDate.getDate() < b.getDate())) age -= 1;
+      return age;
+    };
 
     danhSach.forEach((hk, i) => {
       const errs = {};
@@ -102,7 +132,7 @@ export default function PassengerInfoPage() {
       if (!hk.hoTen?.trim()) {
         errs.hoTen = 'Vui lòng nhập họ tên';
         isValid = false;
-      } else if (!/^[A-Z\s]+$/.test(hk.hoTen.trim())) {
+      } else if (!/^[A-Z\s'-]+$/.test(hk.hoTen.trim())) {
         errs.hoTen = 'Họ tên phải viết IN HOA, không dấu (chỉ ký tự A-Z)';
         isValid = false;
       }
@@ -110,21 +140,46 @@ export default function PassengerInfoPage() {
       if (!hk.ngaySinh) {
         errs.ngaySinh = 'Vui lòng nhập ngày sinh';
         isValid = false;
+      } else {
+        const birthDate = new Date(`${hk.ngaySinh}T00:00:00`);
+        if (birthDate >= today) {
+          errs.ngaySinh = 'Ngày sinh phải trước ngày hiện tại';
+          isValid = false;
+        } else {
+          const age = calcAge(hk.ngaySinh, flightDate);
+          if (hk.loaiHanhKhach === 'NGUOI_LON' && age < 12) {
+            errs.ngaySinh = `Người lớn phải từ 12 tuổi trở lên tính đến ngày bay (hiện ${age} tuổi)`;
+            isValid = false;
+          } else if (hk.loaiHanhKhach === 'TRE_EM' && (age < 2 || age >= 12)) {
+            errs.ngaySinh = `Trẻ em phải từ 2 đến dưới 12 tuổi tính đến ngày bay (hiện ${age} tuổi)`;
+            isValid = false;
+          } else if (hk.loaiHanhKhach === 'EM_BE' && (age < 0 || age >= 2)) {
+            errs.ngaySinh = `Em bé phải dưới 2 tuổi tính đến ngày bay (hiện ${age} tuổi)`;
+            isValid = false;
+          }
+        }
       }
 
-      // Khớp pattern BE: ^\+?[0-9 ]{8,20}$
-      if (!hk.soDienThoai?.trim()) {
-        errs.soDienThoai = 'Vui lòng nhập số điện thoại';
+      if (hk.loaiHanhKhach === 'NGUOI_LON' && !hk.cmndPassport?.trim()) {
+        errs.cmndPassport = 'Người lớn bắt buộc nhập số CMND/CCCD hoặc Passport';
         isValid = false;
-      } else if (!/^\+?[0-9 ]{8,20}$/.test(hk.soDienThoai.trim())) {
+      }
+
+      // Khớp pattern BE: ^\+?[0-9 ]{8,20}$ — chỉ bắt buộc cho hành khách đầu tiên (người liên hệ/đặt vé)
+      const phone = hk.soDienThoai?.trim() || '';
+      if (i === 0 && !phone) {
+        errs.soDienThoai = 'Vui lòng nhập số điện thoại liên hệ';
+        isValid = false;
+      } else if (phone && !/^\+?[0-9 ]{8,20}$/.test(phone)) {
         errs.soDienThoai = 'Số điện thoại không hợp lệ (8-20 chữ số)';
         isValid = false;
       }
 
-      if (!hk.email?.trim()) {
-        errs.email = 'Vui lòng nhập email';
+      const email = hk.email?.trim() || '';
+      if (i === 0 && !email) {
+        errs.email = 'Vui lòng nhập email nhận vé';
         isValid = false;
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(hk.email.trim())) {
+      } else if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         errs.email = 'Email không hợp lệ';
         isValid = false;
       }
@@ -152,8 +207,8 @@ export default function PassengerInfoPage() {
         hoTen: hk.hoTen.trim(),
         ngaySinh: hk.ngaySinh,
         gioiTinh: hk.gioiTinh,
-        email: hk.email.trim(),
-        soDienThoai: hk.soDienThoai.trim(),
+        email: hk.email?.trim() || null,
+        soDienThoai: hk.soDienThoai?.trim() || null,
         cmndPassport: hk.cmndPassport?.trim() || null,
         loaiHanhKhach: hk.loaiHanhKhach,
       })),
@@ -167,16 +222,25 @@ export default function PassengerInfoPage() {
     setSubmitting(true);
     setSubmitError(null);
 
+    let bookingDi = null;
     try {
-      const bookingDi = await bookingService.createBooking(
+      bookingDi = await bookingService.createBooking(
         buildBookingRequest(chuyenDi.hangVeId)
       );
 
       let bookingVe = null;
       if (loaiVe === 'roundTrip' && chuyenVe?.hangVeId) {
-        bookingVe = await bookingService.createBooking(
-          buildBookingRequest(chuyenVe.hangVeId)
-        );
+        try {
+          bookingVe = await bookingService.createBooking(
+            buildBookingRequest(chuyenVe.hangVeId)
+          );
+        } catch (veErr) {
+          // Rollback đơn chiều đi nếu chiều về thất bại để tránh giữ chỗ/trùng đơn
+          if (bookingDi?.id) {
+            await paymentService.cancelBooking(bookingDi.id).catch(() => {});
+          }
+          throw veErr;
+        }
       }
 
       navigate('/dat-ve/thanh-toan', {
@@ -194,15 +258,36 @@ export default function PassengerInfoPage() {
       });
     } catch (err) {
       if (err instanceof ApiError) {
+        // Map chi tiết lỗi hành khách từ BE vào từng ô nhập liệu
+        if (Array.isArray(err.details) && err.details.length > 0) {
+          const mappedErrors = {};
+          err.details.forEach((d) => {
+            const match = /^hanhKhach\[(\d+)\]\.(.+)$/.exec(d.field || '');
+            if (match) {
+              const idx = Number(match[1]);
+              const fieldName = match[2];
+              mappedErrors[idx] = { ...(mappedErrors[idx] || {}), [fieldName]: d.message };
+            }
+          });
+          if (Object.keys(mappedErrors).length > 0) {
+            setErrors((prev) => ({ ...prev, ...mappedErrors }));
+          }
+        }
+
         if (err.status === 401 || err.code === 'UNAUTHORIZED') {
           setSubmitError({
             type: 'chuaDangNhap',
             message: 'Bạn cần đăng nhập tài khoản trước khi xác nhận đặt vé.',
           });
-        } else if (err.code === 'GHE_DA_BI_CHIEM' || err.status === 409) {
+        } else if (err.code === 'CHUYEN_BAY_DA_KHOI_HANH' || err.code === 'CHUYEN_BAY_DA_HUY') {
           setSubmitError({
             type: 'gheChiem',
-            message: 'Ghế vừa bị người khác đặt. Vui lòng quay lại chọn chuyến bay khác.',
+            message: err.message || 'Chuyến bay không còn khả dụng. Vui lòng chọn chuyến bay khác.',
+          });
+        } else if (err.code === 'GHE_DA_BI_CHIEM' || err.code === 'HET_CHO' || err.status === 409) {
+          setSubmitError({
+            type: 'gheChiem',
+            message: err.message || 'Ghế vừa bị người khác đặt. Vui lòng quay lại chọn chuyến bay khác.',
           });
         } else if (err.code === 'NETWORK_ERROR') {
           setSubmitError({
@@ -210,7 +295,11 @@ export default function PassengerInfoPage() {
             message: 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra mạng và thử lại.',
           });
         } else {
-          setSubmitError({ type: 'khac', message: err.message });
+          const detailMsg =
+            Array.isArray(err.details) && err.details.length > 0
+              ? err.details.map((d) => d.message).filter(Boolean).join(' · ')
+              : null;
+          setSubmitError({ type: 'khac', message: detailMsg || err.message });
         }
       } else {
         setSubmitError({ type: 'khac', message: 'Đã có lỗi xảy ra. Vui lòng thử lại.' });

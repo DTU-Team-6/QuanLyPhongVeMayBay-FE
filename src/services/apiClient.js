@@ -76,7 +76,7 @@ export function refreshSession() {
   return refreshInFlight;
 }
 
-async function request(endpoint, options, binary, allowRefresh = true) {
+async function request(endpoint, options, binary, allowRefresh = true, allowCsrfRetry = true) {
   const url = `${BASE_URL}${API_PREFIX}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
   const method = (options.method || 'GET').toUpperCase();
@@ -87,9 +87,17 @@ async function request(endpoint, options, binary, allowRefresh = true) {
     headers.set('Content-Type', 'application/json');
   }
 
-  // Tự động gắn header X-XSRF-TOKEN cho các request thay đổi dữ liệu
+  // Tự động gắn header X-XSRF-TOKEN cho MỌI request thay đổi dữ liệu (kể cả /auth/login, /auth/refresh, /auth/logout, /dat-cho...)
   if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
-    const xsrfToken = getCookie('XSRF-TOKEN');
+    let xsrfToken = getCookie('XSRF-TOKEN');
+    if (!xsrfToken && endpoint !== '/auth/csrf') {
+      try {
+        await request('/auth/csrf', {}, false, false, false);
+        xsrfToken = getCookie('XSRF-TOKEN');
+      } catch {
+        // Bỏ qua nếu có lỗi, request bên dưới sẽ tiếp tục
+      }
+    }
     if (xsrfToken) {
       headers.set('X-XSRF-TOKEN', xsrfToken);
     }
@@ -116,10 +124,19 @@ async function request(endpoint, options, binary, allowRefresh = true) {
           }
           throw error;
         }
-        return request(endpoint, options, binary, false);
+        return request(endpoint, options, binary, false, allowCsrfRetry);
       }
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new Event('auth-session-expired'));
+      }
+    }
+
+    if (response.status === 403 && allowCsrfRetry && !['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+      try {
+        await request('/auth/csrf', {}, false, false, false);
+        return request(endpoint, options, binary, allowRefresh, false);
+      } catch {
+        // Tiếp tục để phần dưới ném lỗi chi tiết
       }
     }
 

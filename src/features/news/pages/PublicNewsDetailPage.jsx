@@ -122,11 +122,12 @@ export default function PublicNewsDetailPage() {
                 {estimateReadingMinutes(article.noiDung)} phút đọc
               </p>
 
-              {article.moTaNgan && (
-                <p className="mt-4 text-[14px] font-medium leading-relaxed text-[#334155]">
-                  {article.moTaNgan}
-                </p>
-              )}
+              {article.moTaNgan &&
+                article.moTaNgan.trim() !== (article.noiDung || '').trim() && (
+                  <p className="mt-4 text-[14px] font-medium leading-relaxed text-[#334155]">
+                    {article.moTaNgan}
+                  </p>
+                )}
 
               <div className="my-5 overflow-hidden rounded-xl border border-[#e2e8f0] bg-[#f8fafc]">
                 <img

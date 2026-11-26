@@ -1,17 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   MAX_IMAGE_URL_LENGTH,
-  buildLocalNewsImagePath,
   validateNewsImageFile,
 } from '../newsValidation';
+import newsService from '../services/newsService';
 import { handleNewsImageError, resolveNewsImageSrc } from '../utils/newsImage';
 
 /**
- * Thẻ chọn/tải ảnh đại diện bài viết tin tức (hỗ trợ kéo-thả, chọn từ máy, xem trước và nhập URL).
+ * Thẻ chọn/tải ảnh đại diện bài viết tin tức (hỗ trợ kéo-thả, tải lên máy chủ, xem trước và nhập URL).
  */
 export default function NewsImageUploadCard({ value, onChange, error }) {
   const fileInputRef = useRef(null);
   const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [fileError, setFileError] = useState('');
   const [selectedFileMeta, setSelectedFileMeta] = useState(null);
   const [previewObjectUrl, setPreviewObjectUrl] = useState('');
@@ -24,7 +25,7 @@ export default function NewsImageUploadCard({ value, onChange, error }) {
     };
   }, [previewObjectUrl]);
 
-  const handleFile = (file) => {
+  const handleFile = async (file) => {
     if (!file) return;
     const validationError = validateNewsImageFile(file);
     if (validationError) {
@@ -42,7 +43,18 @@ export default function NewsImageUploadCard({ value, onChange, error }) {
 
     const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
     setSelectedFileMeta(`${file.name} • ${sizeMb === '0.0' ? '< 0.1' : sizeMb} MB`);
-    onChange(buildLocalNewsImagePath(file.name));
+
+    setUploading(true);
+    try {
+      const uploadedUrl = await newsService.uploadNewsImage(file);
+      if (uploadedUrl) {
+        onChange(uploadedUrl);
+      }
+    } catch (err) {
+      setFileError(err?.message || 'Không thể tải ảnh lên máy chủ. Vui lòng thử lại.');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleDrop = (event) => {
@@ -79,6 +91,7 @@ export default function NewsImageUploadCard({ value, onChange, error }) {
         <div className="space-y-3">
           <div className="aspect-video w-full overflow-hidden rounded-lg border border-[#e2e8f0] bg-[#f8fafc]">
             <img
+              key={displaySrc}
               src={displaySrc}
               alt="Ảnh đại diện tin tức"
               onError={handleNewsImageError}
@@ -86,7 +99,7 @@ export default function NewsImageUploadCard({ value, onChange, error }) {
             />
           </div>
           <p className="truncate text-[12px] text-[#64748b]">
-            {selectedFileMeta || value}
+            {uploading ? 'Đang tải ảnh lên máy chủ...' : selectedFileMeta || value}
           </p>
           <div className="flex gap-2">
             <button

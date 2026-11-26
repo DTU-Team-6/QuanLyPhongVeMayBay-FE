@@ -12,9 +12,10 @@ import flightService from '../../../services/flightService';
 export default function FlightDetailModal({
   flight,
   flightVe,
+  modalContext = 'di',
   loaiVe,
-  soNguoiLon,
-  soTreEm,
+  soNguoiLon = 1,
+  soTreEm = 0,
   onClose,
   onConfirm,
 }) {
@@ -189,15 +190,20 @@ export default function FlightDetailModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {fareOptions.map((opt) => {
                   const active = opt.hangVeId === selectedFare.hangVeId;
+                  const requiredSeats = (soNguoiLon || 1) + (soTreEm || 0);
+                  const notEnoughSeats = opt.soGheTrong != null && opt.soGheTrong < requiredSeats;
                   return (
                     <button
                       key={opt.hangVeId}
                       type="button"
-                      onClick={() => setSelectedFare(opt)}
-                      className={`p-3 rounded-[8px] border text-left transition cursor-pointer ${
-                        active
-                          ? 'border-[#0284c7] bg-[#f0f9ff]'
-                          : 'border-[#e2e8f0] hover:border-[#cbd5e1]'
+                      disabled={notEnoughSeats}
+                      onClick={() => !notEnoughSeats && setSelectedFare(opt)}
+                      className={`p-3 rounded-[8px] border text-left transition ${
+                        notEnoughSeats
+                          ? 'border-[#e2e8f0] bg-[#f8fafc] opacity-55 cursor-not-allowed'
+                          : active
+                            ? 'border-[#0284c7] bg-[#f0f9ff] cursor-pointer'
+                            : 'border-[#e2e8f0] hover:border-[#cbd5e1] cursor-pointer'
                       }`}
                     >
                       <div className="flex justify-between items-center">
@@ -209,7 +215,12 @@ export default function FlightDetailModal({
                         </span>
                       </div>
                       <p className="text-[11px] text-[#64748b] mt-1">
-                        {opt.hanhLyXachTayKg}kg xách tay • {opt.hanhLyKyGuiKg}kg ký gửi • Còn {opt.soGheTrong} ghế
+                        {opt.hanhLyXachTayKg}kg xách tay • {opt.hanhLyKyGuiKg}kg ký gửi •{' '}
+                        {notEnoughSeats ? (
+                          <span className="text-red-600 font-semibold">Không đủ chỗ (còn {opt.soGheTrong})</span>
+                        ) : (
+                          `Còn ${opt.soGheTrong} ghế`
+                        )}
                       </p>
                     </button>
                   );
@@ -222,11 +233,11 @@ export default function FlightDetailModal({
             <p className="text-[12px] text-[#64748b] mb-2">Đang cập nhật thông tin hạng vé...</p>
           )}
 
-          {/* Chuyến đi / đang xem */}
-          {renderFlightBlock(selectedFare, 'Chuyến đi')}
+          {/* Chuyến đang xem */}
+          {renderFlightBlock(selectedFare, modalContext === 've' ? 'Chuyến về' : 'Chuyến đi')}
 
-          {/* Chuyến về (nếu khứ hồi và đã chọn) */}
-          {loaiVe === 'roundTrip' && flightVe && renderFlightBlock(flightVe, 'Chuyến về')}
+          {/* Chuyến về (chỉ hiện thêm nếu đang xem chuyến đi khứ hồi và đã chọn chuyến về) */}
+          {loaiVe === 'roundTrip' && modalContext !== 've' && flightVe && renderFlightBlock(flightVe, 'Chuyến về')}
 
           {/* ---- Tóm tắt giá từ BE ---- */}
           <div className="bg-[#f8fafc] rounded-[10px] border border-[#e2e8f0] p-4">

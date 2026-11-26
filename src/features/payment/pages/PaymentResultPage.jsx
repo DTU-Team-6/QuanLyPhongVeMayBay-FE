@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Loading from '../../../components/common/Loading';
 import paymentService from '../services/paymentService';
@@ -14,9 +14,14 @@ export default function PaymentResultPage({ isCancelled = false }) {
   const [loading, setLoading] = useState(!isCancelled);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const verifiedKeyRef = useRef(null);
 
   useEffect(() => {
     if (isCancelled) return;
+
+    const queryKey = searchParams.toString();
+    if (verifiedKeyRef.current === queryKey) return;
+    verifiedKeyRef.current = queryKey;
 
     const phuongThuc = searchParams.get('phuongThuc');
     const vnpTxnRef = searchParams.get('vnp_TxnRef');

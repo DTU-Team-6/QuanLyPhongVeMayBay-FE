@@ -25,9 +25,11 @@ export default function AdminNewsListPage() {
 
   const [keywordInput, setKeywordInput] = useState('');
   const [categoryInput, setCategoryInput] = useState('');
+  const [statusInput, setStatusInput] = useState('');
   const [queryFilter, setQueryFilter] = useState({
     keyword: '',
     loaiTin: '',
+    trangThai: '',
     page: 0,
   });
 
@@ -52,9 +54,10 @@ export default function AdminNewsListPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await newsService.getNewsList({
+      const data = await newsService.getAdminNewsList({
         keyword: queryFilter.keyword,
         loaiTin: queryFilter.loaiTin || undefined,
+        trangThai: queryFilter.trangThai || undefined,
         page: queryFilter.page,
         size: PAGE_SIZE,
       });
@@ -77,6 +80,7 @@ export default function AdminNewsListPage() {
     setQueryFilter({
       keyword: keywordInput.trim(),
       loaiTin: categoryInput,
+      trangThai: statusInput,
       page: 0,
     });
   };
@@ -84,8 +88,9 @@ export default function AdminNewsListPage() {
   const handleReset = () => {
     setKeywordInput('');
     setCategoryInput('');
+    setStatusInput('');
     setNotice('');
-    setQueryFilter({ keyword: '', loaiTin: '', page: 0 });
+    setQueryFilter({ keyword: '', loaiTin: '', trangThai: '', page: 0 });
   };
 
   const handleDeleteConfirm = async (item) => {
@@ -188,7 +193,7 @@ export default function AdminNewsListPage() {
           aria-label="Lọc theo chuyên mục"
           value={categoryInput}
           onChange={(event) => setCategoryInput(event.target.value)}
-          className="h-10 rounded-lg border border-[#dce5ef] bg-white px-3 text-[13px] font-medium text-[#334155] focus:border-[#0284c7] focus:outline-none md:w-[210px]"
+          className="h-10 rounded-lg border border-[#dce5ef] bg-white px-3 text-[13px] font-medium text-[#334155] focus:border-[#0284c7] focus:outline-none md:w-[190px]"
         >
           <option value="">Tất cả chuyên mục</option>
           {NEWS_CATEGORIES.map((category) => (
@@ -196,6 +201,17 @@ export default function AdminNewsListPage() {
               {category.label}
             </option>
           ))}
+        </select>
+
+        <select
+          aria-label="Lọc theo trạng thái"
+          value={statusInput}
+          onChange={(event) => setStatusInput(event.target.value)}
+          className="h-10 rounded-lg border border-[#dce5ef] bg-white px-3 text-[13px] font-medium text-[#334155] focus:border-[#0284c7] focus:outline-none md:w-[155px]"
+        >
+          <option value="">Tất cả trạng thái</option>
+          <option value="HIEN_THI">Hiển thị</option>
+          <option value="AN">Đang ẩn</option>
         </select>
 
         <div className="flex items-center gap-2">

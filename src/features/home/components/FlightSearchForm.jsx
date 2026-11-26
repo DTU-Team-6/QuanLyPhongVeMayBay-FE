@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import arrowLeftRightIcon from '../../../assets/arrow-left-right.svg';
 import chevronDownIcon from '../../../assets/chevron-down.svg';
 import chevronUpIcon from '../../../assets/chevron-up.svg';
-import calendarDaysIcon from '../../../assets/calendar-days.svg';
 import searchIcon from '../../../assets/search.svg';
 
 const AIRPORTS = [
@@ -193,47 +192,31 @@ export default function FlightSearchForm({ onSearch }) {
             <label className="block text-[12px] font-semibold text-[#334155] mb-1.5">
               Ngày đi
             </label>
-            <div className="relative">
-              <input
-                type="date"
-                value={ngayDi}
-                min={formatDateValue(new Date())}
-                onChange={(e) => setNgayDi(e.target.value)}
-                className="w-full h-[40px] px-3 pr-8 bg-white border border-[#cbd5e1] rounded-[8px] text-[14px] text-[#0f172a] focus:outline-hidden focus:border-[#0284c7]"
-              />
-              <img
-                src={calendarDaysIcon}
-                alt=""
-                className="absolute right-3 top-1/2 -translate-y-1/2 size-4 pointer-events-none"
-              />
-            </div>
+            <input
+              type="date"
+              value={ngayDi}
+              min={formatDateValue(new Date())}
+              onChange={(e) => setNgayDi(e.target.value)}
+              className="w-full h-[40px] px-3 bg-white border border-[#cbd5e1] rounded-[8px] text-[14px] text-[#0f172a] focus:outline-hidden focus:border-[#0284c7] cursor-pointer"
+            />
           </div>
 
           <div>
             <label className="block text-[12px] font-semibold text-[#334155] mb-1.5">
               Ngày về
             </label>
-            <div className="relative">
-              <input
-                type="date"
-                value={ngayVe}
-                min={ngayDi}
-                disabled={tripType === 'oneWay'}
-                onChange={(e) => setNgayVe(e.target.value)}
-                className={`w-full h-[40px] px-3 pr-8 border rounded-[8px] text-[14px] focus:outline-hidden ${
-                  tripType === 'oneWay'
-                    ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed'
-                    : 'bg-white border-[#cbd5e1] text-[#0f172a] focus:border-[#0284c7]'
-                }`}
-              />
-              <img
-                src={calendarDaysIcon}
-                alt=""
-                className={`absolute right-3 top-1/2 -translate-y-1/2 size-4 pointer-events-none ${
-                  tripType === 'oneWay' ? 'opacity-40' : ''
-                }`}
-              />
-            </div>
+            <input
+              type="date"
+              value={ngayVe}
+              min={ngayDi}
+              disabled={tripType === 'oneWay'}
+              onChange={(e) => setNgayVe(e.target.value)}
+              className={`w-full h-[40px] px-3 border rounded-[8px] text-[14px] focus:outline-hidden ${
+                tripType === 'oneWay'
+                  ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed'
+                  : 'bg-white border-[#cbd5e1] text-[#0f172a] focus:border-[#0284c7] cursor-pointer'
+              }`}
+            />
           </div>
         </div>
 

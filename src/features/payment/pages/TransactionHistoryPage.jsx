@@ -5,7 +5,7 @@ import Loading from '../../../components/common/Loading';
 import paymentService from '../services/paymentService';
 import { ApiError } from '../../../services/apiClient';
 import { formatCurrency } from '../../../utils/formatters';
-import { formatLocalDate, getBookingStatusMeta } from '../utils/paymentFormatters';
+import { formatLocalDate, formatPaymentMethod, getBookingStatusMeta } from '../utils/paymentFormatters';
 
 const PAGE_SIZE = 6;
 
@@ -72,10 +72,26 @@ export default function TransactionHistoryPage() {
     fetchHistory();
   }, [fetchHistory]);
 
+  const [filterError, setFilterError] = useState(null);
+
   const handleFilterSubmit = (e) => {
     e.preventDefault();
+    if (tuNgay && denNgay && tuNgay > denNgay) {
+      setFilterError('Ngày bắt đầu không được lớn hơn ngày kết thúc.');
+      return;
+    }
+    setFilterError(null);
     setPage(0);
     setAppliedFilters({ tuNgay, denNgay, trangThai });
+  };
+
+  const handleResetFilters = () => {
+    setTuNgay('');
+    setDenNgay('');
+    setTrangThai('');
+    setFilterError(null);
+    setPage(0);
+    setAppliedFilters({ tuNgay: '', denNgay: '', trangThai: '' });
   };
 
   const { content = [], totalElements = 0, totalPages = 0 } = pageData;
@@ -119,7 +135,7 @@ export default function TransactionHistoryPage() {
               onSubmit={handleFilterSubmit}
               className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end mb-5"
             >
-              <div className="sm:col-span-4">
+              <div className="sm:col-span-3">
                 <label className="block text-[12px] font-semibold text-[#334155] mb-1.5">
                   Từ ngày
                 </label>
@@ -161,18 +177,31 @@ export default function TransactionHistoryPage() {
                 </select>
               </div>
 
-              <div className="sm:col-span-1 flex">
+              <div className="sm:col-span-2 flex gap-2">
                 <button
                   type="submit"
-                  className="w-full h-10 px-4 bg-[#0284c7] hover:bg-[#0369a1] text-white text-[13px] font-semibold rounded-[8px] flex items-center justify-center gap-1.5 transition cursor-pointer"
+                  className="flex-1 h-10 px-3 bg-[#0284c7] hover:bg-[#0369a1] text-white text-[13px] font-semibold rounded-[8px] flex items-center justify-center gap-1.5 transition cursor-pointer"
                 >
                   <svg className="size-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                   </svg>
                   <span>Lọc</span>
                 </button>
+                {(tuNgay || denNgay || trangThai) && (
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className="h-10 px-3 bg-white border border-[#cbd5e1] hover:bg-[#f1f5f9] text-[#475569] text-[12px] font-semibold rounded-[8px] transition cursor-pointer"
+                    title="Xóa bộ lọc"
+                  >
+                    Xóa
+                  </button>
+                )}
               </div>
             </form>
+            {filterError && (
+              <p className="text-[12px] text-red-600 -mt-3 mb-4">{filterError}</p>
+            )}
 
             {/* Bảng lịch sử */}
             <div className="bg-white border border-[#e2e8f0] rounded-[12px] overflow-hidden shadow-[0px_2px_8px_rgba(15,23,42,0.03)]">
@@ -228,6 +257,7 @@ export default function TransactionHistoryPage() {
                         <th className="py-3.5 px-4">Ngày đặt</th>
                         <th className="py-3.5 px-4">Ngày bay</th>
                         <th className="py-3.5 px-4">Giá tiền</th>
+                        <th className="py-3.5 px-4">Phương thức</th>
                         <th className="py-3.5 px-4">Trạng thái</th>
                       </tr>
                     </thead>
@@ -244,6 +274,9 @@ export default function TransactionHistoryPage() {
                             <td className="py-3.5 px-4">{formatLocalDate(item.ngayBay)}</td>
                             <td className="py-3.5 px-4 font-semibold text-[#0f172a]">
                               {formatCurrency(item.giaTien)}
+                            </td>
+                            <td className="py-3.5 px-4 text-[12px] text-[#475569]">
+                              {item.phuongThucThanhToan ? formatPaymentMethod(item.phuongThucThanhToan) : '—'}
                             </td>
                             <td className="py-3.5 px-4">
                               <div className="flex items-center gap-2 flex-wrap">
