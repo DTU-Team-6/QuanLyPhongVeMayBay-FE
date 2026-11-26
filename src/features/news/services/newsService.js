@@ -23,12 +23,51 @@ const newsService = {
   },
 
   /**
-   * Xem chi tiết một bài viết tin tức theo ID
+   * 99.4.1 Lấy danh sách tin tức quản trị (bao gồm cả bài ẩn)
+   */
+  async getAdminNewsList({ keyword, loaiTin, chuyenMuc, trangThai, page = 0, size = 6 } = {}) {
+    const query = new URLSearchParams();
+    if (keyword && keyword.trim()) query.set('keyword', keyword.trim());
+    if (loaiTin) query.set('loaiTin', loaiTin);
+    if (chuyenMuc) query.set('chuyenMuc', chuyenMuc);
+    if (trangThai) query.set('trangThai', trangThai);
+    query.set('page', String(page));
+    query.set('size', String(size));
+
+    const res = await apiClient(`/tin-tuc/quan-ly?${query.toString()}`, { method: 'GET' });
+    return res?.data;
+  },
+
+  /**
+   * Xem chi tiết một bài viết tin tức công khai theo ID
    * @param {number|string} id
    */
   async getNewsDetail(id) {
     const res = await apiClient(`/tin-tuc/${id}`, { method: 'GET' });
     return res?.data;
+  },
+
+  /**
+   * Xem chi tiết một bài viết tin tức quản trị theo ID (bao gồm bài ẩn)
+   * @param {number|string} id
+   */
+  async getAdminNewsDetail(id) {
+    const res = await apiClient(`/tin-tuc/quan-ly/${id}`, { method: 'GET' });
+    return res?.data;
+  },
+
+  /**
+   * Tải tệp ảnh tin tức lên máy chủ Backend và trả về URL ảnh thật
+   * @param {File} file
+   */
+  async uploadNewsImage(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await apiClient('/tin-tuc/upload-image', {
+      method: 'POST',
+      body: formData,
+    });
+    return res?.data?.url;
   },
 
   /**

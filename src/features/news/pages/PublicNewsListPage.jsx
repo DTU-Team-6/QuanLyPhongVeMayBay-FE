@@ -15,9 +15,18 @@ const PAGE_SIZE = 6;
 /**
  * Trang Tin tức & Cẩm nang bay dành cho khách hàng (Screenshot 1)
  */
-export default function PublicNewsListPage() {
+export default function PublicNewsListPage({ defaultCategory = '', title = '', description = '' }) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialCategory = searchParams.get('loaiTin') || '';
+  const resolveCategoryFromParams = useCallback(
+    (params) => {
+      if (params.has('loaiTin')) return params.get('loaiTin') || '';
+      if (params.has('loai')) return params.get('loai') || '';
+      return defaultCategory || '';
+    },
+    [defaultCategory]
+  );
+
+  const initialCategory = resolveCategoryFromParams(searchParams);
 
   const [keywordInput, setKeywordInput] = useState('');
   const [categoryInput, setCategoryInput] = useState(initialCategory);
@@ -32,14 +41,14 @@ export default function PublicNewsListPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const paramCategory = searchParams.get('loaiTin') || '';
+    const paramCategory = resolveCategoryFromParams(searchParams);
     setCategoryInput(paramCategory);
-    setQueryFilter((prev) => ({
-      ...prev,
-      loaiTin: paramCategory,
-      page: 0,
-    }));
-  }, [searchParams]);
+    setQueryFilter((prev) =>
+      prev.loaiTin === paramCategory && prev.page === 0
+        ? prev
+        : { ...prev, loaiTin: paramCategory, page: 0 }
+    );
+  }, [searchParams, resolveCategoryFromParams]);
 
   const loadNews = useCallback(async () => {
     setLoading(true);
@@ -67,23 +76,21 @@ export default function PublicNewsListPage() {
 
   const handleSearch = (event) => {
     event.preventDefault();
+    const trimmedKeyword = keywordInput.trim();
+    const nextParams = categoryInput ? { loaiTin: categoryInput } : defaultCategory ? { loaiTin: '' } : {};
     setQueryFilter({
-      keyword: keywordInput.trim(),
+      keyword: trimmedKeyword,
       loaiTin: categoryInput,
       page: 0,
     });
-    if (categoryInput) {
-      setSearchParams({ loaiTin: categoryInput });
-    } else {
-      setSearchParams({});
-    }
+    setSearchParams(nextParams, { replace: true });
   };
 
   const handleReset = () => {
     setKeywordInput('');
-    setCategoryInput('');
-    setSearchParams({});
-    setQueryFilter({ keyword: '', loaiTin: '', page: 0 });
+    setCategoryInput(defaultCategory || '');
+    setQueryFilter({ keyword: '', loaiTin: defaultCategory || '', page: 0 });
+    setSearchParams(defaultCategory ? { loaiTin: defaultCategory } : {}, { replace: true });
   };
 
   const items = pageData?.content || [];
@@ -106,16 +113,31 @@ export default function PublicNewsListPage() {
             Trang chủ
           </Link>
           <span>/</span>
-          <span className="font-medium text-[#0f172a]">Tin tức</span>
+          {defaultCategory ? (
+            <>
+              <Link to="/tin-tuc" className="hover:text-[#0284c7]">
+                Tin tức
+              </Link>
+              <span>/</span>
+              <span className="font-medium text-[#0f172a]">
+                {getNewsCategoryLabel(defaultCategory)}
+              </span>
+            </>
+          ) : (
+            <span className="font-medium text-[#0f172a]">Tin tức</span>
+          )}
         </nav>
 
         {/* Tiêu đề trang */}
         <div className="mb-6">
           <h1 className="text-[28px] font-bold tracking-tight text-[#0f172a]">
-            Tin tức &amp; Cẩm nang bay
+            {title || (defaultCategory ? getNewsCategoryLabel(defaultCategory) : 'Tin tức & Cẩm nang bay')}
           </h1>
           <p className="mt-1 text-[13px] text-[#64748b]">
-            Cập nhật ưu đãi, thông tin chuyến bay và kinh nghiệm cho mỗi hành trình.
+            {description ||
+              (defaultCategory
+                ? `Cập nhật các bài viết mới nhất thuộc chuyên mục ${getNewsCategoryLabel(defaultCategory).toLowerCase()}.`
+                : 'Cập nhật ưu đãi, thông tin chuyến bay và kinh nghiệm cho mỗi hành trình.')}
           </p>
         </div>
 

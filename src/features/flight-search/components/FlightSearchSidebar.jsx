@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import chevronDownIcon from '../../../assets/chevron-down.svg';
 import chevronUpIcon from '../../../assets/chevron-up.svg';
 import arrowLeftRightIcon from '../../../assets/arrow-left-right.svg';
-import calendarDaysIcon from '../../../assets/calendar-days.svg';
 import searchIcon from '../../../assets/search.svg';
 
 /**
@@ -123,28 +122,26 @@ export default function FlightSearchSidebar({ defaultParams, selectedAirlines, o
           </div>
 
           {/* Ngày đi */}
-          <div className="relative">
+          <div>
             <input
               type="date"
               value={ngayDi}
               min={today}
               onChange={(e) => setNgayDi(e.target.value)}
-              className="w-full h-9 px-2 pr-7 bg-white border border-[#cbd5e1] rounded-[6px] text-[12px] text-[#0f172a] focus:outline-none focus:border-[#0284c7]"
+              className="w-full h-9 px-2 bg-white border border-[#cbd5e1] rounded-[6px] text-[12px] text-[#0f172a] focus:outline-none focus:border-[#0284c7] cursor-pointer"
             />
-            <img src={calendarDaysIcon} alt="" className="absolute right-2 top-1/2 -translate-y-1/2 size-3 pointer-events-none" />
           </div>
 
           {/* Ngày về (chỉ hiện khi khứ hồi) */}
           {loaiVe === 'roundTrip' && (
-            <div className="relative">
+            <div>
               <input
                 type="date"
                 value={ngayVe}
                 min={ngayDi || today}
                 onChange={(e) => setNgayVe(e.target.value)}
-                className="w-full h-9 px-2 pr-7 bg-white border border-[#cbd5e1] rounded-[6px] text-[12px] text-[#0f172a] focus:outline-none focus:border-[#0284c7]"
+                className="w-full h-9 px-2 bg-white border border-[#cbd5e1] rounded-[6px] text-[12px] text-[#0f172a] focus:outline-none focus:border-[#0284c7] cursor-pointer"
               />
-              <img src={calendarDaysIcon} alt="" className="absolute right-2 top-1/2 -translate-y-1/2 size-3 pointer-events-none" />
             </div>
           )}
 

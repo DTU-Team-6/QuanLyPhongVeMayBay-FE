@@ -45,7 +45,7 @@ function formatDayMonth(dateStr) {
   return `${dd}/${mm}`;
 }
 
-export default function DateTabBar({ selectedDate, onDateChange, minPriceMap }) {
+export default function DateTabBar({ selectedDate, onDateChange, minPriceMap, minDate }) {
   // minPriceMap: { 'YYYY-MM-DD': number } hoặc null
   const days = buildDateRange(selectedDate);
 
@@ -54,30 +54,34 @@ export default function DateTabBar({ selectedDate, onDateChange, minPriceMap }) 
       {days.map((dateStr) => {
         const isSelected = dateStr === selectedDate;
         const price = minPriceMap?.[dateStr];
+        const isDisabled = Boolean(minDate && dateStr < minDate);
 
         return (
           <button
             key={dateStr}
             type="button"
-            onClick={() => onDateChange(dateStr)}
-            className={`flex-1 flex flex-col items-center py-2.5 px-1 cursor-pointer transition-colors
-              ${isSelected
-                ? 'bg-[#0284c7] text-white'
-                : 'bg-white text-[#64748b] hover:bg-[#f0f9ff]'
+            disabled={isDisabled}
+            onClick={() => !isDisabled && onDateChange && onDateChange(dateStr)}
+            className={`flex-1 flex flex-col items-center py-2.5 px-1 transition-colors
+              ${isDisabled
+                ? 'bg-[#f8fafc] text-[#cbd5e1] cursor-not-allowed opacity-50'
+                : isSelected
+                  ? 'bg-[#0284c7] text-white cursor-pointer'
+                  : 'bg-white text-[#64748b] hover:bg-[#f0f9ff] cursor-pointer'
               }
               border-r border-[#e2e8f0] last:border-r-0`}
           >
             {/* Tên thứ */}
-            <span className={`text-[11px] font-semibold uppercase ${isSelected ? 'text-sky-100' : 'text-[#94a3b8]'}`}>
+            <span className={`text-[11px] font-semibold uppercase ${isSelected ? 'text-sky-100' : isDisabled ? 'text-[#cbd5e1]' : 'text-[#94a3b8]'}`}>
               {getShortWeekday(dateStr)}
             </span>
             {/* Ngày tháng */}
-            <span className={`text-[13px] font-bold mt-0.5 ${isSelected ? 'text-white' : 'text-[#334155]'}`}>
+            <span className={`text-[13px] font-bold mt-0.5 ${isSelected ? 'text-white' : isDisabled ? 'text-[#cbd5e1]' : 'text-[#334155]'}`}>
               {formatDayMonth(dateStr)}
             </span>
             {/* Giá thấp nhất */}
-            <span className={`text-[11px] mt-1 ${isSelected ? 'text-sky-100' : 'text-[#64748b]'}`}>
-              {price != null ? formatCurrency(price) : '--'}
+            <span className={`text-[11px] mt-1 ${isSelected ? 'text-sky-100' : isDisabled ? 'text-[#cbd5e1]' : 'text-[#64748b]'}`}>
+              {isDisabled ? '--' : price != null ? formatCurrency(price) : '--'}
             </span>
           </button>
         );

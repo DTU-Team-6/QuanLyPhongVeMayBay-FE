@@ -98,7 +98,11 @@ function PassengerFormItem({
             id={labelFor('ngaySinh')}
             type="date"
             value={value.ngaySinh}
-            max={new Date().toISOString().split('T')[0]}
+            max={(() => {
+              const d = new Date();
+              d.setDate(d.getDate() - 1);
+              return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            })()}
             onChange={(e) => handleChange('ngaySinh', e.target.value)}
             className={`w-full h-10 px-3 border rounded-[6px] text-[13px] text-[#0f172a] focus:outline-none
               ${errors?.ngaySinh ? 'border-red-400 bg-red-50' : 'border-[#cbd5e1] bg-white focus:border-[#0284c7]'}`}
@@ -109,8 +113,10 @@ function PassengerFormItem({
         {/* CMND / Passport */}
         <div>
           <label htmlFor={labelFor('cmndPassport')} className="block text-[12px] font-semibold text-[#334155] mb-1.5">
-            CMND / Passport
-            {loaiHanhKhach !== 'NGUOI_LON' && (
+            CMND / Passport{' '}
+            {loaiHanhKhach === 'NGUOI_LON' ? (
+              <span className="text-red-500">*</span>
+            ) : (
               <span className="ml-1 font-normal text-[#94a3b8]">(không bắt buộc)</span>
             )}
           </label>
@@ -120,14 +126,21 @@ function PassengerFormItem({
             value={value.cmndPassport}
             placeholder="Số CMND/CCCD hoặc hộ chiếu"
             onChange={(e) => handleChange('cmndPassport', e.target.value)}
-            className="w-full h-10 px-3 bg-white border border-[#cbd5e1] rounded-[6px] text-[13px] text-[#0f172a] focus:outline-none focus:border-[#0284c7]"
+            className={`w-full h-10 px-3 border rounded-[6px] text-[13px] text-[#0f172a] focus:outline-none
+              ${errors?.cmndPassport ? 'border-red-400 bg-red-50' : 'border-[#cbd5e1] bg-white focus:border-[#0284c7]'}`}
           />
+          {errors?.cmndPassport && <p className="text-red-500 text-[11px] mt-1">{errors.cmndPassport}</p>}
         </div>
 
         {/* Số điện thoại */}
         <div>
           <label htmlFor={labelFor('soDienThoai')} className="block text-[12px] font-semibold text-[#334155] mb-1.5">
-            Số điện thoại <span className="text-red-500">*</span>
+            Số điện thoại{' '}
+            {index === 0 ? (
+              <span className="text-red-500">*</span>
+            ) : (
+              <span className="ml-1 font-normal text-[#94a3b8]">(không bắt buộc)</span>
+            )}
           </label>
           <input
             id={labelFor('soDienThoai')}
@@ -144,7 +157,12 @@ function PassengerFormItem({
         {/* Email */}
         <div className="sm:col-span-2">
           <label htmlFor={labelFor('email')} className="block text-[12px] font-semibold text-[#334155] mb-1.5">
-            Email nhận vé <span className="text-red-500">*</span>
+            Email nhận vé{' '}
+            {index === 0 ? (
+              <span className="text-red-500">*</span>
+            ) : (
+              <span className="ml-1 font-normal text-[#94a3b8]">(không bắt buộc)</span>
+            )}
           </label>
           <input
             id={labelFor('email')}

@@ -37,16 +37,11 @@ export const bookingService = {
   },
 
   /**
-   * Lấy danh sách gói hành lý bổ sung (nếu BE hỗ trợ endpoint này)
-   * @returns {Promise<Array>} Danh sách BaggageOption hoặc [] nếu chưa có
+   * Lấy danh sách gói hành lý bổ sung (hiện tại hành lý xách tay và ký gửi đã tính trong hạng vé)
+   * @returns {Promise<Array>} Danh sách BaggageOption rỗng
    */
   async getBaggageOptions() {
-    try {
-      const res = await apiClient('/baggage-options');
-      return res?.data || [];
-    } catch {
-      return [];
-    }
+    return [];
   },
 };
 

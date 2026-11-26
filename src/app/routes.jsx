@@ -52,27 +52,30 @@ export const router = createBrowserRouter([
       {
         path: 'khuyen-mai',
         element: (
-          <PlaceholderPage
-            title="Tin khuyến mãi"
-            description="Tổng hợp các chương trình ưu đãi vé máy bay mới nhất."
+          <PublicNewsListPage
+            defaultCategory="KHUYEN_MAI"
+            title="Tin khuyến mãi & Ưu đãi vé"
+            description="Tổng hợp các chương trình ưu đãi vé máy bay mới nhất của các hãng hàng không."
           />
         ),
       },
       {
         path: 'gioi-thieu',
         element: (
-          <PlaceholderPage
-            title="Giới thiệu phòng vé Vân Việt"
-            description="Đại lý vé máy bay nội địa và quốc tế uy tín hàng đầu."
+          <PublicNewsListPage
+            defaultCategory="GIOI_THIEU"
+            title="Giới thiệu phòng vé Vân Việt & Điểm đến"
+            description="Đại lý vé máy bay nội địa và quốc tế uy tín hàng đầu, gợi ý các điểm đến hấp dẫn."
           />
         ),
       },
       {
         path: 'quy-dinh-hanh-ly',
         element: (
-          <PlaceholderPage
-            title="Quy định hành lý"
-            description="Thông tin chi tiết về kích thước, trọng lượng hành lý xách tay và ký gửi."
+          <PublicNewsListPage
+            defaultCategory="QUY_DINH_HANH_LY"
+            title="Quy định hành lý & Kinh nghiệm bay"
+            description="Thông tin chi tiết về kích thước, trọng lượng hành lý xách tay, ký gửi và kinh nghiệm bay an toàn."
           />
         ),
       },

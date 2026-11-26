@@ -71,7 +71,7 @@ export default function AdminNewsFormPage({ mode = 'create' }) {
     setLoadError('');
 
     newsService
-      .getNewsDetail(id)
+      .getAdminNewsDetail(id)
       .then((detail) => {
         if (cancelled || !detail) return;
         setValues({
@@ -102,7 +102,7 @@ export default function AdminNewsFormPage({ mode = 'create' }) {
     return () => {
       cancelled = true;
     };
-  }, [authLoading, canManage, id, isEdit, user?.hoTen]);
+  }, [authLoading, canManage, id, isEdit]);
 
   const updateField = (field, nextValue) => {
     setValues((prev) => ({ ...prev, [field]: nextValue }));

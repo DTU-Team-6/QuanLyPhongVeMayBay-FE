@@ -17,10 +17,11 @@ export default function PaymentSummaryCard({
   const [secondsLeft, setSecondsLeft] = useState(30 * 60);
 
   useEffect(() => {
-    if (secondsLeft <= 0) return;
-    const timer = setInterval(() => setSecondsLeft((s) => s - 1), 1000);
+    const timer = setInterval(() => {
+      setSecondsLeft((s) => (s > 0 ? s - 1 : 0));
+    }, 1000);
     return () => clearInterval(timer);
-  }, [secondsLeft]);
+  }, []);
 
   const formatCountdown = (sec) => {
     const m = Math.floor(sec / 60);
@@ -90,13 +91,17 @@ export default function PaymentSummaryCard({
       <hr className="border-[#e2e8f0]" />
 
       <div className="flex justify-between items-center">
-        <span className="font-bold text-[#334155] text-[13px]">Đơn giá / khách</span>
+        <span className="font-bold text-[#334155] text-[13px]">
+          Tổng cộng ({(soNguoiLon || 1) + (soTreEm || 0)} khách tính vé)
+        </span>
         <span className="text-[20px] font-bold text-[#f97316]">
-          {tongTien != null ? formatCurrency(tongTien, tienTe) : '—'}
+          {tongTien != null
+            ? formatCurrency(Number(tongTien) * ((soNguoiLon || 1) + (soTreEm || 0)), tienTe)
+            : '—'}
         </span>
       </div>
       <p className="text-[11px] text-[#94a3b8] -mt-2">
-        Tổng tiền chính xác toàn đơn sẽ được hệ thống tính khi xác nhận đặt chỗ.
+        Đơn giá: {tongTien != null ? formatCurrency(tongTien, tienTe) : '—'} / khách (em bé miễn phí vé cơ bản).
       </p>
 
       <div

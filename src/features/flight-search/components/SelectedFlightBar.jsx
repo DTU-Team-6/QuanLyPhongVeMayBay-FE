@@ -63,9 +63,14 @@ export default function SelectedFlightBar({
         <div className="flex items-center gap-4">
           {tongTien != null && (
             <div className="text-right">
-              <p className="text-[12px] text-[#64748b]">Tổng giá vé / khách</p>
+              <p className="text-[12px] text-[#64748b]">
+                Tổng tạm tính ({(soNguoiLon || 1) + (soTreEm || 0)} khách tính vé)
+              </p>
               <p className="text-[20px] font-bold text-[#f97316]">
-                {formatCurrency(tongTien, selectedFlights?.di?.tienTe || 'VND')}
+                {formatCurrency(
+                  Number(tongTien) * ((soNguoiLon || 1) + (soTreEm || 0)),
+                  selectedFlights?.di?.tienTe || 'VND'
+                )}
               </p>
             </div>
           )}
