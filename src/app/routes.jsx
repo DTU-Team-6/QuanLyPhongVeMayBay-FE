@@ -1,5 +1,6 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
+import AdminDashboardPage from '../features/admin/pages/AdminDashboardPage';
 import HomePage from '../features/home/pages/HomePage';
 import ReportPage from '../features/reports/pages/ReportPage';
 import PlaceholderPage from '../components/common/PlaceholderPage';
@@ -23,6 +24,11 @@ import PersonalInfoPage from '../features/account/pages/PersonalInfoPage';
 import ChangePasswordPage from '../features/account/pages/ChangePasswordPage';
 
 export const router = createBrowserRouter([
+  { path: '/quan-ly', element: <AdminDashboardPage /> },
+  { path: '/admin', element: <Navigate to="/quan-ly" replace /> },
+  { path: '/quan-ly/thong-tin', element: <PersonalInfoPage inAdminShell /> },
+  { path: '/quan-ly/doi-mat-khau', element: <ChangePasswordPage inAdminShell /> },
+  { path: '/quan-ly/bao-cao', element: <ReportPage inAdminShell /> },
   { path: '/quan-ly-nhan-vien', element: <EmployeePage /> },
   { path: '/quan-ly-ban-ve', element: <TicketPage /> },
   { path: '/quan-ly-chat', element: <AdminChatPage /> },

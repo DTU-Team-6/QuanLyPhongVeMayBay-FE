@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import reportService from '../../../services/reportService';
 import { useAuth } from '../../../context/AuthContext';
+import AdminShell from '../../../components/layout/AdminShell';
 import {
   getPresetDateRange,
   getPreviousPeriod,
@@ -19,7 +20,7 @@ import Loading from '../../../components/common/Loading';
  * Màn hình Tạo báo cáo (SRS 6.5.4.1) và Kết quả thống kê (SRS 6.5.4.2)
  * Thiết kế chuẩn theo Figma node 186:3277 (Staff Bảng) và 186:5696 (Admin Biểu đồ)
  */
-export default function ReportPage() {
+export default function ReportPage({ inAdminShell = false }) {
   const { user } = useAuth();
 
   // Khởi tạo bộ lọc mặc định: Tuần này
@@ -141,9 +142,9 @@ export default function ReportPage() {
 
   const currentTitle = reportTypeTitles[filter.reportType] || 'Thống kê báo cáo';
 
-  return (
-    <div className="bg-[#f8fafc] min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-[1400px] mx-auto flex flex-col gap-8">
+  const content = (
+    <div className={inAdminShell ? 'flex flex-col gap-8' : 'bg-[#f8fafc] min-h-screen py-8 px-4 sm:px-6 lg:px-8'}>
+      <div className={inAdminShell ? 'flex flex-col gap-8' : 'max-w-[1400px] mx-auto flex flex-col gap-8'}>
         {/* Đường dẫn & Thông tin hệ thống */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between text-[#64748b] text-[12px] gap-2 border-b border-[#e2e8f0] pb-3">
           <div className="flex items-center gap-2">
@@ -299,4 +300,14 @@ export default function ReportPage() {
       </div>
     </div>
   );
+
+  if (inAdminShell) {
+    return (
+      <AdminShell user={user} activeKey="reports">
+        {content}
+      </AdminShell>
+    );
+  }
+
+  return content;
 }

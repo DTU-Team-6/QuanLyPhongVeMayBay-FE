@@ -46,7 +46,7 @@ function PasswordField({ label, name, value, onChange, error, disabled }) {
   );
 }
 
-export default function ChangePasswordPage() {
+export default function ChangePasswordPage({ inAdminShell = false }) {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
@@ -126,7 +126,7 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <AccountPageLayout title="Đổi mật khẩu" description="Cập nhật mật khẩu thường xuyên để bảo vệ tài khoản của bạn.">
+    <AccountPageLayout title="Đổi mật khẩu" description="Cập nhật mật khẩu thường xuyên để bảo vệ tài khoản của bạn." inAdminShell={inAdminShell}>
       <section className="rounded-[12px] border border-[#e2e8f0] bg-white p-4 shadow-[0px_2px_8px_rgba(15,23,42,0.03)] sm:p-6">
         <h2 className="text-[18px] font-bold text-[#0f172a] sm:text-[16px]">Bảo mật tài khoản</h2>
         <form onSubmit={handleSubmit} className="mt-5 max-w-[500px] space-y-4">

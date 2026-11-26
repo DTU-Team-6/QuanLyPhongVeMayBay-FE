@@ -136,7 +136,7 @@ function EditPersonalInfo({ user, onClose, onSave }) {
   );
 }
 
-export default function PersonalInfoPage() {
+export default function PersonalInfoPage({ inAdminShell = false }) {
   const { user, loading, refreshPersonalInfo, updatePersonalInfo, updateAvatar } = useAuth();
   const [editingUserId, setEditingUserId] = useState(null);
   const [profileLoading, setProfileLoading] = useState(true);
@@ -229,7 +229,11 @@ export default function PersonalInfoPage() {
   ];
 
   return (
-    <AccountPageLayout title="Thông tin cá nhân" description="Quản lý thông tin để đặt vé nhanh hơn trong những lần tiếp theo.">
+    <AccountPageLayout
+      title={inAdminShell ? (user?.vaiTro === 'NHAN_VIEN' ? 'Thông tin tài khoản' : 'Thông tin Admin') : 'Thông tin cá nhân'}
+      description={inAdminShell ? 'Quản lý thông tin hồ sơ tài khoản quản trị.' : 'Quản lý thông tin để đặt vé nhanh hơn trong những lần tiếp theo.'}
+      inAdminShell={inAdminShell}
+    >
       <section className="rounded-[12px] border border-[#e2e8f0] bg-white p-5 shadow-[0px_2px_8px_rgba(15,23,42,0.03)] sm:p-6">
         <div className="flex flex-wrap items-center gap-4 border-b border-[#e2e8f0] pb-5 sm:flex-nowrap">
           <div className="relative order-1 flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#e0f2fe] text-[20px] font-bold text-[#0284c7]">

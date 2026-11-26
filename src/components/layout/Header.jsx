@@ -65,13 +65,14 @@ export default function Header() {
     }
   };
 
+  const isStaffOrAdmin = user?.vaiTro === 'ADMIN' || user?.vaiTro === 'NHAN_VIEN';
   const navLinks = [
     { to: '/', label: 'Trang chủ' },
     { to: '/tin-tuc', label: 'Tin tức' },
     { to: '/khuyen-mai', label: 'Tin khuyến mãi' },
     { to: '/gioi-thieu', label: 'Giới thiệu' },
     { to: '/quy-dinh-hanh-ly', label: 'Quy định hành lý' },
-    { to: '/bao-cao', label: 'Thống kê báo cáo' },
+    { to: isStaffOrAdmin ? '/quan-ly/bao-cao' : '/bao-cao', label: 'Thống kê báo cáo' },
   ];
   const visibleNavLinks = isAuthPage
     ? navLinks.filter((link) => ['/', '/khuyen-mai', '/gioi-thieu', '/quy-dinh-hanh-ly'].includes(link.to))
@@ -164,9 +165,18 @@ export default function Header() {
               </button>
 
               {userDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-[#e2e8f0] py-1 z-50">
+                <div className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-lg border border-[#e2e8f0] py-1 z-50">
+                  {(user.vaiTro === 'ADMIN' || user.vaiTro === 'NHAN_VIEN') && (
+                    <Link
+                      to="/quan-ly"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="block px-4 py-2 text-[13px] font-semibold text-[#0284c7] hover:bg-[#f0f9ff]"
+                    >
+                      Không gian quản trị
+                    </Link>
+                  )}
                   <Link
-                    to="/tai-khoan"
+                    to={user.vaiTro === 'ADMIN' || user.vaiTro === 'NHAN_VIEN' ? '/quan-ly/thong-tin' : '/tai-khoan'}
                     onClick={() => setUserDropdownOpen(false)}
                     className="block px-4 py-2 text-[13px] text-[#334155] hover:bg-[#f8fafc]"
                   >
@@ -263,8 +273,17 @@ export default function Header() {
               <p role="status" className="text-sm text-[#64748b]">Đang kiểm tra phiên đăng nhập...</p>
             ) : isAuthenticated && user ? (
               <>
+                {isStaffOrAdmin && (
+                  <Link
+                    to="/quan-ly"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-sm font-semibold text-[#0284c7] py-1"
+                  >
+                    Không gian quản trị
+                  </Link>
+                )}
                 <Link
-                  to="/tai-khoan"
+                  to={isStaffOrAdmin ? '/quan-ly/thong-tin' : '/tai-khoan'}
                   onClick={() => setMobileMenuOpen(false)}
                   className="text-sm text-[#334155] py-1"
                 >
