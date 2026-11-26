@@ -105,9 +105,13 @@ export default function LoginPage() {
         rememberMe: values.rememberMe === 'on',
       });
       const next = new URLSearchParams(location.search).get('next');
+      const defaultRoute =
+        user.vaiTro === 'ADMIN' || user.vaiTro === 'NHAN_VIEN'
+          ? '/quan-ly'
+          : '/';
       navigate(next?.startsWith('/') && !next.startsWith('//')
         ? next
-        : user.vaiTro === 'KHACH_HANG' ? '/' : '/quan-ly-ban-ve', { replace: true });
+        : defaultRoute, { replace: true });
     } catch (error) {
       if (error?.code === 'INVALID_CREDENTIALS') {
         setErrorMessage('Email hoặc mật khẩu không đúng.');

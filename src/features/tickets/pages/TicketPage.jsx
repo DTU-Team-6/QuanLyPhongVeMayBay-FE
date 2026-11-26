@@ -113,6 +113,6 @@ export default function TicketPage() {
       {page && pages > 0 && <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#e2e8f0] px-5 py-4 text-xs text-[#667895]"><span>Hiển thị {start}–{end} / {total} vé</span><div className="flex items-center gap-2"><button type="button" disabled={currentPage === 0 || loading} onClick={() => setFilter(value => ({ ...value, trang: value.trang - 1 }))} className="rounded border border-[#c9d7e7] px-3 py-1.5 disabled:opacity-40">Trước</button><span>Trang {currentPage + 1} / {pages}</span><button type="button" disabled={currentPage + 1 >= pages || loading} onClick={() => setFilter(value => ({ ...value, trang: value.trang + 1 }))} className="rounded border border-[#c9d7e7] px-3 py-1.5 disabled:opacity-40">Sau</button></div></div>}
     </div>
     {editTicket && <TicketEditDialog ticket={editTicket} onClose={() => setEditTicket(null)} onSaved={() => { setEditTicket(null); setNotice('Cập nhật vé thành công.'); reload(); }} />}
-    {cancelTicket && <TicketCancelDialog ticket={cancelTicket} onClose={() => setCancelTicket(null)} />}
+    {cancelTicket && <TicketCancelDialog ticket={cancelTicket} onClose={() => setCancelTicket(null)} onCancelled={() => { const code = cancelTicket.maVe; setCancelTicket(null); setNotice(`Hủy vé ${code} thành công.`); reload(); }} />}
   </AdminShell>;
 }
