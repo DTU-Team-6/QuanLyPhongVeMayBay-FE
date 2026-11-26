@@ -39,6 +39,14 @@ export const ticketService = {
     });
     return response?.data;
   },
+  /** DELETE /api/v1/ve-may-bay/{id}: hủy mềm vé đang chờ thanh toán. */
+  async cancel(id) {
+    await apiClient('/auth/csrf');
+    const response = await apiClient(`${RESOURCE}/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
+    return response?.data;
+  },
   /** GET PDF thật từ Backend; không dựng tệp vé ở trình duyệt. */
   async downloadPdf(id) {
     return apiClientBlob(`${RESOURCE}/${encodeURIComponent(id)}/pdf`);
